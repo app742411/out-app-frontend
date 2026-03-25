@@ -24,8 +24,9 @@ export default function ChatInterface({ conversation, onClose }) {
     const otherUser = conversation?.userId || conversation?.serviceUserId;
     const otherUserId = otherUser?._id;
     const otherUserName = otherUser ? `${otherUser.firstName || ""} ${otherUser.lastName || ""}`.trim() || otherUser.email : "User Support";
+    const Base_URL = import.meta.env.VITE_API_URL;
 
-    const SOCKET_URL = import.meta.env.VITE_API_URL;
+    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -37,36 +38,87 @@ export default function ChatInterface({ conversation, onClose }) {
 
     useEffect(() => {
         if (!adminId) return;
-        const socket = io(SOCKET_URL, { transports: ["websocket"] });
+        const socket = io(SOCKET_URL, {
+            path: "/ws",
+            transports: ["websocket"],
+            auth: {
+                token: localStorage.getItem("token")
+            }
+        });
+        console.log("Socket instance initialized:", socket);
         socketRef.current = socket;
-        socket.on("connect", () => socket.emit("registerUser", adminId));
+
+        socket.on("connect", () => {
+            console.log("🟢 Socket CONNECTED to everything. ID:", socket.id);
+            socket.emit("registerUser", adminId);
+            if (conversationId) {
+                console.log("📖 Socket EMITTING markAsRead:", { conversationId, userId: adminId });
+                socket.emit("markAsRead", { conversationId, userId: adminId });
+            }
+        });
+
+        socket.on("connect_error", (error) => {
+            console.error("🔴 Socket CONNECTION ERROR:", error.message);
+        });
+
+        socket.on("disconnect", (reason) => {
+            console.warn("🟡 Socket DISCONNECTED. Reason:", reason);
+        });
+
+        socket.on("reconnect_attempt", (attempt) => {
+            console.log("⏳ Socket RECONNECTING... attempt:", attempt);
+        });
+
+        socket.on("reconnect", (attempt) => {
+            console.log("🟢 Socket RECONNECTED. Total attempts:", attempt);
+        });
+
         socket.on("receiveMessage", (msg) => {
+            console.log("📩 Socket RECEIVED Message:", msg);
             if (msg.conversationId === conversationId) setMessages((prev) => [...prev, msg]);
         });
+
         socket.on("userTyping", ({ senderId }) => {
             if (senderId?.toString() !== adminId?.toString()) setTypingUser(true);
         });
+
         socket.on("userStopTyping", ({ senderId }) => {
             if (senderId?.toString() !== adminId?.toString()) setTypingUser(false);
         });
+
         socket.on("userOnline", (id) => {
+            console.log("👤 Socket: userOnline - ID:", id);
             if (id?.toString() === otherUserId?.toString()) setIsUserOnline(true);
         });
+
         socket.on("userOffline", (id) => {
+            console.log("👤 Socket: userOffline - ID:", id);
             if (id?.toString() === otherUserId?.toString()) setIsUserOnline(false);
         });
+
         socket.on("onlineStatusResult", (data) => {
+            console.log("👤 Socket: onlineStatusResult - Data:", data);
             if (data.userId?.toString() === otherUserId?.toString()) setIsUserOnline(data.isOnline);
         });
-        socket.on("errorMessage", (msg) => toast.error(msg));
+
+        socket.on("errorMessage", (msg) => {
+            console.error("💥 Socket ERROR message:", msg);
+            toast.error(msg)
+        });
 
         return () => socket.disconnect();
     }, [adminId, conversationId]);
 
     useEffect(() => {
         if (!conversationId || !socketRef.current) return;
+        console.log("🤝 Socket EMITTING joinConversation:", conversationId);
         socketRef.current.emit("joinConversation", conversationId);
-        setTimeout(() => socketRef.current.emit("checkOnlineStatus", otherUserId), 200);
+        console.log("📖 Socket EMITTING markAsRead:", { conversationId, userId: adminId });
+        socketRef.current.emit("markAsRead", { conversationId, userId: adminId });
+        setTimeout(() => {
+            console.log("🤝 Socket EMITTING checkOnlineStatus:", otherUserId);
+            socketRef.current.emit("checkOnlineStatus", otherUserId);
+        }, 200);
 
         const loadMessages = async () => {
             try {
@@ -87,15 +139,25 @@ export default function ChatInterface({ conversation, onClose }) {
         e.preventDefault();
         const text = newMessage.trim();
         if (!text) return;
+        console.log("📤 Socket EMITTING sendMessage:", { conversationId, senderId: adminId, message: text });
         socketRef.current.emit("sendMessage", { conversationId, senderId: adminId, message: text });
         setNewMessage("");
+
+        // Auto move to IN_PROGRESS locally when admin replies
+        if (ticket?.status === "OPEN") {
+            setTicket(prev => ({ ...prev, status: "IN_PROGRESS" }));
+        }
     };
 
     const handleTyping = () => {
+        console.log("📤 Socket EMITTING typing...");
         socketRef.current.emit("typing", { conversationId, senderId: adminId });
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => {
-            if (socketRef.current) socketRef.current.emit("stopTyping", { conversationId, senderId: adminId });
+            if (socketRef.current) {
+                console.log("📤 Socket EMITTING stopTyping...");
+                socketRef.current.emit("stopTyping", { conversationId, senderId: adminId });
+            }
         }, 1000);
     };
 
@@ -131,7 +193,7 @@ export default function ChatInterface({ conversation, onClose }) {
                         <div className="relative group">
                             <div className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-gray-50 dark:ring-gray-800 group-hover:ring-brand/30 transition-all duration-300 shadow-sm">
                                 <img
-                                    src={otherUser?.profile || otherUser?.profileImage ? `${SOCKET_URL}/uploads/users/${otherUser.profile || otherUser.profileImage}` : "/images/user/user-01.jpg"}
+                                    src={otherUser?.profile || otherUser?.profileImage ? `${Base_URL}/uploads/users/${otherUser.profile || otherUser.profileImage}` : "/images/user/user-01.jpg"}
                                     className="w-full h-full object-cover"
                                     alt="avatar"
                                     onError={(e) => { e.target.onerror = null; e.target.src = "/images/user/user-01.jpg"; }}
@@ -207,8 +269,8 @@ export default function ChatInterface({ conversation, onClose }) {
                                     <div className={`w-8 h-8 shrink-0 rounded-xl overflow-hidden shadow-sm border-2 border-white dark:border-gray-800 transition-opacity ${!showAvatar && 'opacity-0'}`}>
                                         <img
                                             src={msg.senderId?.toString() === adminId?.toString() || msg.sender?.senderType === "Admin"
-                                                ? (currentUser?.profile || currentUser?.profileImage ? `${SOCKET_URL}/uploads/users/${currentUser.profile || currentUser.profileImage}` : `https://ui-avatars.com/api/?name=Admin&background=000&color=fff`)
-                                                : (otherUser?.profile || otherUser?.profileImage ? `${SOCKET_URL}/uploads/users/${otherUser.profile || otherUser.profileImage}` : `https://ui-avatars.com/api/?name=${otherUserName}&background=random`)}
+                                                ? (currentUser?.profile || currentUser?.profileImage ? `${Base_URL}/uploads/users/${currentUser.profile || currentUser.profileImage}` : `https://ui-avatars.com/api/?name=Admin&background=000&color=fff`)
+                                                : (otherUser?.profile || otherUser?.profileImage ? `${Base_URL}/uploads/users/${otherUser.profile || otherUser.profileImage}` : `https://ui-avatars.com/api/?name=${otherUserName}&background=random`)}
                                             className="w-full h-full object-cover"
                                             alt="avatar"
                                             onError={(e) => { e.target.onerror = null; e.target.src = "/images/user/user-01.jpg"; }}
@@ -287,8 +349,8 @@ export default function ChatInterface({ conversation, onClose }) {
                         {ticket.Image && (
                             <div className="space-y-4">
                                 <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Evidence</h4>
-                                <a href={`${SOCKET_URL}/uploads/${ticket.Image}`} target="_blank" className="block relative group rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
-                                    <img src={`${SOCKET_URL}/uploads/ticketImage/${ticket.Image}`} className="w-full aspect-square object-cover" alt="attach" />
+                                <a href={`${Base_URL}/uploads/${ticket.Image}`} target="_blank" className="block relative group rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
+                                    <img src={`${Base_URL}/uploads/ticketImage/${ticket.Image}`} className="w-full aspect-square object-cover" alt="attach" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 flex items-end justify-center p-4 transition-all">
                                         <span className="text-white text-[10px] font-black bg-brand px-5 py-2 rounded-full uppercase tracking-widest shadow-lg">Enlarge Image</span>
                                     </div>
