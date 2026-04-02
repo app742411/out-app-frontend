@@ -7,62 +7,34 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 
-const tableData = [
-    {
-        id: 1,
-        customerName: "Andrew Sas",
-        serviceType: "Apartment",
-        location: "Miami Beach, FL",
-        date: "Monday, 26 May",
-        startTime: "09:00 AM",
-        endTime: "10:00 AM",
-        price: "$150.00",
-        phone: "+1 305-555-1234",
-        status: "Confirmed",
-        image: "/images/service/apartment-01.jpg",
-    },
-    {
-        id: 2,
-        customerName: "Sarah Johnson",
-        serviceType: "Villa",
-        location: "Los Angeles, CA",
-        date: "Wednesday, 28 May",
-        startTime: "02:00 PM",
-        endTime: "06:00 PM",
-        price: "$600.00",
-        phone: "+1 213-555-7890",
-        status: "Pending",
-        image: "/images/service/villa-01.jpg",
-    },
-    {
-        id: 3,
-        customerName: "Michael Brown",
-        serviceType: "Apartment",
-        location: "New York, NY",
-        date: "Friday, 30 May",
-        startTime: "11:00 AM",
-        endTime: "01:00 PM",
-        price: "$220.00",
-        phone: "+1 646-555-4567",
-        status: "Confirmed",
-        image: "/images/service/apartment-02.jpg",
-    },
-    {
-        id: 4,
-        customerName: "Emma Wilson",
-        serviceType: "Villa",
-        location: "Dallas, TX",
-        date: "Sunday, 02 June",
-        startTime: "10:00 AM",
-        endTime: "04:00 PM",
-        price: "$750.00",
-        phone: "+1 972-555-2345",
-        status: "Canceled",
-        image: "/images/service/villa-02.jpg",
-    },
-];
+import React, { useState, useEffect } from "react";
+export default function RecentServices({ data: dashboardData }) {
+    const [services, setServices] = useState([]);
+    const baseURL = import.meta.env.VITE_API_URL;
 
-export default function RecentServices() {
+    useEffect(() => {
+        if (dashboardData?.recentServices) {
+            setServices(dashboardData.recentServices);
+        }
+    }, [dashboardData]);
+
+    const getImageUrl = (service) => {
+        if (service?.media?.images?.length > 0) {
+            const cleanBaseURL = baseURL ? baseURL.replace(/\/$/, "") : "";
+            return `${cleanBaseURL}/uploads/serviceIcon/${service.media.images[0]}`;
+        }
+        return "/images/service/apartment-01.jpg";
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch(e) {
+            return "N/A";
+        }
+    };
+
     return (
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
 
@@ -107,25 +79,25 @@ export default function RecentServices() {
                     </TableHeader>
 
                     <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {tableData.map((booking) => (
-                            <TableRow key={booking.id}>
+                        {services.length > 0 ? services.map((booking) => (
+                            <TableRow key={booking._id}>
 
                                 {/* Customer */}
                                 <TableCell className="py-3">
                                     <div className="flex items-center gap-3">
                                         <div className="h-[50px] w-[50px] overflow-hidden rounded-md border border-gray-100 dark:border-gray-800">
                                             <img
-                                                src={booking.image}
-                                                alt={booking.customerName}
+                                                src={getImageUrl(booking.service)}
+                                                alt={booking.user?.firstName}
                                                 className="h-full w-full object-cover"
                                             />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                {booking.customerName}
+                                            <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 capitalize">
+                                                {booking.user?.firstName} {booking.user?.lastName}
                                             </p>
-                                            <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                                                {booking.phone}
+                                            <span className="text-gray-500 text-theme-xs dark:text-gray-400 lowercase">
+                                                {booking.user?.email || "-"}
                                             </span>
                                         </div>
                                     </div>
@@ -134,24 +106,24 @@ export default function RecentServices() {
                                 {/* Service */}
                                 <TableCell className="py-3">
                                     <div>
-                                        <p className="font-medium text-gray-800 dark:text-white/90">{booking.serviceType}</p>
-                                        <span className="text-theme-xs text-gray-500 dark:text-gray-400">{booking.location}</span>
+                                        <p className="font-medium text-gray-800 dark:text-white/90">{booking.service?.name}</p>
+                                        <span className="text-theme-xs text-gray-500 dark:text-gray-400">{booking.service?.location?.city || "-"}</span>
                                     </div>
                                 </TableCell>
 
                                 {/* Schedule */}
                                 <TableCell className="py-3">
                                     <div className="text-theme-sm text-gray-800 dark:text-white/90">
-                                        <p>{booking.date}</p>
+                                        <p>{formatDate(booking.createdAt)}</p>
                                         <span className="text-theme-xs text-gray-500 dark:text-gray-400">
-                                            {booking.startTime} - {booking.endTime}
+                                            {formatDate(booking.bookedDate)} {/* Adjust to actual field if time is available */}
                                         </span>
                                     </div>
                                 </TableCell>
 
                                 {/* Price */}
                                 <TableCell className="py-3 font-medium text-gray-700 dark:text-gray-300">
-                                    {booking.price}
+                                    SAR {booking.totalAmount}
                                 </TableCell>
 
                                 {/* Status */}
@@ -159,19 +131,25 @@ export default function RecentServices() {
                                     <Badge
                                         size="sm"
                                         color={
-                                            booking.status === "Confirmed"
+                                            booking.bookingStatus === "confirmed"
                                                 ? "success"
-                                                : booking.status === "Pending"
+                                                : booking.bookingStatus === "pending"
                                                     ? "warning"
                                                     : "error"
                                         }
                                     >
-                                        {booking.status}
+                                        {booking.bookingStatus}
                                     </Badge>
                                 </TableCell>
 
                             </TableRow>
-                        ))}
+                        )) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="py-8 text-center text-gray-500">
+                                    No recent services found.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>

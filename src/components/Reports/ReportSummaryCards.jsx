@@ -30,19 +30,19 @@ export default function ReportSummaryCards({ metrics }) {
     const cards = [
         {
             title: "Total Revenue",
-            value: `SAR ${metrics?.totalRevenue || "0.00"}`,
+            value: `SAR ${metrics?.totalRevenue?.toLocaleString() || "0"}`,
             icon: DollarSign,
             color: "bg-brand-500",
-            percentage: "12",
-            isTrendingUp: true
+            percentage: metrics?.revenueGrowthPercent || "0",
+            isTrendingUp: (metrics?.revenueGrowthPercent || 0) >= 0
         },
         {
             title: "Total Bookings",
             value: metrics?.totalBookings || "0",
             icon: Calendar,
             color: "bg-blue-500",
-            percentage: "8.5",
-            isTrendingUp: true
+            percentage: metrics?.bookingGrowthPercent || "0",
+            isTrendingUp: (metrics?.bookingGrowthPercent || 0) >= 0
         },
         {
             title: "Total Users",
@@ -54,11 +54,11 @@ export default function ReportSummaryCards({ metrics }) {
         },
         {
             title: "Average Booking",
-            value: `SAR ${metrics?.avgBooking || "0.00"}`,
+            value: `SAR ${metrics?.avgBooking?.toLocaleString() || "0"}`,
             icon: TrendingUp,
             color: "bg-orange-500",
             percentage: "2.1",
-            isTrendingUp: false
+            isTrendingUp: true
         }
     ];
 

@@ -98,12 +98,13 @@ export default function App() {
               <Route path="/videos" element={<Videos />} />
               <Route path="/line-chart" element={<LineChart />} />
               <Route path="/bar-chart" element={<BarChart />} />
-              <Route path="/bookings" element={<BookingsPage />} />
+              <Route path="/bookings" element={<BookingsPage title="All Bookings" defaultStatus="all" />} />
               <Route path="/booking-details/:id" element={<BookingDetailsPage />} />
-              <Route path="/bookings/upcoming" element={<UpcomingBookingsPage />} />
-              <Route path="/bookings/completed" element={<ComingSoon />} />
-              <Route path="/bookings/cancelled" element={<ComingSoon />} />
-              <Route path="/bookings/refunds" element={<ComingSoon />} />
+              <Route path="/bookings/upcoming" element={<BookingsPage title="Pending Bookings" defaultStatus="pending" />} />
+              <Route path="/bookings/confirmed" element={<BookingsPage title="Confirmed Bookings" defaultStatus="confirmed" />} />
+              <Route path="/bookings/completed" element={<BookingsPage title="Completed Bookings" defaultStatus="completed" />} />
+              <Route path="/bookings/cancelled" element={<BookingsPage title="Cancelled Bookings" defaultStatus="cancelled" />} />
+              <Route path="/bookings/refunds" element={<BookingsPage title="Cancelled & Refunds" defaultStatus="cancelled" />} />
               <Route path="/vendor-payouts" element={<VendorPayoutsPage />} />
               <Route path="/earnings-report" element={<EarningsReportPage />} />
               <Route path="/transaction-logs" element={<TransactionsPage />} />

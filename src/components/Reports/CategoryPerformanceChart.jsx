@@ -8,7 +8,6 @@ export default function CategoryPerformanceChart({ data }) {
             fontFamily: "Outfit, sans-serif",
             type: "pie",
         },
-        labels: ["Resorts", "Hotels", "Villas", "Apartments", "Camps"],
         legend: {
             show: true,
             position: "bottom",
@@ -16,17 +15,17 @@ export default function CategoryPerformanceChart({ data }) {
         },
         dataLabels: {
             enabled: true,
-            formatter: function (val) {
-                return val.toFixed(1) + "%";
-            }
-        },
-        stroke: {
-            width: 1,
-            colors: ["#fff"]
+            formatter: (val) => val.toFixed(1) + "%"
         }
     };
 
-    const series = data || [35, 25, 20, 15, 5];
+    const labels = data?.map(i => i.name) || ["N/A"];
+    const series = data?.map(i => i.value) || [0];
+
+    const optionsWithLabels = {
+        ...options,
+        labels: labels
+    };
 
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
@@ -34,7 +33,7 @@ export default function CategoryPerformanceChart({ data }) {
                 Bookings by Category
             </h3>
             <div className="flex justify-center">
-                <Chart options={options} series={series} type="pie" width="100%" height={320} />
+                <Chart options={optionsWithLabels} series={series} type="pie" width="100%" height={320} />
             </div>
         </div>
     );

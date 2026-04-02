@@ -7,7 +7,6 @@ import {
     TrendingUp,
     TrendingDown 
 } from "lucide-react";
-import { getAdminDashboard } from "../../api/authApi";
 
 const MetricCard = ({ title, value, icon: Icon, subText, trend, trendValue, color }) => (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
@@ -32,32 +31,24 @@ const MetricCard = ({ title, value, icon: Icon, subText, trend, trendValue, colo
     </div>
 );
 
-export default function DashboardMetrics() {
+export default function DashboardMetrics({ data }) {
     const [metrics, setMetrics] = useState({
         bookings: 0,
-        properties: 0,
+        occupancy: 0,
         users: 0,
         revenue: 0
     });
 
     useEffect(() => {
-        const fetchMetrics = async () => {
-            try {
-                const res = await getAdminDashboard();
-                if (res) {
-                    setMetrics({
-                        bookings: res.totalBookings || 0,
-                        properties: res.totalProperties || 0,
-                        users: res.totalUsers || 0,
-                        revenue: res.totalRevenue || 0
-                    });
-                }
-            } catch (err) {
-                console.error("Error fetching dashboard metrics:", err);
-            }
-        };
-        fetchMetrics();
-    }, []);
+        if (data?.stats) {
+            setMetrics(prev => ({
+                ...prev,
+                bookings: data.stats.totalBookings || 0,
+                revenue: data.stats.netRevenue || 0,
+                occupancy: data.stats.occupancyRate || 0,
+            }));
+        }
+    }, [data]);
 
     const cards = [
         {
@@ -70,13 +61,13 @@ export default function DashboardMetrics() {
             subText: "vs last month"
         },
         {
-            title: "Active Properties",
-            value: metrics.properties,
+            title: "Occupancy Rate",
+            value: `${metrics.occupancy}%`,
             icon: Home,
             color: "text-blue-500",
             trend: "up",
             trendValue: "5.4",
-            subText: "total listings"
+            subText: "average capacity"
         },
         {
             title: "Total Service Users",

@@ -30,9 +30,9 @@ export default function AllUserListComp() {
 
     const baseURL = import.meta.env.VITE_API_URL;
 
-    const fetchUsers = async (page = 1) => {
+    const fetchUsers = async (page = 1, isBackgroundPoll = false) => {
         try {
-            setLoading(true);
+            if (!isBackgroundPoll) setLoading(true);
 
             const res = await getAllUsers({
                 page,
@@ -45,15 +45,32 @@ export default function AllUserListComp() {
             setCurrentPage(page);
             setTotalPages(Math.ceil((res.totalCount || res.total || 0) / ITEMS_PER_PAGE));
         } catch (error) {
-            toast.error("Failed to load users");
+            if (!isBackgroundPoll) toast.error("Failed to load users");
         } finally {
-            setLoading(false);
+            if (!isBackgroundPoll) setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchUsers(1);
     }, [search, statusFilter]);
+
+    // Real-time data refresh on focus or tab visibility to avoid continuous background polling
+    useEffect(() => {
+        const handleRefresh = () => {
+            if (document.visibilityState === "visible") {
+                fetchUsers(currentPage, true);
+            }
+        };
+
+        window.addEventListener("focus", handleRefresh);
+        document.addEventListener("visibilitychange", handleRefresh);
+
+        return () => {
+            window.removeEventListener("focus", handleRefresh);
+            document.removeEventListener("visibilitychange", handleRefresh);
+        };
+    }, [currentPage, search, statusFilter]);
 
     const handleBlockUnblock = async (userId, currentStatus) => {
         try {
@@ -95,147 +112,143 @@ export default function AllUserListComp() {
             {/* Table */}
             <div className="rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] overflow-visible">
                 {loading ? (
-                        <div className="text-center p-6 text-gray-500">Loading...</div>
-                    ) : (
-                        <Table>
-                            <TableHeader className="text-left">
-                                <TableRow>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        S.No.
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Profile
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
+                    <div className="text-center p-6 text-gray-500">Loading...</div>
+                ) : (
+                    <Table>
+                        <TableHeader className="text-left">
+                            <TableRow>
+                                <TableCell isHeader className="px-5 py-3">
+                                    S.No.
+                                </TableCell>
+                                <TableCell isHeader className="px-5 py-3">
+                                    Profile
+                                </TableCell>
+                                {/* <TableCell isHeader className="px-5 py-3">
                                         User ID
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Name
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Email
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Phone
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Role
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Joined Date
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3 text-right">
-                                        Action
-                                    </TableCell>
-                                </TableRow>
-                            </TableHeader>
+                                    </TableCell> */}
+                                <TableCell isHeader className="px-5 py-3">
+                                    User
+                                </TableCell>
+                                <TableCell isHeader className="px-5 py-3">
+                                    Phone
+                                </TableCell>
+                                <TableCell isHeader className="px-5 py-3">
+                                    Role
+                                </TableCell>
+                                <TableCell isHeader className="px-5 py-3">
+                                    Joined Date
+                                </TableCell>
+                                <TableCell isHeader className="px-5 py-3 text-right">
+                                    Action
+                                </TableCell>
+                            </TableRow>
+                        </TableHeader>
 
-                            <TableBody className="divide-y divide-dashed divide-gray-200 dark:divide-white/5">
-                                {users.length > 0 ? (
-                                    users.map((user, index) => (
-                                        <TableRow key={user._id || index}>
-                                            <TableCell className="px-5 py-3">
-                                                {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                                            </TableCell>
+                        <TableBody className="divide-y divide-dashed divide-gray-200 dark:divide-white/5">
+                            {users.length > 0 ? (
+                                users.map((user, index) => (
+                                    <TableRow key={user._id || index}>
+                                        <TableCell className="px-5 py-3">
+                                            {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                                        </TableCell>
 
-                                            <TableCell className="px-5 py-3">
-                                                <div className="w-10 h-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
-                                                    {user.profile ? (
-                                                        <img
-                                                            src={
-                                                                user.profile
-                                                                    ? `${baseURL.replace(/\/$/, "")}/uploads/users/${user.profile}`
-                                                                    : "/images/user/user-01.jpg"
-                                                            }
-                                                            alt={user.firstName}
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full font-semibold uppercase text-xs">
-                                                            {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-
-                                            <TableCell className="px-5 py-3 font-medium text-gray-800 dark:text-white">
-                                                {user.userId || "-"}
-                                            </TableCell>
-
-                                            <TableCell className="px-5 py-3 capitalize">
-                                                {user.firstName} {user.lastName}
-                                            </TableCell>
-
-                                            <TableCell className="px-5 py-3">
-                                                {user.email || "-"}
-                                            </TableCell>
-
-                                            <TableCell className="px-5 py-3">
-                                                {user.phone ? `${user.phoneCode || ""} ${user.phone}` : "-"}
-                                            </TableCell>
-
-                                            <TableCell className="px-5 py-3 capitalize">
-                                                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                                                    {user.role || "-"}
-                                                </span>
-                                            </TableCell>
-
-                                            <TableCell className="px-5 py-3">
-                                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
-                                            </TableCell>
-                                            <TableCell className="px-5 py-3 text-right">
-                                                <div className="flex items-center justify-end">
-                                                    <div className="relative">
-                                                        <button
-                                                            type="button"
-                                                            className="dropdown-toggle p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-                                                            onClick={() =>
-                                                                setOpenDropdownId(openDropdownId === user._id ? null : user._id)
-                                                            }
-                                                        >
-                                                            <MoreDotIcon className="text-gray-400 size-5" />
-                                                        </button>
-
-                                                        <Dropdown
-                                                            isOpen={openDropdownId === user._id}
-                                                            onClose={() => setOpenDropdownId(null)}
-                                                            className="w-40 p-2 right-0 mt-2 absolute"
-                                                        >
-                                                            <DropdownItem
-                                                                onItemClick={() => {
-                                                                    navigate(`/user-details/${user._id}`);
-                                                                    setOpenDropdownId(null);
-                                                                }}
-                                                                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                                                            >
-                                                                View
-                                                            </DropdownItem>
-
-                                                            <DropdownItem
-                                                                onItemClick={() => handleBlockUnblock(user._id, user.isActive)}
-                                                                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                                                            >
-                                                                {user.isActive ? "Block" : "Unblock"}
-                                                            </DropdownItem>
-                                                        </Dropdown>
+                                        <TableCell className="px-5 py-3">
+                                            <div className="w-10 h-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
+                                                {user.profile ? (
+                                                    <img
+                                                        src={
+                                                            user.profile
+                                                                ? `${baseURL.replace(/\/$/, "")}/uploads/users/${user.profile}`
+                                                                : "/images/user/user-01.jpg"
+                                                        }
+                                                        alt={user.firstName}
+                                                        className="object-cover w-full h-full"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full font-semibold uppercase text-xs">
+                                                        {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                                                     </div>
+                                                )}
+                                            </div>
+                                        </TableCell>
+
+                                        {/* <TableCell className="px-5 py-3 font-medium text-gray-800 dark:text-white">
+                                                {user.userId || "-"}
+                                            </TableCell> */}
+
+                                        <TableCell className="px-5 py-3">
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-gray-800 dark:text-white capitalize line-clamp-1">{user.firstName} {user.lastName}</span>
+                                                <span className="text-xs text-gray-500 line-clamp-1">{user.email || "-"}</span>
+                                            </div>
+                                        </TableCell>
+
+                                        <TableCell className="px-5 py-3">
+                                            {user.phone ? `${user.phoneCode || ""} ${user.phone}` : "-"}
+                                        </TableCell>
+
+                                        <TableCell className="px-5 py-3 capitalize">
+                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                                                {user.role || "-"}
+                                            </span>
+                                        </TableCell>
+
+                                        <TableCell className="px-5 py-3">
+                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
+                                        </TableCell>
+                                        <TableCell className="px-5 py-3 text-right">
+                                            <div className="flex items-center justify-end">
+                                                <div className="relative">
+                                                    <button
+                                                        type="button"
+                                                        className="dropdown-toggle p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                                                        onClick={() =>
+                                                            setOpenDropdownId(openDropdownId === user._id ? null : user._id)
+                                                        }
+                                                    >
+                                                        <MoreDotIcon className="text-gray-400 size-5" />
+                                                    </button>
+
+                                                    <Dropdown
+                                                        isOpen={openDropdownId === user._id}
+                                                        onClose={() => setOpenDropdownId(null)}
+                                                        className="w-40 p-2 right-0 mt-2 absolute"
+                                                    >
+                                                        <DropdownItem
+                                                            onItemClick={() => {
+                                                                navigate(`/user-details/${user._id}`);
+                                                                setOpenDropdownId(null);
+                                                            }}
+                                                            className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+                                                        >
+                                                            View
+                                                        </DropdownItem>
+
+                                                        <DropdownItem
+                                                            onItemClick={() => handleBlockUnblock(user._id, user.isActive)}
+                                                            className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+                                                        >
+                                                            {user.isActive ? "Block" : "Unblock"}
+                                                        </DropdownItem>
+                                                    </Dropdown>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-6 text-gray-500">
-                                            No users found
+                                            </div>
                                         </TableCell>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    )}
-                </div>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-6 text-gray-500">
+                                        No users found
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                )}
+            </div>
 
-                {!loading && totalPages > 0 && (
+            {!loading && totalPages > 0 && (
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

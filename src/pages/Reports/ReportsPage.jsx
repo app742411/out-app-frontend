@@ -6,7 +6,7 @@ import BookingStatusChart from "../../components/Reports/BookingStatusChart";
 import RevenueLineChart from "../../components/Reports/RevenueLineChart";
 import PropertyBarChart from "../../components/Reports/PropertyBarChart";
 import CategoryPerformanceChart from "../../components/Reports/CategoryPerformanceChart";
-import { getAdminDashboard } from "../../api/authApi";
+import { getAdminReports, exportEarningsCSV, exportEarningsPDF } from "../../api/authApi";
 import { Download } from "lucide-react";
 import Button from "../../components/ui/button/Button";
 import toast from "react-hot-toast";
@@ -19,17 +19,10 @@ export default function ReportsPage() {
         const fetchReportData = async () => {
             try {
                 setLoading(true);
-                const res = await getAdminDashboard();
-                // Map dashboard data to report format if needed
-                // For now using mock structure based on requirements
-                setReportData({
-                    metrics: {
-                        totalRevenue: res?.totalRevenue || "128,430",
-                        totalBookings: res?.totalBookings || "1,420",
-                        totalUsers: res?.totalUsers || "850",
-                        avgBooking: "450"
-                    }
-                });
+                const res = await getAdminReports();
+                if (res?.data) {
+                    setReportData(res.data);
+                }
             } catch (error) {
                 console.error("Failed to load report data", error);
                 toast.error("Failed to load latest analytics");
@@ -41,8 +34,46 @@ export default function ReportsPage() {
         fetchReportData();
     }, []);
 
-    const handleExport = (type) => {
-        toast.success(`Exporting report as ${type}...`);
+    const handleExport = async (type) => {
+        try {
+            toast.loading(`Preparing ${type} report...`, { id: "export-loading" });
+            const res = await getAdminReports(type.toLowerCase());
+            
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `admin_report_${new Date().toISOString().split('T')[0]}.${type.toLowerCase()}`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            
+            toast.success(`${type} Export successful`, { id: "export-loading" });
+        } catch (error) {
+            console.error(`Export failed: ${type}`, error);
+            toast.error(`Failed to export ${type} report`, { id: "export-loading" });
+        }
+    };
+
+    const handleExportEarnings = async (format) => {
+        try {
+            toast.loading(`Preparing Earnings ${format} report...`, { id: "exporting-earnings" });
+            const res = format === "CSV" ? await exportEarningsCSV() : await exportEarningsPDF();
+            
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Earnings_Report_${new Date().toISOString().split('T')[0]}.${format.toLowerCase()}`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            
+            toast.success(`Earnings ${format} report downloaded!`, { id: "exporting-earnings" });
+        } catch (error) {
+            console.error("Earnings Export failed", error);
+            toast.error("Failed to generate earnings report", { id: "exporting-earnings" });
+        }
     };
 
     return (
@@ -53,13 +84,26 @@ export default function ReportsPage() {
             <div className="space-y-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between -mt-2 mb-4">
                     <div className="text-sm text-gray-500 dark:text-gray-400">View detailed reports and analytics for the booking system.</div>
-                    <div className="flex items-center gap-3">
-                        <Button variant="outline" size="sm" onClick={() => handleExport("CSV")}>
-                            <Download size={16} className="mr-2" /> Export CSV
-                        </Button>
-                        <Button size="sm" onClick={() => handleExport("PDF")}>
-                            <Download size={16} className="mr-2" /> Export PDF
-                        </Button>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-2 mr-2">
+                             <Button variant="outline" size="sm" onClick={() => handleExport("CSV")} id="export-summary-csv">
+                                <Download size={14} className="mr-1.5" /> Summary CSV
+                            </Button>
+                            <Button size="sm" onClick={() => handleExport("PDF")} id="export-summary-pdf">
+                                <Download size={14} className="mr-1.5" /> Summary PDF
+                            </Button>
+                        </div>
+
+                        <div className="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
+
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleExportEarnings("CSV")} id="export-earnings-csv" className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-900 dark:text-green-400">
+                                <Download size={14} className="mr-1.5" /> Earnings CSV
+                            </Button>
+                            <Button size="sm" onClick={() => handleExportEarnings("PDF")} id="export-earnings-pdf" className="bg-green-600 hover:bg-green-700">
+                                <Download size={14} className="mr-1.5" /> Earnings PDF
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -70,29 +114,33 @@ export default function ReportsPage() {
                 ) : (
                     <div className="space-y-6">
                         {/* Summary Metrics */}
-                        <ReportSummaryCards metrics={reportData?.metrics} />
+                        <ReportSummaryCards metrics={reportData?.stats} />
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                             {/* Revenue Chart */}
                             <div className="lg:col-span-8">
-                                <RevenueLineChart />
+                                <RevenueLineChart data={{ revenueGraph: reportData?.revenueGraph }} />
                             </div>
 
                             {/* Booking Status distribution */}
                             <div className="lg:col-span-4">
-                                <BookingStatusChart />
+                                <BookingStatusChart data={{ bookingStatus: {
+                                    confirmed: reportData?.bookingStatusChart?.find(i => i.name === "Confirmed")?.value || 0,
+                                    pending: reportData?.bookingStatusChart?.find(i => i.name === "Pending")?.value || 0,
+                                    cancelled: reportData?.bookingStatusChart?.find(i => i.name === "Cancelled")?.value || 0
+                                }}} />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                            {/* Property Performance */}
+                            {/* Location Analytics instead of property bar for now or keep both */}
                             <div className="lg:col-span-8">
-                                <PropertyBarChart />
+                                <PropertyBarChart data={{ topProperties: reportData?.locationAnalytics?.map(l => ({ name: l._id, totalBookings: l.totalBookings })) }} />
                             </div>
 
                             {/* Category Distribution */}
                             <div className="lg:col-span-4">
-                                <CategoryPerformanceChart />
+                                <CategoryPerformanceChart data={reportData?.bookingsByCategory} />
                             </div>
                         </div>
 
@@ -105,29 +153,29 @@ export default function ReportsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                                         <div>
-                                            <p className="text-xs font-medium text-gray-500 uppercase">Peak Booking Time</p>
-                                            <p className="text-sm font-bold text-gray-800 dark:text-white">Weekend Evenings</p>
+                                            <p className="text-xs font-medium text-gray-500 uppercase">Retention Rate</p>
+                                            <p className="text-sm font-bold text-gray-800 dark:text-white">{reportData?.retentionRate || 0}% Repeat Guests</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-medium text-green-500">+15% vs Weekdays</p>
+                                            <p className="text-xs font-medium text-green-500">Industry leading</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                                         <div>
                                             <p className="text-xs font-medium text-gray-500 uppercase">Top Search Location</p>
-                                            <p className="text-sm font-bold text-gray-800 dark:text-white">Riyadh, SA</p>
+                                            <p className="text-sm font-bold text-gray-800 dark:text-white">{reportData?.locationAnalytics?.[0]?._id || "N/A"}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-medium text-blue-500">2.4k Searches</p>
+                                            <p className="text-xs font-medium text-blue-500">{reportData?.locationAnalytics?.[0]?.totalBookings || 0} Bookings</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                                         <div>
-                                            <p className="text-xs font-medium text-gray-500 uppercase">User Retention</p>
-                                            <p className="text-sm font-bold text-gray-800 dark:text-white">68% Repeat Guests</p>
+                                            <p className="text-xs font-medium text-gray-500 uppercase">Growth Rate</p>
+                                            <p className="text-sm font-bold text-gray-800 dark:text-white">+{reportData?.stats?.revenueGrowthPercent || 0}% MoM</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-medium text-purple-500">Very High</p>
+                                            <p className="text-xs font-medium text-purple-500">Steady</p>
                                         </div>
                                     </div>
                                 </div>

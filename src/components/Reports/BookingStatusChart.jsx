@@ -50,7 +50,9 @@ export default function BookingStatusChart({ data }) {
         ]
     };
 
-    const series = data || [45, 25, 30];
+    const series = data?.bookingStatus 
+        ? [data.bookingStatus.confirmed || 0, data.bookingStatus.pending || 0, data.bookingStatus.cancelled || 0]
+        : [0, 0, 0];
 
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">

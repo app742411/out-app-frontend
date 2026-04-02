@@ -7,7 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "../ui/table";
-import { getAllBookings } from "../../api/authApi";
+import { getAllBookings, getCompletedBookings } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
@@ -15,11 +15,12 @@ import { useNavigate } from "react-router";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function BookingListComp() {
+export default function BookingListComp({ defaultStatus = "all" }) {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [bookingStatus, setBookingStatus] = useState("");
+    const [bookingStatus, setBookingStatus] = useState(defaultStatus);
+    const [bookingType, setBookingType] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -28,18 +29,23 @@ export default function BookingListComp() {
     const fetchBookings = async (page = 1) => {
         try {
             setLoading(true);
-            const res = await getAllBookings({
+            const apiParams = {
                 page,
                 limit: ITEMS_PER_PAGE,
                 search,
-                bookingStatus,
+                type: bookingType,
                 paymentStatus,
-            });
+            };
+
+            const res = bookingStatus === "completed" 
+                ? await getCompletedBookings(apiParams)
+                : await getAllBookings({ ...apiParams, status: bookingStatus || "all" });
 
             setBookings(res.data || []);
             setCurrentPage(page);
             setTotalPages(res.pagination?.totalPages || 1);
         } catch (error) {
+            console.error("Fetch Bookings Error:", error);
             toast.error("Failed to load bookings");
         } finally {
             setLoading(false);
@@ -48,11 +54,12 @@ export default function BookingListComp() {
 
     useEffect(() => {
         fetchBookings(1);
-    }, [search, bookingStatus, paymentStatus]);
+    }, [search, bookingStatus, paymentStatus, bookingType]);
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case "confirmed":
+            case "completed":
             case "success":
             case "paid":
                 return "success";
@@ -69,34 +76,47 @@ export default function BookingListComp() {
     return (
         <ComponentCard title="All Bookings" className="">
             {/* Filters */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 flex-wrap">
                 <input
                     type="text"
-                    placeholder="Search by Order ID, User Email..."
-                    className="border rounded-lg p-2 w-full md:w-1/3 dark:bg-gray-800 dark:text-white"
+                    placeholder="Search by Order ID..."
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 w-full md:w-1/4 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
 
                 <select
-                    className="border rounded-lg p-2 dark:bg-gray-800 dark:text-white"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={bookingStatus}
                     onChange={(e) => setBookingStatus(e.target.value)}
                 >
-                    <option value="">All Booking Status</option>
-                    <option value="pending">Pending</option>
+                    <option value="all">All Status</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="cancelled">Cancelled</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
                 </select>
 
                 <select
-                    className="border rounded-lg p-2 dark:bg-gray-800 dark:text-white"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    value={bookingType}
+                    onChange={(e) => setBookingType(e.target.value)}
+                >
+                    <option value="">All Types</option>
+                    <option value="PROPERTY">Property</option>
+                    <option value="SERVICE">Service</option>
+                    <option value="PACKAGE">Package</option>
+                    <option value="PROPERTY_SERVICE">Property Service</option>
+                </select>
+
+                <select
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={paymentStatus}
                     onChange={(e) => setPaymentStatus(e.target.value)}
                 >
-                    <option value="">All Payment Status</option>
+                    <option value="">All Payments</option>
+                    <option value="paid">Paid</option>
                     <option value="pending">Pending</option>
-                    <option value="success">Success</option>
                     <option value="failed">Failed</option>
                 </select>
             </div>
@@ -165,16 +185,22 @@ export default function BookingListComp() {
                                             </TableCell>
                                             <TableCell className="px-5 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-[150px]" title={booking.user?.email}>
-                                                        {booking.user?.email}
+                                                    <span className="text-sm font-semibold text-gray-800 dark:text-white/90 truncate max-w-[150px]" title={booking.user?.email}>
+                                                        {booking.user?.firstName || booking.user?.lastName ? `${booking.user?.firstName || ""} ${booking.user?.lastName || ""}` : booking.user?.email}
                                                     </span>
-                                                    <span className="text-xs text-gray-400">{booking.user?.phone}</span>
+                                                    <span className="text-[11px] text-gray-500 font-medium">{booking.user?.phone || "No Phone"}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                                <div className="flex flex-col whitespace-nowrap">
-                                                    <span>In: {booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : "-"}</span>
-                                                    <span>Out: {booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : "-"}</span>
+                                            <TableCell className="px-5 py-4 text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                                <div className="flex flex-col gap-0.5 whitespace-nowrap">
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="text-[10px] text-gray-400 font-bold uppercase w-7">In:</span>
+                                                        <span>{booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : "-"}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="text-[10px] text-gray-400 font-bold uppercase w-7">Out:</span>
+                                                        <span>{booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : "-"}</span>
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-5 py-4 text-center">
@@ -183,20 +209,20 @@ export default function BookingListComp() {
                                                     <div>{booking.children} Kids</div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-5 py-4">
+                                            <TableCell className="px-5 py-4 text-center">
                                                 <div className="flex flex-col">
                                                     <span className="font-bold text-gray-900 dark:text-white">
-                                                        ₹{(booking.totalAmount || 0).toLocaleString()}
+                                                        SAR {(booking.totalAmount || 0).toLocaleString()}
                                                     </span>
-                                                    <span className="text-[10px] text-gray-400">Incl. Tax</span>
+                                                    <span className="text-[10px] text-gray-400 font-semibold uppercase">Inclusive</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="px-5 py-4 text-center">
-                                                <div className="flex flex-col gap-1 items-center">
-                                                    <Badge size="sm" color={getStatusColor(booking.bookingStatus)} className="w-full justify-center capitalize">
+                                            <TableCell className="px-5 py-4">
+                                                <div className="flex flex-col gap-1.5 items-center">
+                                                    <Badge size="sm" color={getStatusColor(booking.bookingStatus)} className="w-[85px] justify-center capitalize font-bold tracking-tight">
                                                         {booking.bookingStatus}
                                                     </Badge>
-                                                    <Badge size="sm" color={getStatusColor(booking.paymentStatus)} className="w-full justify-center capitalize">
+                                                    <Badge size="sm" color={getStatusColor(booking.paymentStatus)} className="w-[85px] justify-center capitalize font-bold tracking-tight">
                                                         {booking.paymentStatus}
                                                     </Badge>
                                                 </div>

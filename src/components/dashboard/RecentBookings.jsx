@@ -10,51 +10,30 @@ import Badge from "../ui/badge/Badge";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router";
 
-// Mock data reflecting real app context
-const recentBookings = [
-    {
-        id: "ORD_6D41ABC6",
-        customer: { name: "Devi Lodhi", email: "devi@mail.com", profile: "/images/user/owner.jpg" },
-        property: "Riyadh Garden Villa",
-        checkIn: "2026-03-14",
-        amount: "SAR 15,200",
-        status: "confirmed"
-    },
-    {
-        id: "ORD_43971CFB",
-        customer: { name: "Anand Singh", email: "anand@mail.com", profile: "/images/user/user-01.jpg" },
-        property: "Jeddah Sea View",
-        checkIn: "2026-03-20",
-        amount: "SAR 8,500",
-        status: "pending"
-    },
-    {
-        id: "ORD_9B2C4E51",
-        customer: { name: "Sarah Khan", email: "sarah@mail.com", profile: "/images/user/user-22.jpg" },
-        property: "Desert Palm Resort",
-        checkIn: "2026-04-01",
-        amount: "SAR 12,000",
-        status: "confirmed"
-    },
-    {
-        id: "ORD_1A7D8F22",
-        customer: { name: "Mohammed Ali", email: "med@mail.com", profile: "/images/user/user-03.jpg" },
-        property: "Mountain Retreat",
-        checkIn: "2026-03-12",
-        amount: "SAR 5,800",
-        status: "cancelled"
-    }
-];
-
-export default function RecentBookings() {
+export default function RecentBookings({ data }) {
+    const [bookings, setBookings] = React.useState([]);
     const navigate = useNavigate();
 
+    React.useEffect(() => {
+        if (data?.recentBookings) {
+            setBookings(data.recentBookings);
+        }
+    }, [data]);
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case "confirmed": return "success";
             case "pending": return "warning";
             case "cancelled": return "error";
             default: return "light";
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "-";
+        try {
+            return new Date(dateString).toISOString().split('T')[0];
+        } catch(e) {
+            return "-";
         }
     };
 
@@ -86,25 +65,31 @@ export default function RecentBookings() {
                     </TableHeader>
 
                     <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {recentBookings.map((booking) => (
-                            <TableRow key={booking.id}>
+                        {bookings.length > 0 ? bookings.map((booking) => (
+                            <TableRow key={booking._id}>
                                 <TableCell className="py-3">
-                                    <span className="font-medium text-gray-800 dark:text-white/90">{booking.id}</span>
+                                    <span className="font-medium text-gray-800 dark:text-white/90">{booking.orderId}</span>
                                 </TableCell>
-                                <TableCell className="py-3 text-xs">
-                                    <div>{booking.customer.name}</div>
-                                    <div className="text-gray-400">{booking.customer.email}</div>
+                                <TableCell className="py-3 text-xs capitalize">
+                                    <div>{booking.user?.firstName || "Unknown User"}</div>
+                                    <div className="text-gray-400 lowercase">{booking.user?.email || "No Email"}</div>
                                 </TableCell>
-                                <TableCell className="py-3 text-theme-sm">{booking.property}</TableCell>
-                                <TableCell className="py-3 text-theme-sm text-gray-500">{booking.checkIn}</TableCell>
-                                <TableCell className="py-3 font-semibold text-gray-800 dark:text-white">{booking.amount}</TableCell>
+                                <TableCell className="py-3 text-theme-sm">{booking.property?.name || "N/A"}</TableCell>
+                                <TableCell className="py-3 text-theme-sm text-gray-500">{formatDate(booking.createdAt)}</TableCell>
+                                <TableCell className="py-3 font-semibold text-gray-800 dark:text-white">SAR {booking.totalAmount}</TableCell>
                                 <TableCell className="py-3 text-right">
-                                    <Badge size="sm" color={getStatusColor(booking.status)}>
-                                        {booking.status}
+                                    <Badge size="sm" color={getStatusColor(booking.bookingStatus)}>
+                                        {booking.bookingStatus}
                                     </Badge>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )) : (
+                            <TableRow>
+                                <TableCell colSpan={6} className="py-4 text-center text-gray-500">
+                                    No recent bookings found.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>

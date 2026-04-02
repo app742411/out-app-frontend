@@ -1,11 +1,33 @@
 // src/api/authApi.js
 import apiClient from "./apiClient";
 
-// ADMIN DASHBOARD
-export const getAdminDashboard = async () => {
+
+
+export const adminDashboard = async () => {
   try {
     const res = await apiClient.get("/api/admin/dashboard");
     return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// ADMIN DASHBOARD
+export const getAdminDashboard1 = async () => {
+  try {
+    const res = await apiClient.get("/api/admin/getAdminDashboard");
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// ADMIN REPORTS
+export const getAdminReports = async (exportType = null) => {
+  try {
+    const config = exportType ? { params: { exportType }, responseType: 'blob' } : {};
+    const res = await apiClient.get("/api/admin/getAdminReports", config);
+    return exportType ? res : res.data;
   } catch (error) {
     throw error.response?.data || error;
   }
@@ -656,9 +678,47 @@ export const reopenTicket = async (ticketId) => {
 };
 
 // BOOKINGS API
-export const getAllBookings = async () => {
+export const getAllBookings = async ({
+  status = "all",
+  page = 1,
+  limit = 10,
+  type = "",
+  paymentStatus = "",
+  search = "",
+} = {}) => {
   try {
-    const res = await apiClient.get("/api/admin/allBookings");
+    const res = await apiClient.get(`/api/admin/bookings/${status}`, {
+      params: {
+        page,
+        limit,
+        type,
+        paymentStatus,
+        search,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getCompletedBookings = async ({
+  page = 1,
+  limit = 10,
+  type = "",
+  paymentStatus = "",
+  search = "",
+} = {}) => {
+  try {
+    const res = await apiClient.get("/api/admin/bookings/completed", {
+      params: {
+        page,
+        limit,
+        type,
+        paymentStatus,
+        search,
+      },
+    });
     return res.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -801,6 +861,26 @@ export const updateWithdrawStatus = async (id, payload) => {
   }
 };
 
+export const getReviews = async (type, id, page = 1, limit = 10) => {
+  try {
+    const res = await apiClient.get(`/api/admin/getReviews`, {
+      params: { type, id, page, limit }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const softDeleteReview = async (reviewId) => {
+  try {
+    const res = await apiClient.patch(`/api/admin/softDeleteReview/${reviewId}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 export const getAllUserBookingsAdmin = async (userId, { page = 1, limit = 5 } = {}) => {
   try {
     const res = await apiClient.get(`/api/admin/getAllUserBookingsAdmin/${userId}`, {
@@ -826,6 +906,35 @@ export const upsertCancellationPolicies = async (payload) => {
   try {
     const res = await apiClient.post("/api/admin/upsertCancellationPolicies", payload);
     return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getAdminEarningsDashboard = async ({ page = 1, limit = 10 } = {}) => {
+  try {
+    const res = await apiClient.get("/api/admin/getAdminEarningsDashboard", {
+      params: { page, limit }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const exportEarningsCSV = async () => {
+  try {
+    const res = await apiClient.get("/api/admin/exportEarningsCSV", { responseType: 'blob' });
+    return res;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const exportEarningsPDF = async () => {
+  try {
+    const res = await apiClient.get("/api/admin/exportEarningsPDF", { responseType: 'blob' });
+    return res;
   } catch (error) {
     throw error.response?.data || error;
   }

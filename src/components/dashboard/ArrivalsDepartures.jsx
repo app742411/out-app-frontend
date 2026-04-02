@@ -1,20 +1,26 @@
 import React, { useState } from "react";
 import { LogIn, LogOut } from "lucide-react";
 
-export default function ArrivalsDepartures() {
+export default function ArrivalsDepartures({ data: dashboardData }) {
     const [activeTab, setActiveTab] = useState("arrivals");
+    const [data, setData] = useState({ arrivals: [], departures: [] });
 
-    const data = {
-        arrivals: [
-            { id: 1, guest: "John Doe", property: "Sunset Villa", time: "11:00 AM", status: "Expected" },
-            { id: 2, guest: "Jane Smith", property: "Ocean Suite", time: "02:00 PM", status: "Checked-in" },
-            { id: 3, guest: "Ahmed Ali", property: "Desert Camp", time: "04:30 PM", status: "Expected" },
-        ],
-        departures: [
-            { id: 1, guest: "Michael Ross", property: "Mountain Chalet", time: "10:00 AM", status: "Checked-out" },
-            { id: 2, guest: "Harvey Specter", property: "City Loft", time: "11:00 AM", status: "In-room" },
-            { id: 3, guest: "Donna Paulsen", property: "Penthouse", time: "12:00 PM", status: "Expected" },
-        ]
+    React.useEffect(() => {
+        if (dashboardData?.todayMovement) {
+            setData({
+                arrivals: dashboardData.todayMovement.arrivals || [],
+                departures: dashboardData.todayMovement.departures || [],
+            });
+        }
+    }, [dashboardData]);
+
+    const formatTime = (dateString) => {
+        if (!dateString) return "N/A";
+        try {
+            return new Date(dateString).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        } catch(e) {
+            return "N/A";
+        }
     };
 
     return (
@@ -40,27 +46,33 @@ export default function ArrivalsDepartures() {
             </div>
 
             <div className="space-y-4">
-                {(activeTab === "arrivals" ? data.arrivals : data.departures).map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${activeTab === "arrivals" ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"} dark:bg-opacity-10`}>
-                                {activeTab === "arrivals" ? <LogIn size={18} /> : <LogOut size={18} />}
+                {(activeTab === "arrivals" ? data.arrivals : data.departures).length > 0 ? (
+                    (activeTab === "arrivals" ? data.arrivals : data.departures).map((item) => (
+                        <div key={item._id} className="flex items-center justify-between p-3 rounded-xl border border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${activeTab === "arrivals" ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"} dark:bg-opacity-10`}>
+                                    {activeTab === "arrivals" ? <LogIn size={18} /> : <LogOut size={18} />}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-white capitalize">{item.user?.firstName || "Unknown"}</p>
+                                    <p className="text-xs text-gray-400 truncate w-32">{item.property?.name || "N/A"}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm font-semibold text-gray-800 dark:text-white">{item.guest}</p>
-                                <p className="text-xs text-gray-400">{item.property}</p>
+                            <div className="text-right flex flex-col items-end">
+                                <p className="text-xs font-bold text-gray-800 dark:text-white">{activeTab === "arrivals" ? formatTime(item.checkIn) : formatTime(item.checkOut)}</p>
+                                <span className={`mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                                    item.bookingStatus?.includes('confirmed') ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                                } dark:bg-opacity-20`}>
+                                    {item.bookingStatus || "Expected"}
+                                </span>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xs font-bold text-gray-800 dark:text-white">{item.time}</p>
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                                item.status.includes('Checked') ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                            } dark:bg-opacity-20`}>
-                                {item.status}
-                            </span>
-                        </div>
+                    ))
+                ) : (
+                    <div className="p-4 text-center text-gray-500 text-sm">
+                        No {activeTab} for today.
                     </div>
-                ))}
+                )}
             </div>
         </div>
     );

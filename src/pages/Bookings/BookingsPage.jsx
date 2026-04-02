@@ -3,13 +3,13 @@ import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import BookingListComp from "../../components/Bookings/BookingListComp";
 
-export default function BookingsPage() {
+export default function BookingsPage({ defaultStatus = "all", title = "All Bookings" }) {
     return (
         <>
-            <PageMeta title="All Bookings | Out Admin" />
-            <PageBreadcrumb pageTitle="All Bookings" />
+            <PageMeta title={`${title} | Out Admin`} />
+            <PageBreadcrumb pageTitle={title} />
             <div className="w-full">
-                <BookingListComp />
+                <BookingListComp defaultStatus={defaultStatus} />
             </div>
         </>
     );

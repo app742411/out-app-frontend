@@ -3,16 +3,17 @@ import { useNavigate } from "react-router";
 import ComponentCard from "../common/ComponentCard";
 import Pagination from "../common/Pagination";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-import { Eye, Search, Filter } from "lucide-react";
+  Search,
+  MapPin,
+  Eye,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Clock,
+  Tag
+} from "lucide-react";
 import { getAllServicesAdmin, getPendingServices, updateServiceApproval } from "../../api/authApi";
 import toast from "react-hot-toast";
-import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -29,9 +30,9 @@ const ServiceList = () => {
 
   const baseURL = import.meta.env.VITE_API_URL;
 
-  const fetchServices = async (page = 1) => {
+  const fetchServices = async (page = 1, isBackgroundPoll = false) => {
     try {
-      setLoading(true);
+      if (!isBackgroundPoll) setLoading(true);
       if (activeTab === "pending") {
         const res = await getPendingServices();
         setServices(res.data || []);
@@ -48,9 +49,9 @@ const ServiceList = () => {
         setCurrentPage(res.page || page);
       }
     } catch (error) {
-      toast.error("Failed to load services");
+      if (!isBackgroundPoll) toast.error("Failed to load services");
     } finally {
-      setLoading(false);
+      if (!isBackgroundPoll) setLoading(false);
     }
   };
 
@@ -84,176 +85,207 @@ const ServiceList = () => {
     fetchServices(currentPage);
   }, [currentPage, activeTab]);
 
+  // Real-time data refresh on focus or tab visibility to avoid continuous background polling
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (document.visibilityState === "visible") {
+        fetchServices(currentPage, true);
+      }
+    };
+
+    window.addEventListener("focus", handleRefresh);
+    document.addEventListener("visibilitychange", handleRefresh);
+
+    return () => {
+      window.removeEventListener("focus", handleRefresh);
+      document.removeEventListener("visibilitychange", handleRefresh);
+    };
+  }, [currentPage, search, activeTab]);
+
+  const getImageUrl = (service) => {
+    if (service.media && service.media.images && service.media.images.length > 0) {
+      const cleanBaseURL = baseURL ? baseURL.replace(/\/$/, "") : "";
+      return `${cleanBaseURL}/uploads/serviceIcon/${service.media.images[0]}`;
+    }
+    return "/images/home/properties2.webp";
+  };
+
   return (
-    <ComponentCard title="Service Management">
-      {/* Search & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div className="relative w-full md:w-1/2">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-            <Search size={18} />
-          </span>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Service Management</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Manage and oversee all listed services efficiently.</p>
+        </div>
+
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search services, vendors or categories..."
-            className="w-full pl-11 pr-4 py-2.5 text-sm text-gray-800 dark:text-white/90 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-xl focus:border-brand-500 transition-all focus:outline-none"
+            placeholder="Search services, vendors..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-
-        {/* Tab Switcher */}
-        <div className="flex border-b border-gray-100 dark:border-gray-800">
-          <button
-            onClick={() => setActiveTab("active")}
-            className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "active"
-              ? "border-brand-500 text-brand-500"
-              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              }`}
-          >
-            Active Services
-          </button>
-          <button
-            onClick={() => setActiveTab("pending")}
-            className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "pending"
-              ? "border-brand-500 text-brand-500"
-              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              }`}
-          >
-            Pending Approval
-          </button>
-        </div>
       </div>
 
-      {/* Table Container */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 transition-colors duration-300">
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="text-center p-12">
-              <div className="inline-block w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="mt-2 text-gray-500">Fetching services...</p>
-            </div>
+      {/* Tab Switcher */}
+      <div className="flex border-b border-gray-100 dark:border-gray-800">
+        <button
+          onClick={() => setActiveTab("active")}
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "active"
+            ? "border-brand-500 text-brand-500"
+            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            }`}
+        >
+          Active Services
+        </button>
+        <button
+          onClick={() => setActiveTab("pending")}
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "pending"
+            ? "border-brand-500 text-brand-500"
+            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            }`}
+        >
+          Pending Approval
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+            <div key={n} className="h-[420px] rounded-3xl bg-gray-100 dark:bg-gray-800 animate-pulse"></div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {services.length > 0 ? (
+            services.map((service, index) => (
+              <div
+                key={service._id || index}
+                className="group bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-500 hover:translate-y-[-6px]"
+              >
+                {/* Image Section */}
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={getImageUrl(service)}
+                    alt={service.name}
+                    onLoad={(e) => e.currentTarget.classList.remove('opacity-0')}
+                    onError={(e) => { e.target.src = "/images/home/properties2.webp"; }}
+                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-0 bg-gray-100 dark:bg-gray-800"
+                  />
+                  <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${service.isActive
+                      ? 'bg-green-500 text-white'
+                      : 'bg-red-500 text-white'
+                      }`}>
+                      {service.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="absolute bottom-4 left-4">
+                    <p className="bg-white/95 dark:bg-black/90 px-3 py-1 rounded-lg font-bold text-brand-600 dark:text-brand-400 shadow-sm">
+                      {service.priceType && <span className="text-[9px] uppercase tracking-wider text-gray-500 mr-1">{service.priceType}</span>}
+                      SAR {service.price}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-5 space-y-4">
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white truncate text-lg group-hover:text-brand-500 transition-colors">
+                      {service.name || "Unnamed Service"}
+                    </h3>
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                      <MapPin className="w-3 h-3" /> {service.location?.city || "Unknown City"}, {service.location?.state || ""}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3 py-3 border-y border-gray-50 dark:border-gray-800/50">
+                    <div className="w-8 h-8 rounded-full bg-brand-50/50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs uppercase">
+                      {service.user?.firstName?.charAt(0) || "U"}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase text-gray-400 font-bold tracking-tighter">Vendor</p>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate capitalize">
+                        {service.user?.firstName} {service.user?.lastName}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-y-3 gap-x-2">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
+                      <Tag className="w-3.5 h-3.5" />
+                      <span className="truncate">{service.category?.name || "No Category"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span className="truncate">{service.duration || "0"} min</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  {activeTab === "active" ? (
+                    <div className="grid grid-cols-1 pt-2">
+                      <button
+                        onClick={() => navigate(`/service-details/${service._id}`)}
+                        className="flex items-center justify-center gap-2 p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn w-full"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
+                        <span className="text-[10px] font-bold uppercase text-gray-500 group-hover/btn:text-brand-500 outline-none">View Details</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 pt-2">
+                      <button
+                        onClick={() => navigate(`/service-details/${service._id}`)}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn outline-none"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
+                      </button>
+                      <button
+                        disabled={approvalLoading === service._id}
+                        onClick={() => handleApproval(service._id, "approve")}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold transition-all shadow-md shadow-green-500/20 disabled:opacity-50 outline-none"
+                      >
+                        {approvalLoading === service._id ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle className="w-4 h-4" />}
+                        <span className="text-[9px] mt-1 font-bold uppercase text-white">Approve</span>
+                      </button>
+                      <button
+                        disabled={approvalLoading === service._id}
+                        onClick={() => setRejectionModal({ show: true, serviceId: service._id, reason: "" })}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all shadow-md shadow-red-500/20 disabled:opacity-50 outline-none"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-white">Reject</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">S.No.</TableCell>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Service</TableCell>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Category</TableCell>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Vendor</TableCell>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Price</TableCell>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Status</TableCell>
-                  <TableCell isHeader className="px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">{activeTab === "active" ? "Actions" : "Approval"}</TableCell>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {services.length > 0 ? (
-                  services.map((service, index) => (
-                    <TableRow key={service._id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                      <TableCell className="px-5 py-4">
-                        {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                      </TableCell>
-
-                      <TableCell className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
-                            <img
-                              src={`${baseURL}/uploads/serviceIcon/${service.media?.images?.[0]}`}
-                              alt={service.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.src = "/images/home/properties2.webp";
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-800 dark:text-white capitalize line-clamp-1">{service.name}</p>
-                            <p className="text-xs text-gray-500 line-clamp-1">{service.location?.city}, {service.location?.state}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="px-5 py-4">
-                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 rounded-md">
-                          {service.category?.name}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="px-5 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{service.user?.firstName} {service.user?.lastName}</span>
-                          <span className="text-xs text-gray-500">{service.user?.email}</span>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="px-5 py-4 font-semibold text-gray-900 dark:text-white">
-                        ₹{service.price}
-                      </TableCell>
-
-                      <TableCell className="px-5 py-4 text-center">
-                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${service.isActive ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
-                          {service.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="px-5 py-4 text-right">
-                        {activeTab === "active" ? (
-                          <button
-                            onClick={() => navigate(`/service-details/${service._id}`)}
-                            className="p-2 rounded-lg text-gray-500 hover:text-brand-500 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-400 dark:hover:bg-brand-500/10 transition-all"
-                            title="View Details"
-                          >
-                            <Eye size={20} />
-                          </button>
-                        ) : (
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => navigate(`/service-details/${service._id}`)}
-                              className="p-2 rounded-lg text-gray-500 hover:text-brand-500 hover:bg-brand-50 dark:text-gray-400 dark:hover:text-brand-400 dark:hover:bg-brand-500/10 transition-all"
-                              title="View Details"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              disabled={approvalLoading === service._id}
-                              onClick={() => handleApproval(service._id, "approve")}
-                              className="p-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md shadow-green-500/20 disabled:opacity-50"
-                              title="Approve"
-                            >
-                              {approvalLoading === service._id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle size={18} />}
-                            </button>
-                            <button
-                              disabled={approvalLoading === service._id}
-                              onClick={() => setRejectionModal({ show: true, serviceId: service._id, reason: "" })}
-                              className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors shadow-md shadow-red-500/20 disabled:opacity-50"
-                              title="Reject"
-                            >
-                              <XCircle size={18} />
-                            </button>
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-gray-500 bg-gray-50/30 dark:bg-white/5">
-                      No services found matching your criteria.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-gray-800/20 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+              <p className="text-gray-500 dark:text-gray-400">No services found matching your criteria.</p>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
       {!loading && totalPages > 1 && (
         <div className="mt-6 flex justify-end">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={(newPage) => setCurrentPage(newPage)}
+            onPageChange={(newPage) => {
+              setCurrentPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
         </div>
       )}
@@ -297,7 +329,7 @@ const ServiceList = () => {
           </div>
         </div>
       )}
-    </ComponentCard>
+    </div>
   );
 };
 

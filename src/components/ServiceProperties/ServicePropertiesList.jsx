@@ -37,9 +37,9 @@ export default function ServicePropertiesList() {
 
     const baseURL = import.meta.env.VITE_API_URL || "";
 
-    const fetchProperties = async () => {
+    const fetchProperties = async (isBackgroundPoll = false) => {
         try {
-            setLoading(true);
+            if (!isBackgroundPoll) setLoading(true);
             let finalProperties = [];
 
             if (activeTab === "pending") {
@@ -56,7 +56,7 @@ export default function ServicePropertiesList() {
             } else {
                 const res = await getAllProperties({
                     page: 1,
-                    limit: 100, 
+                    limit: 100,
                     search,
                     status: "",
                 });
@@ -84,16 +84,33 @@ export default function ServicePropertiesList() {
             setProperties(finalProperties);
 
         } catch (error) {
-            toast.error("Failed to load properties");
+            if (!isBackgroundPoll) toast.error("Failed to load properties");
             console.error(error);
         } finally {
-            setLoading(false);
+            if (!isBackgroundPoll) setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchProperties();
         setCurrentPage(1);
+    }, [search, activeTab]);
+
+    // Real-time data refresh on focus or tab visibility to avoid continuous background polling
+    useEffect(() => {
+        const handleRefresh = () => {
+            if (document.visibilityState === "visible") {
+                fetchProperties(true);
+            }
+        };
+
+        window.addEventListener("focus", handleRefresh);
+        document.addEventListener("visibilitychange", handleRefresh);
+
+        return () => {
+            window.removeEventListener("focus", handleRefresh);
+            document.removeEventListener("visibilitychange", handleRefresh);
+        };
     }, [search, activeTab]);
 
     const handleApproval = async (id, action, reason = "") => {

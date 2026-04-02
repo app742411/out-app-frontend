@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { getAdminDashboard } from "../api/authApi";
+import { adminDashboard } from "../api/authApi";
 import toast from "react-hot-toast";
 
 const UserContext = createContext();
@@ -11,7 +11,7 @@ export const UserProvider = ({ children }) => {
     const fetchDashboard = async () => {
         try {
             setLoading(true);
-            const res = await getAdminDashboard();
+            const res = await adminDashboard();
             if (res && res.admin) {
                 setUser(res.admin);
             }

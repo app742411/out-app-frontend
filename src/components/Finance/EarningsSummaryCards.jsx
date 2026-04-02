@@ -41,7 +41,7 @@ export default function EarningsSummaryCards({ stats }) {
     const cards = [
         {
             title: "Gross Revenue",
-            value: stats?.totalRevenue || 128450,
+            value: stats?.grossRevenue || 0,
             icon: DollarSign,
             iconBg: "bg-brand-500/10 dark:bg-brand-500/20",
             iconColor: "text-brand-500",
@@ -51,7 +51,7 @@ export default function EarningsSummaryCards({ stats }) {
         },
         {
             title: "Provider Payouts",
-            value: stats?.providerPayouts || 102760,
+            value: stats?.providerPayouts || 0,
             icon: Wallet,
             iconBg: "bg-blue-500/10 dark:bg-blue-500/20",
             iconColor: "text-blue-500",
@@ -61,17 +61,17 @@ export default function EarningsSummaryCards({ stats }) {
         },
         {
             title: "Platform Fees",
-            value: stats?.platformFees || 19267,
+            value: (stats?.platformFees || 0) + (stats?.adminCommission || 0),
             icon: Percent,
             iconBg: "bg-purple-500/10 dark:bg-purple-500/20",
             iconColor: "text-purple-500",
             trend: "up",
             trendValue: "15.4",
-            subValue: "Admin commission"
+            subValue: "Admin & Platform commission"
         },
         {
-            title: "Tax & Expenses",
-            value: stats?.taxAmount || 6422,
+            title: "Tax Expenses",
+            value: stats?.taxExpenses || 0,
             icon: Receipt,
             iconBg: "bg-orange-500/10 dark:bg-orange-500/20",
             iconColor: "text-orange-500",
@@ -80,11 +80,11 @@ export default function EarningsSummaryCards({ stats }) {
         },
         {
             title: "Refund Amount",
-            value: stats?.refunds || 2450,
+            value: stats?.refundAmount || 0,
             icon: RefreshCcw,
             iconBg: "bg-red-500/10 dark:bg-red-500/20",
             iconColor: "text-red-500",
-            subValue: "Total cancelled refunds"
+            subValue: "Total processed refunds"
         }
     ];
 

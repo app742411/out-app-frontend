@@ -17,30 +17,22 @@ export default function PropertyBarChart({ data }) {
                 barHeight: '70%',
             }
         },
-        colors: ['#000'],
-        dataLabels: {
-            enabled: false
-        },
+    };
+
+    const categories = data?.topProperties?.map(p => p.name) || ['N/A'];
+    const counts = data?.topProperties?.map(p => p.totalBookings) || [0];
+
+    const optionsWithData = {
+        ...options,
         xaxis: {
-            categories: data?.names || ['Beach Resort', 'City Hotel', 'Desert Camp', 'Mountain Villa', 'Luxury Suite', 'Family Home', 'Pool Villa'],
-        },
-        grid: {
-            xaxis: {
-                lines: {
-                    show: true
-                }
-            }
-        },
-        tooltip: {
-            y: {
-                formatter: (val) => `${val} Bookings`
-            }
+            ...options.xaxis,
+            categories: categories
         }
     };
 
     const series = [{
         name: 'Bookings',
-        data: data?.counts || [400, 430, 448, 470, 540, 580, 690]
+        data: counts
     }];
 
     return (
@@ -48,8 +40,8 @@ export default function PropertyBarChart({ data }) {
             <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
                 Top Performing Properties
             </h3>
-            <div className="max-w-full overflow-x-auto">
-                <Chart options={options} series={series} type="bar" height={310} />
+            <div className="max-w-full overflow-hidden">
+                <Chart options={optionsWithData} series={series} type="bar" height={310} />
             </div>
         </div>
     );

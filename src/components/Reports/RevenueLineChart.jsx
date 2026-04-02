@@ -53,16 +53,23 @@ export default function RevenueLineChart({ data }) {
     const series = [
         {
             name: "Revenue",
-            data: data || [31, 40, 28, 51, 42, 109, 100, 85, 95, 110, 120, 150],
+            data: data?.revenueGraph?.map(item => item.revenue !== undefined ? item.revenue : item.total) || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         }
     ];
+
+    const monthsLong = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (data?.revenueGraph) {
+        options.xaxis.categories = data.revenueGraph.map(item => 
+            item.month ? item.month : (monthsLong[item._id - 1] || "N/A")
+        );
+    }
 
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
                 Revenue Growth
             </h3>
-            <div className="max-w-full overflow-x-auto">
+            <div className="max-w-full overflow-hidden">
                 <Chart options={options} series={series} type="area" height={310} />
             </div>
         </div>

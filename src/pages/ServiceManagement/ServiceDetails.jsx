@@ -7,6 +7,7 @@ import Button from "../../components/ui/button/Button";
 import { ArrowLeft, MapPin, Calendar, Clock, Tag, User, Mail, Smartphone } from "lucide-react";
 import { getSingleServiceAdmin } from "../../api/authApi";
 import toast from "react-hot-toast";
+import ReviewListComp from "../../components/Reviews/ReviewListComp";
 
 const ServiceDetails = () => {
   const { id } = useParams();
@@ -156,6 +157,10 @@ const ServiceDetails = () => {
               </div>
             </div>
           </ComponentCard>
+          
+          <div className="mt-8">
+            <ReviewListComp type="service" id={id} />
+          </div>
         </div>
 
         {/* Sidebar Info */}

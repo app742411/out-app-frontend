@@ -32,9 +32,9 @@ export default function VendorListComp() {
     const baseURL = import.meta.env.VITE_API_URL;
 
 
-    const fetchVendors = async (page = 1) => {
+    const fetchVendors = async (page = 1, isBackgroundPoll = false) => {
         try {
-            setLoading(true);
+            if (!isBackgroundPoll) setLoading(true);
 
             const res = await getAllServiceUsers({
                 page,
@@ -47,15 +47,32 @@ export default function VendorListComp() {
             setCurrentPage(page);
             setTotalPages(Math.ceil((res.totalCount || res.total || 0) / ITEMS_PER_PAGE));
         } catch (error) {
-            toast.error("Failed to load vendors");
+            if (!isBackgroundPoll) toast.error("Failed to load vendors");
         } finally {
-            setLoading(false);
+            if (!isBackgroundPoll) setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchVendors(1);
     }, [search, statusFilter]);
+
+    // Real-time data refresh on focus or tab visibility to avoid continuous background polling
+    useEffect(() => {
+        const handleRefresh = () => {
+            if (document.visibilityState === "visible") {
+                fetchVendors(currentPage, true);
+            }
+        };
+
+        window.addEventListener("focus", handleRefresh);
+        document.addEventListener("visibilitychange", handleRefresh);
+
+        return () => {
+            window.removeEventListener("focus", handleRefresh);
+            document.removeEventListener("visibilitychange", handleRefresh);
+        };
+    }, [currentPage, search, statusFilter]);
 
     const handleBlockUnblock = async (vendorId, currentStatus) => {
         try {
@@ -116,10 +133,7 @@ export default function VendorListComp() {
                                         User ID
                                     </TableCell>
                                     <TableCell isHeader className="px-5 py-3">
-                                        Name
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
-                                        Email
+                                        Vendor Details
                                     </TableCell>
                                     <TableCell isHeader className="px-5 py-3">
                                         Phone
@@ -171,12 +185,11 @@ export default function VendorListComp() {
                                                 {vendor.userId || "-"}
                                             </TableCell>
 
-                                            <TableCell className="px-5 py-3 capitalize">
-                                                {vendor.firstName} {vendor.lastName}
-                                            </TableCell>
-
                                             <TableCell className="px-5 py-3">
-                                                {vendor.email || "-"}
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-gray-800 dark:text-white capitalize line-clamp-1">{vendor.firstName} {vendor.lastName}</span>
+                                                    <span className="text-xs text-gray-500 line-clamp-1">{vendor.email || "-"}</span>
+                                                </div>
                                             </TableCell>
 
                                             <TableCell className="px-5 py-3">
@@ -245,7 +258,7 @@ export default function VendorListComp() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={9} className="text-center py-6 text-gray-500">
+                                        <TableCell colSpan={8} className="text-center py-6 text-gray-500">
                                             No service providers found
                                         </TableCell>
                                     </TableRow>

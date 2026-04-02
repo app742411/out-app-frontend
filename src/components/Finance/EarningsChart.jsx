@@ -1,9 +1,9 @@
 import React from "react";
 import Chart from "react-apexcharts";
 
-export default function EarningsChart({ data }) {
+export default function EarningsChart({ graphData }) {
     const options = {
-        colors: ["#2d2d2d", "#3b82f6", "#ef4444"],
+        colors: ["#2d2d2d", "#3b82f6", "#10b981"],
         chart: {
             fontFamily: "Outfit, sans-serif",
             type: "bar",
@@ -21,7 +21,7 @@ export default function EarningsChart({ data }) {
             curve: 'smooth'
         },
         xaxis: {
-            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            categories: graphData?.map(item => item.label) || ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             axisBorder: { show: false },
             axisTicks: { show: false },
         },
@@ -53,22 +53,22 @@ export default function EarningsChart({ data }) {
         {
             name: "Gross Revenue",
             type: "column",
-            data: data?.revenue || [31000, 40000, 28000, 51000, 42000, 109000, 100000, 85000, 95000, 110000, 120000, 150000],
+            data: graphData?.map(item => item.revenue) || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
         {
             name: "Provider Payouts",
             type: "column",
-            data: data?.payouts || [25000, 32000, 22000, 41000, 33000, 87000, 80000, 68000, 76000, 88000, 96000, 120000],
+            data: graphData?.map(item => item.payouts) || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
         {
             name: "Net Platform Earnings",
             type: "line",
-            data: data?.profit || [6000, 8000, 6000, 10000, 9000, 22000, 20000, 17000, 19000, 22000, 24000, 30000],
+            data: graphData?.map(item => item.netEarnings) || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         }
     ];
 
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6 shadow-sm overflow-hidden">
             <h3 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
                 Revenue vs Payouts Trend
             </h3>

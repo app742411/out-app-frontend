@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import UserPropertiesList from "../Users/UserPropertiesList";
 import PropertyBookingListComp from "../Bookings/PropertyBookingListComp";
 import { useLocation } from "react-router";
+import ReviewListComp from "../Reviews/ReviewListComp";
 
 export default function ServicePropertyDetailsComp() {
     const { id } = useParams();
@@ -393,6 +394,8 @@ export default function ServicePropertyDetailsComp() {
                 <PropertyBookingListComp propertyId={id} />
             </div>
 
+
+
             {/* Show more properties by this user */}
             {property.user?._id && (
                 <div className="w-full pt-8 pb-4">
@@ -412,6 +415,10 @@ export default function ServicePropertyDetailsComp() {
                     )}
                 </div>
             )}
+            {/* Reviews Section */}
+            <div id="reviews-section" className="mt-8">
+                <ReviewListComp type="property" id={id} />
+            </div>
         </div>
     );
 }
