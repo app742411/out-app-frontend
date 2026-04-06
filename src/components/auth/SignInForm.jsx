@@ -6,6 +6,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { loginUser } from "../../api/authApi";
+import { generateFCMToken } from "../../lib/fcm";
 import toast from "react-hot-toast";
 import { useUser } from "../../context/UserContext";
 
@@ -43,7 +44,14 @@ export default function SignInForm() {
     setLoading(true);
 
     try {
-      const res = await loginUser(email, password);
+      let fcmToken = localStorage.getItem("fcmToken");
+      
+      // Attempt to generate token if not already in localStorage
+      if (!fcmToken) {
+        fcmToken = await generateFCMToken();
+      }
+
+      const res = await loginUser(email, password, fcmToken);
 
       if (res?.token) {
         localStorage.setItem("token", res.token);

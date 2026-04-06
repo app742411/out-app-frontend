@@ -9,8 +9,10 @@ import Button from "../../components/ui/button/Button";
 import toast from "react-hot-toast";
 import { getAdminEarningsDashboard, exportEarningsCSV, exportEarningsPDF } from "../../api/authApi";
 import Pagination from "../../components/common/Pagination";
+import { useNavigate } from "react-router";
 
 export default function EarningsReportPage() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +41,7 @@ export default function EarningsReportPage() {
         try {
             toast.loading(`Preparing ${format} report...`, { id: "exporting" });
             const res = format === "CSV" ? await exportEarningsCSV() : await exportEarningsPDF();
-            
+
             const url = window.URL.createObjectURL(new Blob([res.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -48,7 +50,7 @@ export default function EarningsReportPage() {
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
-            
+
             toast.success(`${format} report downloaded!`, { id: "exporting" });
         } catch (error) {
             console.error("Export failed", error);
@@ -58,25 +60,25 @@ export default function EarningsReportPage() {
 
     return (
         <>
-            <PageMeta 
-                title="Detailed Financial Earnings | Out Admin" 
-                description="Holistic view of revenue, payouts, expenses, and platform fees." 
+            <PageMeta
+                title="Detailed Financial Earnings | Out Admin"
+                description="Holistic view of revenue, payouts, expenses, and platform fees."
             />
-            
+
             <PageBreadcrumb pageTitle="Earnings Report" />
 
             <div className="space-y-6 pb-10">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between -mt-2 mb-4">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Comprehensive financial audit of all booking transactions.</p>
                     <div className="flex items-center gap-3">
-                        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl shadow-sm">
+                        {/* <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl shadow-sm">
                             <button className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-gray-700 shadow-sm text-brand-500 transition-all">
                                 Monthly
                             </button>
                             <button className="px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">
                                 Yearly
                             </button>
-                        </div>
+                        </div> */}
                         <Button variant="outline" size="sm" onClick={() => handleExport("PDF")}>
                             <Download size={16} className="mr-2" /> PDF Report
                         </Button>
@@ -118,7 +120,12 @@ export default function EarningsReportPage() {
                                             <span className="text-sm font-bold text-blue-700">15 March</span>
                                         </div>
                                     </div>
-                                    <Button className="w-full mt-6" variant="outline" size="sm">
+                                    <Button 
+                                        className="w-full mt-6" 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => navigate("/finance-settings")}
+                                    >
                                         Manage Settings
                                     </Button>
                                 </div>
@@ -141,10 +148,10 @@ export default function EarningsReportPage() {
                         {/* Detailed Data View */}
                         <div className="space-y-4">
                             <EarningsTable transactions={data?.transactions} isLoading={loading} onExportCSV={() => handleExport("CSV")} />
-                            
+
                             {!loading && data?.pagination && data.pagination.total > 0 && (
                                 <div className="flex justify-center mt-6">
-                                    <Pagination 
+                                    <Pagination
                                         currentPage={data.pagination.page}
                                         totalPages={Math.ceil(data.pagination.total / data.pagination.limit)}
                                         onPageChange={(page) => fetchEarningsData(page)}

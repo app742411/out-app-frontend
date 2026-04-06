@@ -327,8 +327,8 @@ export const changePassword = async (oldPassword, newPassword, confirmPassword) 
 };
 
 // Login API
-export const loginUser = async (email, password) => {
-  const res = await apiClient.post("/api/admin/sign-in", { email, password });
+export const loginUser = async (email, password, fcmToken) => {
+  const res = await apiClient.post("/api/admin/sign-in", { email, password, fcmToken });
   return res.data;
 };
 
@@ -935,6 +935,43 @@ export const exportEarningsPDF = async () => {
   try {
     const res = await apiClient.get("/api/admin/exportEarningsPDF", { responseType: 'blob' });
     return res;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// NOTIFICATIONS API
+export const getAllNotificationsAdmin = async (params = {}) => {
+  try {
+    const res = await apiClient.get("/api/admin/getAllNotificationsAdmin", { params });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getAdminNotifications = async () => {
+  try {
+    const res = await apiClient.get("/api/admin/getAdminNotifications");
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getNotificationDetails = async (id) => {
+  try {
+    const res = await apiClient.get(`/api/admin/getNotificationDetails/${id}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const adminDeleteNotifications = async (ids) => {
+  try {
+    const res = await apiClient.delete("/api/admin/adminDeleteNotifications", { data: { ids } });
+    return res.data;
   } catch (error) {
     throw error.response?.data || error;
   }

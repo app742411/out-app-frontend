@@ -6,13 +6,13 @@ import NotificationList from "../../components/Notifications/NotificationList";
 export default function NotificationsPage() {
     return (
         <>
-            <PageMeta 
-                title="Notifications | Out Admin" 
-                description="View and manage all system notifications including bookings, properties, and support." 
+            <PageMeta
+                title="Notifications | Out Admin"
+                description="View and manage all system notifications including bookings, properties, and support."
             />
             <PageBreadcrumb pageTitle="Notifications" />
-            
-            <div className="max-w-[1000px] mx-auto">
+
+            <div className="w-full mx-auto">
                 <NotificationList />
             </div>
         </>

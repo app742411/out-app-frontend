@@ -53,8 +53,12 @@ export default function BookingListComp({ defaultStatus = "all" }) {
     };
 
     useEffect(() => {
-        fetchBookings(1);
-    }, [search, bookingStatus, paymentStatus, bookingType]);
+        setBookingStatus(defaultStatus);
+    }, [defaultStatus]);
+
+    useEffect(() => {
+        fetchBookings(currentPage || 1);
+    }, [search, bookingStatus, paymentStatus, bookingType, currentPage]);
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {

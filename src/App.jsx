@@ -56,8 +56,40 @@ import ServiceDetails from "./pages/ServiceManagement/ServiceDetails";
 import PackageListPage from "./pages/Packages/PackageListPage";
 import PackageDetailsPage from "./pages/Packages/PackageDetailsPage";
 import CancellationPoliciesPage from "./pages/Finance/CancellationPoliciesPage";
+import { useEffect } from "react";
+import { generateFCMToken, onMessageListener } from "./lib/fcm";
+import { toast } from "react-hot-toast";
+import { useSocket } from "./context/SocketContext";
 
 export default function App() {
+  const { socket } = useSocket();
+
+  /**
+   * Professional FCM Setup: 
+   * 1. Generate/Retrieve the device token.
+   * 2. Set up a listener for foreground notifications.
+   */
+  useEffect(() => {
+    // 1. Initial Permission & Token Flow
+    generateFCMToken();
+
+    // 2. Continuous Listener for Foreground Notifications
+    onMessageListener()
+      .then((payload) => {
+        // Deduplicate: If socket is active, it already handled the UI toast
+        // We only show FCM notification if the socket is down or backgrounded
+        const isSocketHealthy = socket?.connected;
+
+        if (!isSocketHealthy) {
+          toast.success(`${payload.notification.title}: ${payload.notification.body}`, {
+            icon: '🔔',
+            duration: 6000,
+          });
+        }
+      })
+      .catch((err) => console.error("FCM: Foreground listener error:", err));
+  }, [socket]);
+
   return (
     <>
       <Router>

@@ -21,6 +21,7 @@
     "apexcharts": "^4.1.0",
     "axios": "^1.12.2",
     "clsx": "^2.1.1",
+    "firebase": "^12.11.0",
     "flatpickr": "^4.6.13",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.555.0",

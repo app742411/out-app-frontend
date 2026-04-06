@@ -105,11 +105,11 @@ const othersItems = [
     name: "Notification",
     path: "/notifications",
   },
-  {
-    icon: <PlugInIcon />,
-    name: "Settings",
-    path: "/settings",
-  }
+  // {
+  //   icon: <PlugInIcon />,
+  //   name: "Settings",
+  //   path: "/settings",
+  // }
 ];
 
 const AppSidebar = () => {

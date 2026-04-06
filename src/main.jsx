@@ -9,6 +9,7 @@ import App from "./App.jsx";
 import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { UserProvider } from "./context/UserContext.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
@@ -17,8 +18,9 @@ createRoot(rootElement).render(
 
   <ThemeProvider>
     <UserProvider>
-      <AppWrapper>
-        <App />
+      <SocketProvider>
+        <AppWrapper>
+          <App />
         <Toaster
           position="top-right"
 
@@ -39,7 +41,8 @@ createRoot(rootElement).render(
           }}
         />
       </AppWrapper>
-    </UserProvider>
-  </ThemeProvider>
+    </SocketProvider>
+  </UserProvider>
+</ThemeProvider>
 
 );
