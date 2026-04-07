@@ -1,41 +1,54 @@
-:root{
-  --bg-fallback: #f9f9f9; /* fallback solid color */
+:root {
+  --bg-fallback: #f9f9f9;
+  /* fallback solid color */
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  min-height:100vh;
- 
+* {
+  box-sizing: border-box
+}
+
+html,
+body {
+  height: 100%
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
   /* layered radial gradients create the 'mesh' – large & soft to avoid visible edges */
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; */
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(255,120,120,0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 10%, rgba(120,180,255,0.12) 0%, transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(170,120,255,0.12) 0%, transparent 50%),
-    radial-gradient(circle at 60% 40%, rgba(120,255,180,0.10) 0%, transparent 50%);
+    radial-gradient(circle at 10% 20%, rgba(255, 120, 120, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 10%, rgba(120, 180, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(170, 120, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 60% 40%, rgba(120, 255, 180, 0.10) 0%, transparent 50%);
   background-size: 100% 100%;
   background-attachment: fixed;
-  
+
 }
 
 /* respect reduced motion */
-@media (prefers-reduced-motion: reduce){
-  body{ animation: none; transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  body {
+    animation: none;
+    transition: none;
+  }
 }
 
 /* move the gradient layers slowly to create flow */
-@keyframes meshShift{
-  0%{
+@keyframes meshShift {
+  0% {
     background-position: 0% 10%, 80% 10%, 50% 80%, 60% 40%, 0 0;
     background-size: 1200px 800px, 900px 700px, 1100px 900px, 800px 600px, auto;
   }
-  50%{
+
+  50% {
     background-position: 5% 30%, 85% 20%, 45% 70%, 55% 50%, 0 0;
     background-size: 1300px 900px, 850px 750px, 1000px 850px, 900px 650px, auto;
   }
-  100%{
+
+  100% {
     background-position: 0% 20%, 80% 10%, 50% 80%, 60% 40%, 0 0;
     background-size: 1200px 800px, 900px 700px, 1100px 900px, 800px 600px, auto;
   }

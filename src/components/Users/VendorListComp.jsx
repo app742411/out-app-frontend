@@ -57,7 +57,6 @@ export default function VendorListComp() {
         fetchVendors(1);
     }, [search, statusFilter]);
 
-    // Real-time data refresh on focus or tab visibility to avoid continuous background polling
     useEffect(() => {
         const handleRefresh = () => {
             if (document.visibilityState === "visible") {
@@ -217,7 +216,7 @@ export default function VendorListComp() {
                                                 {vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : "-"}
                                             </TableCell>
                                             <TableCell className="px-5 py-3 text-right">
-                                                <div className="flex items-center justify-end">
+                                                <div className="flex items-center justify-end justify-start">
                                                     <div className="relative">
                                                         <button
                                                             type="button"

@@ -13,7 +13,7 @@ const AddPlayerForm = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email:"",
+    email: "",
     dateOfBirth: "",
     preferredFoot: "",
     positions: [],
@@ -163,19 +163,19 @@ const AddPlayerForm = () => {
           <Label>Last Name</Label>
           <Input name="lastName" value={formData.lastName} onChange={handleChange} />
         </div>
-         <div>
-                  <Label>Email</Label>
-                  <div className="relative">
-                    <Input
-                      placeholder="info@gmail.com"
-                      type="text"
-                      className="pl-[62px]"
-                    />
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                      <EnvelopeIcon className="size-6" />
-                    </span>
-                  </div>
-                </div>
+        <div>
+          <Label>Email</Label>
+          <div className="relative">
+            <Input
+              placeholder="info@gmail.com"
+              type="text"
+              className="pl-[62px]"
+            />
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+              <EnvelopeIcon className="size-6" />
+            </span>
+          </div>
+        </div>
         <div>
           <DatePicker
             id="dob"

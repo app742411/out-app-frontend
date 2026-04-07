@@ -17,16 +17,12 @@ export const UserProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("Failed to fetch dashboard:", error);
-            // We don't always want to show toast on initial load if token is expired, 
-            // interceptors usually handle the redirect
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        // Only fetch if we have a token or we are generally "logged in"
-        // Though checking localstorage token usually works in SPAs
         const token = localStorage.getItem("token");
         if (token) {
             fetchDashboard();

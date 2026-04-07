@@ -63,23 +63,11 @@ import { useSocket } from "./context/SocketContext";
 
 export default function App() {
   const { socket } = useSocket();
-
-  /**
-   * Professional FCM Setup: 
-   * 1. Generate/Retrieve the device token.
-   * 2. Set up a listener for foreground notifications.
-   */
   useEffect(() => {
-    // 1. Initial Permission & Token Flow
     generateFCMToken();
-
-    // 2. Continuous Listener for Foreground Notifications
     onMessageListener()
       .then((payload) => {
-        // Deduplicate: If socket is active, it already handled the UI toast
-        // We only show FCM notification if the socket is down or backgrounded
         const isSocketHealthy = socket?.connected;
-
         if (!isSocketHealthy) {
           toast.success(`${payload.notification.title}: ${payload.notification.body}`, {
             icon: '🔔',

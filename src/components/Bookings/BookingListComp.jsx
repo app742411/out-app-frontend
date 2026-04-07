@@ -37,7 +37,7 @@ export default function BookingListComp({ defaultStatus = "all" }) {
                 paymentStatus,
             };
 
-            const res = bookingStatus === "completed" 
+            const res = bookingStatus === "completed"
                 ? await getCompletedBookings(apiParams)
                 : await getAllBookings({ ...apiParams, status: bookingStatus || "all" });
 

@@ -7,7 +7,7 @@ export default function LandingHero({ setIsHovering }) {
     return (
         <>
 
-            <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center min-h-[90vh] mt-20 transition-colors duration-300">
+            <section className="relative pt-32 pb-20 lg:pt-25 lg:pb-32 overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center min-h-[90vh] mt-20 transition-colors duration-300">
                 {/* Decorative background blobs */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pt-50px">
                     <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-brand-200/50 dark:bg-brand-900/30 blur-[100px]" />

@@ -37,7 +37,7 @@ export default function NotificationDropdown() {
   function toggleDropdown() {
     setIsOpen(!isOpen);
     if (!isOpen) {
-        setNotificationCount(0); // Reset count when opening
+      setNotificationCount(0);
     }
   }
 
@@ -122,12 +122,12 @@ export default function NotificationDropdown() {
         <ul className="flex flex-col h-auto overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="flex items-center justify-center py-10">
-                <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-                <svg className="w-12 h-12 opacity-20 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                <p className="text-sm font-medium">All caught up!</p>
+              <svg className="w-12 h-12 opacity-20 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+              <p className="text-sm font-medium">All caught up!</p>
             </div>
           ) : (
             notifications.map((notification, index) => (
@@ -136,22 +136,21 @@ export default function NotificationDropdown() {
                   onClick={() => handleNotificationClick(notification._id)}
                   className="w-full text-left flex gap-3 rounded-xl border-b border-gray-100 p-3 px-4.5 py-4 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5 transition-all duration-200"
                 >
-                  <span className={`relative block w-full h-10 rounded-full z-1 max-w-10 min-w-10 flex items-center justify-center shadow-lg ${
-                    notification.type === "BOOKING" ? "bg-blue-500" :
-                    notification.type === "PAYMENT" ? "bg-green-500" :
-                    notification.type === "REFUND" ? "bg-red-500" : 
-                    notification.type === "CHAT" ? "bg-indigo-500" : "bg-brand"
-                  }`}>
+                  <span className={`relative block w-full h-10 rounded-full z-1 max-w-10 min-w-10 flex items-center justify-center shadow-lg ${notification.type === "BOOKING" ? "bg-blue-500" :
+                      notification.type === "PAYMENT" ? "bg-green-500" :
+                        notification.type === "REFUND" ? "bg-red-500" :
+                          notification.type === "CHAT" ? "bg-indigo-500" : "bg-brand"
+                    }`}>
                     {notification.type === "BOOKING" ? "📅" : notification.type === "PAYMENT" ? "💰" : notification.type === "CHAT" ? "💬" : "🔔"}
                     {!notification.isRead && <span className="absolute top-0 right-0 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white bg-error-500 dark:border-gray-900"></span>}
                   </span>
 
                   <span className="block overflow-hidden flex-1">
                     <span className="mb-0.5 block text-theme-sm font-bold text-gray-800 dark:text-white truncate">
-                        {notification.title}
+                      {notification.title}
                     </span>
                     <span className="mb-1.5 text-[11px] block text-gray-500 dark:text-gray-400 line-clamp-1 italic">
-                        {notification.body || notification.message}
+                      {notification.body || notification.message}
                     </span>
 
                     <span className="flex items-center gap-2 text-gray-400 text-[9px] dark:text-gray-500 uppercase font-black tracking-widest">
@@ -175,7 +174,7 @@ export default function NotificationDropdown() {
       </Dropdown>
 
       {/* Details Modal */}
-      <NotificationDetailsModal 
+      <NotificationDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         notificationId={selectedId}

@@ -46,7 +46,7 @@ export const updateAdminProfile = async (formData) => {
     throw error.response?.data || error;
   }
 };
-
+// USER LIST
 export const getAllUsers = async ({
   page = 1,
   limit = 10,
