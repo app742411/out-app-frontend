@@ -486,14 +486,14 @@ export const getServicesByUserAdmin = async (userId) => {
   }
 };
 
-export const getVendorStatsAdmin = async (userId) => {
-  try {
-    const res = await apiClient.get(`/api/admin/getVendorStatsAdmin/${userId}`);
-    return res.data;
-  } catch (error) {
-    throw error.response?.data || error;
-  }
-};
+// export const getVendorStatsAdmin = async (userId) => {
+//   try {
+//     const res = await apiClient.get(`/api/admin/getVendorStatsAdmin/${userId}`);
+//     return res.data;
+//   } catch (error) {
+//     throw error.response?.data || error;
+//   }
+// };
 // PACKAGE MANAGEMENT
 export const getAllPackagesAdmin = async (params = {}) => {
   try {
@@ -756,6 +756,15 @@ export const getAdminUpcomingBookings = async ({ page = 1, limit = 10 } = {}) =>
   }
 };
 
+export const deletePendingBooking = async (bookingId) => {
+  try {
+    const res = await apiClient.delete(`/api/admin/deletePendingBooking/${bookingId}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // FINANCE CONFIGURATION API
 export const updatePlatformFee = async (payload) => {
   try {
@@ -971,6 +980,59 @@ export const getNotificationDetails = async (id) => {
 export const adminDeleteNotifications = async (ids) => {
   try {
     const res = await apiClient.delete("/api/admin/adminDeleteNotifications", { data: { ids } });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteUser = async (id) => {
+  try {
+    const res = await apiClient.delete(`/api/admin/softDelete/${id}/user`, {
+      data: { isDeleted: true }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteServiceUser = async (id) => {
+  try {
+    const res = await apiClient.delete(`/api/admin/softDelete/${id}/service`, {
+      data: { isDeleted: true }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteProperty = async (id) => {
+  try {
+    const res = await apiClient.delete(`/api/admin/deleteProperty/${id}`, {
+      data: { isDeleted: true }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const deleteService = async (id) => {
+  try {
+    const res = await apiClient.delete(`/api/admin/deleteService/${id}`, {
+      data: { isDeleted: true }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const logout = async () => {
+  try {
+    const res = await apiClient.post("/api/admin/logout");
     return res.data;
   } catch (error) {
     throw error.response?.data || error;

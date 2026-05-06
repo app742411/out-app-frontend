@@ -9,8 +9,9 @@ import {
   TableRow,
 } from "../ui/table";
 import { Eye } from "lucide-react";
-import { getServicesByUserAdmin } from "../../api/authApi";
+import { getServicesByUserAdmin, getAllServicesAdmin } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { formatCurrency } from "../../utils/currency";
 
 const VendorServicesList = ({ userId }) => {
   const [services, setServices] = useState([]);
@@ -24,7 +25,7 @@ const VendorServicesList = ({ userId }) => {
       try {
         setLoading(true);
         const res = await getServicesByUserAdmin(userId);
-        setServices(res.data || []);
+        setServices(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         toast.error("Failed to load services");
       } finally {
@@ -47,11 +48,11 @@ const VendorServicesList = ({ userId }) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50/50 dark:bg-white/2">
-                   <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Service</TableCell>
-                   <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Category</TableCell>
-                   <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price</TableCell>
-                   <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status</TableCell>
-                   <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Actions</TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Service</TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Category</TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price</TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status</TableCell>
+                  <TableCell isHeader className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Actions</TableCell>
                 </TableRow>
               </TableHeader>
 
@@ -85,7 +86,7 @@ const VendorServicesList = ({ userId }) => {
                       </TableCell>
 
                       <TableCell className="px-5 py-3 text-center">
-                        <span className="text-sm font-black text-gray-900 dark:text-white">₹{service.price?.toLocaleString()}</span>
+                        <span className="text-sm font-black text-gray-900 dark:text-white">{formatCurrency(service.price)}</span>
                       </TableCell>
 
                       <TableCell className="px-5 py-3 text-center">

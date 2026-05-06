@@ -4,7 +4,6 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import VendorPersonalDetailsComp from "../../components/Users/VendorPersonalDetailsComp";
 import VendorServicesList from "../../components/Users/VendorServicesList";
 import UserPropertiesList from "../../components/Users/UserPropertiesList";
-import VendorMetricsCards from "../../components/Users/VendorMetricsCards";
 import VendorPackagesList from "../../components/Users/VendorPackagesList";
 import { useParams, useNavigate } from "react-router";
 import { Home, LayoutGrid, ArrowLeft, UserCheck, Package } from "lucide-react";
@@ -17,7 +16,7 @@ export default function VendorDetailsPage() {
     const tabs = [
         { id: "services", label: "Provided Services", icon: <LayoutGrid size={16} /> },
         { id: "properties", label: "Property Listings", icon: <Home size={16} /> },
-        { id: "packages", label: "Packages", icon: <Package size={16} /> },
+        // { id: "packages", label: "Packages", icon: <Package size={16} /> },
     ];
 
     return (
@@ -28,8 +27,6 @@ export default function VendorDetailsPage() {
 
 
             <div className="space-y-6 pb-8">
-                {/* 1. TOP METRICS - Compact */}
-                <VendorMetricsCards userId={id} />
 
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                     {/* 2. SIDEBAR: IDENTITY */}
@@ -49,7 +46,7 @@ export default function VendorDetailsPage() {
                                         ? "bg-brand-500 text-white shadow-lg shadow-brand-500/20"
                                         : "text-gray-400 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-white/5"
                                         }`}
-                                >
+                                  >
                                     {tab.icon}
                                     {tab.label}
                                 </button>
@@ -60,7 +57,7 @@ export default function VendorDetailsPage() {
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             {activeTab === "services" && <VendorServicesList userId={id} />}
                             {activeTab === "properties" && <UserPropertiesList userId={id} />}
-                            {activeTab === "packages" && <VendorPackagesList userId={id} />}
+                            {/* {activeTab === "packages" && <VendorPackagesList userId={id} />} */}
                         </div>
                     </main>
                 </div>

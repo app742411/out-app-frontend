@@ -10,10 +10,13 @@ import {
   XCircle,
   AlertCircle,
   Clock,
-  Tag
+  Tag,
+  Trash2
 } from "lucide-react";
-import { getAllServicesAdmin, getPendingServices, updateServiceApproval } from "../../api/authApi";
+import { getAllServicesAdmin, getPendingServices, updateServiceApproval, deleteService } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { formatCurrency, formatDuration } from "../../utils/currency";
+import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,9 +26,11 @@ const ServiceList = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [activeTab, setActiveTab] = useState("active"); // "active" or "pending"
+  const [activeTab, setActiveTab] = useState("active");
   const [rejectionModal, setRejectionModal] = useState({ show: false, serviceId: null, reason: "" });
   const [approvalLoading, setApprovalLoading] = useState(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
   const navigate = useNavigate();
 
   const baseURL = import.meta.env.VITE_API_URL;
@@ -70,6 +75,22 @@ const ServiceList = () => {
       toast.error(error?.message || "Failed to perform action");
     } finally {
       setApprovalLoading(null);
+    }
+  };
+
+  const handleDeleteService = async () => {
+    if (!serviceToDelete) return;
+    try {
+      setLoading(true);
+      await deleteService(serviceToDelete);
+      toast.success("Service deleted successfully");
+      setDeleteOpen(false);
+      setServiceToDelete(null);
+      fetchServices(currentPage);
+    } catch (error) {
+      toast.error(error.message || "Failed to delete service");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,9 +205,9 @@ const ServiceList = () => {
                     </span>
                   </div>
                   <div className="absolute bottom-4 left-4">
-                    <p className="bg-white/95 dark:bg-black/90 px-3 py-1 rounded-lg font-bold text-brand-600 dark:text-brand-400 shadow-sm">
+                    <p className="bg-white/95 dark:bg-black/90 px-3 py-1 rounded-lg font-bold text-brand-600 dark:text-brand-400 shadow-sm text-xs">
                       {service.priceType && <span className="text-[9px] uppercase tracking-wider text-gray-500 mr-1">{service.priceType}</span>}
-                      SAR {service.price}
+                      {formatCurrency(service.price)}
                     </p>
                   </div>
                 </div>
@@ -222,20 +243,31 @@ const ServiceList = () => {
                     </div>
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
                       <Clock className="w-3.5 h-3.5" />
-                      <span className="truncate">{service.duration || "0"} min</span>
+                      <span className="truncate">{formatDuration(service.duration)}</span>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
                   {activeTab === "active" ? (
-                    <div className="grid grid-cols-1 pt-2">
+                    <div className="grid grid-cols-2 gap-2 pt-2">
                       <button
                         onClick={() => navigate(`/service-details/${service._id}`)}
-                        className="flex items-center justify-center gap-2 p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn w-full"
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn w-full outline-none"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
-                        <span className="text-[10px] font-bold uppercase text-gray-500 group-hover/btn:text-brand-500 outline-none">View Details</span>
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setServiceToDelete(service._id);
+                          setDeleteOpen(true);
+                        }}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500/30 transition-all group/btn w-full outline-none"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4 text-gray-400 group-hover/btn:text-red-500 transition-colors" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-red-500">Delete</span>
                       </button>
                     </div>
                   ) : (
@@ -329,6 +361,14 @@ const ServiceList = () => {
           </div>
         </div>
       )}
+
+      <DeleteConfirmationModal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteService}
+        title="Delete Service"
+        message="Are you sure you want to delete this service? This action cannot be undone."
+      />
     </div>
   );
 };

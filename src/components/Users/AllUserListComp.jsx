@@ -9,9 +9,10 @@ import {
     TableRow,
 } from "../ui/table";
 import Button from "../ui/button/Button";
-import { getAllUsers, blockUnblockUser } from "../../api/authApi";
+import { getAllUsers, blockUnblockUser, deleteUser } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
+import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
@@ -26,6 +27,8 @@ export default function AllUserListComp() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [openDropdownId, setOpenDropdownId] = useState(null);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
     const navigate = useNavigate();
 
     const baseURL = import.meta.env.VITE_API_URL;
@@ -83,6 +86,22 @@ export default function AllUserListComp() {
         } finally {
             setLoading(false);
             setOpenDropdownId(null);
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        if (!userToDelete) return;
+        try {
+            setLoading(true);
+            await deleteUser(userToDelete);
+            toast.success("User deleted successfully");
+            setDeleteOpen(false);
+            setUserToDelete(null);
+            fetchUsers(currentPage);
+        } catch (error) {
+            toast.error(error.message || "Failed to delete user");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -196,8 +215,8 @@ export default function AllUserListComp() {
                                         <TableCell className="px-5 py-3">
                                             {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
                                         </TableCell>
-                                        <TableCell className="px-5 py-3 text-right">
-                                            <div className="flex items-center justify-end">
+                                        <TableCell className="px-5 py-3 text-center">
+                                            <div className="flex items-center justify-left">
                                                 <div className="relative">
                                                     <button
                                                         type="button"
@@ -230,6 +249,17 @@ export default function AllUserListComp() {
                                                         >
                                                             {user.isActive ? "Block" : "Unblock"}
                                                         </DropdownItem>
+
+                                                        <DropdownItem
+                                                            onItemClick={() => {
+                                                                setUserToDelete(user._id);
+                                                                setDeleteOpen(true);
+                                                                setOpenDropdownId(null);
+                                                            }}
+                                                            className="flex w-full font-normal text-left text-red-500 rounded-lg hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                                                        >
+                                                            Delete
+                                                        </DropdownItem>
                                                     </Dropdown>
                                                 </div>
                                             </div>
@@ -258,6 +288,14 @@ export default function AllUserListComp() {
                     }}
                 />
             )}
+
+            <DeleteConfirmationModal
+                open={deleteOpen}
+                onClose={() => setDeleteOpen(false)}
+                onConfirm={handleDeleteUser}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+            />
         </ComponentCard>
     );
 }

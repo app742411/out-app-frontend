@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import ComponentCard from "../common/ComponentCard";
 import { Link, useNavigate } from "react-router";
 import Button from "../ui/button/Button";
-import { getAllProperties, getPendingProperties, updatePropertyApproval } from "../../api/authApi";
+import { getAllProperties, getPendingProperties, updatePropertyApproval, deleteProperty } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
+import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import {
     Users,
     Maximize,
@@ -18,7 +19,8 @@ import {
     Search,
     CheckCircle,
     XCircle,
-    AlertCircle
+    AlertCircle,
+    Trash2
 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
@@ -34,6 +36,8 @@ export default function ServicePropertiesList() {
     const [activeTab, setActiveTab] = useState("active"); // "active" or "pending"
     const [rejectionModal, setRejectionModal] = useState({ show: false, propId: null, reason: "" });
     const [approvalLoading, setApprovalLoading] = useState(null);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [propertyToDelete, setPropertyToDelete] = useState(null);
 
     const baseURL = import.meta.env.VITE_API_URL || "";
 
@@ -56,7 +60,7 @@ export default function ServicePropertiesList() {
             } else {
                 const res = await getAllProperties({
                     page: 1,
-                    limit: 100,
+                    limit: 10,
                     search,
                     status: "",
                 });
@@ -128,6 +132,22 @@ export default function ServicePropertiesList() {
             toast.error(error?.message || "Failed to perform action");
         } finally {
             setApprovalLoading(null);
+        }
+    };
+
+    const handleDeleteProperty = async () => {
+        if (!propertyToDelete) return;
+        try {
+            setLoading(true);
+            await deleteProperty(propertyToDelete);
+            toast.success("Property deleted successfully");
+            setDeleteOpen(false);
+            setPropertyToDelete(null);
+            fetchProperties();
+        } catch (error) {
+            toast.error(error.message || "Failed to delete property");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -286,14 +306,14 @@ export default function ServicePropertiesList() {
                                                 <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
                                                 <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
                                             </button>
-                                            <button
+                                            {/* <button
                                                 onClick={() => navigate(`/property-details/${prop._id}?tab=bookings`)}
                                                 className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:border-orange-500/30 transition-all group/btn"
                                                 title="Bookings"
                                             >
                                                 <BookOpen className="w-4 h-4 text-gray-400 group-hover/btn:text-orange-500 transition-colors" />
                                                 <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-orange-500">Books</span>
-                                            </button>
+                                            </button> */}
                                             <button
                                                 onClick={() => navigate(`/property-calendar/${prop._id}`)}
                                                 className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-500/30 transition-all group/btn"
@@ -301,6 +321,17 @@ export default function ServicePropertiesList() {
                                             >
                                                 <CalendarIcon className="w-4 h-4 text-gray-400 group-hover/btn:text-blue-500 transition-colors" />
                                                 <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-blue-500">Dates</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setPropertyToDelete(prop._id);
+                                                    setDeleteOpen(true);
+                                                }}
+                                                className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500/30 transition-all group/btn"
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="w-4 h-4 text-gray-400 group-hover/btn:text-red-500 transition-colors" />
+                                                <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-red-500">Delete</span>
                                             </button>
                                         </div>
                                     ) : (
@@ -394,6 +425,14 @@ export default function ServicePropertiesList() {
                     </div>
                 </div>
             )}
+
+            <DeleteConfirmationModal
+                open={deleteOpen}
+                onClose={() => setDeleteOpen(false)}
+                onConfirm={handleDeleteProperty}
+                title="Delete Property"
+                message="Are you sure you want to delete this property? This action cannot be undone."
+            />
         </div>
     );
 }

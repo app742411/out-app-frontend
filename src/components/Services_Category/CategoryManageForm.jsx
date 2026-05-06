@@ -98,7 +98,7 @@ const CategoryManageForm = ({ onCategoryAdded, editData, onCancel }) => {
             name="title"
             value={name}
             placeholder="Enter category name"
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value.toUpperCase())}
           />
         </div>
 

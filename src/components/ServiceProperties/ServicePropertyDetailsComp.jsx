@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import ComponentCard from "../common/ComponentCard";
-import { getPropertyDetailsForAdmin } from "../../api/authApi";
+import { getPropertyDetailsForAdmin, updatePropertyApproval } from "../../api/authApi";
+import apiClient from "../../api/apiClient";
+import { formatCurrency } from "../../utils/currency";
 import Button from "../ui/button/Button";
 import toast from "react-hot-toast";
 import UserPropertiesList from "../Users/UserPropertiesList";
@@ -18,31 +20,76 @@ export default function ServicePropertyDetailsComp() {
     const queryParams = new URLSearchParams(location.search);
     const activeTab = queryParams.get("tab") || "details";
 
+    const [approvalLoading, setApprovalLoading] = useState(false);
+    const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState("");
+
     const baseURL = import.meta.env.VITE_API_URL || "";
     const baseImgUrl = baseURL.replace(/\/$/, "");
 
-    useEffect(() => {
-        const fetchDetails = async () => {
-            try {
-                setLoading(true);
-                const res = await getPropertyDetailsForAdmin(id);
-                if (res.success) {
-                    setProperty(res.data);
-                } else {
-                    toast.error(res.message || "Failed to fetch property details");
-                }
-            } catch (error) {
-                toast.error(error.message || "An error occurred");
-                console.error(error);
-            } finally {
-                setLoading(false);
+    const fetchDetails = async (isBackground = false) => {
+        try {
+            if (!isBackground) setLoading(true);
+            const res = await getPropertyDetailsForAdmin(id);
+            if (res.success) {
+                setProperty(res.data);
+            } else {
+                toast.error(res.message || "Failed to fetch property details");
             }
-        };
+        } catch (error) {
+            toast.error(error.message || "An error occurred");
+            console.error(error);
+        } finally {
+            if (!isBackground) setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (id) {
             fetchDetails();
         }
     }, [id]);
+
+    const handleApproval = async (action, reason = "") => {
+        try {
+            setApprovalLoading(true);
+            const apiAction = action === "approve" ? "approve" : "reject";
+            const res = await updatePropertyApproval(id, apiAction, reason);
+            if (res.success) {
+                toast.success(`Property ${action === "approve" ? "approved" : "rejected"} successfully`);
+                setRejectionModalOpen(false);
+                setRejectionReason("");
+                fetchDetails(true);
+            } else {
+                toast.error(res.message || "Action failed");
+            }
+        } catch (error) {
+            toast.error(error?.message || "Failed to update property status");
+        } finally {
+            setApprovalLoading(false);
+        }
+    };
+
+    const handleDownload = async (e) => {
+        e.preventDefault();
+        try {
+            const fileUrl = `/uploads/propertyDocument/${property.document}`;
+            const res = await apiClient.get(fileUrl, { responseType: 'blob' });
+            const blob = res.data;
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = property.document || "property_document.pdf";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error("Failed to download file:", error);
+            // Fallback
+            window.open(`${baseImgUrl}/uploads/propertyDocument/${property.document}`, "_blank");
+        }
+    };
 
     if (loading) {
         return <div className="p-6 text-center text-gray-500">Loading property details...</div>;
@@ -76,9 +123,9 @@ export default function ServicePropertyDetailsComp() {
                 {/* Left Column: Property Info summary */}
                 <div className="lg:col-span-2 space-y-6">
                     <ComponentCard title="Property Details">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Status</p>
                                 <span className={`px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] inline-block shadow-sm ${property.status === 'publish' || property.status === 'completed'
                                     ? 'bg-green-500 text-white shadow-green-500/20'
                                     : 'bg-orange-500 text-white shadow-orange-500/20'
@@ -86,10 +133,63 @@ export default function ServicePropertyDetailsComp() {
                                     {property.status || "Draft"}
                                 </span>
                             </div>
+
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Approval Status</p>
+                                <span className={`px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] inline-block shadow-sm ${property.approvalStatus === 'approved'
+                                    ? 'bg-blue-500 text-white shadow-blue-500/20'
+                                    : property.approvalStatus === 'rejected'
+                                        ? 'bg-red-500 text-white shadow-red-500/20'
+                                        : 'bg-yellow-500 text-yellow-950 dark:text-yellow-400 shadow-yellow-500/10'
+                                    }`}>
+                                    {property.approvalStatus || "Pending"}
+                                </span>
+                            </div>
+
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Category</p>
+                                <p className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-800 inline-block shadow-sm">
+                                    {property.category?.category || "N/A"}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-xs font-black text-brand-600 dark:text-brand-400 bg-brand-50/50 dark:bg-brand-500/10 px-3 py-1.5 rounded-xl inline-block shadow-sm">
+                                    {formatCurrency(property.price || 0)}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Approval Action Panel */}
+                        <div className="mt-6 p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider">Administrative Status Actions</p>
+                                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest mt-0.5">Approve or reject this property listing for active publication</p>
+                            </div>
+                            <div className="flex gap-2.5">
+                                <button
+                                    disabled={approvalLoading}
+                                    onClick={() => handleApproval("approve")}
+                                    className="px-5 py-2.5 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-[10px] font-black rounded-2xl shadow-lg shadow-green-500/20 uppercase tracking-[0.12em] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer font-bold"
+                                >
+                                    {approvalLoading ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    )}
+                                    Approve
+                                </button>
+                                <button
+                                    disabled={approvalLoading}
+                                    onClick={() => setRejectionModalOpen(true)}
+                                    className="px-5 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-[10px] font-black rounded-2xl shadow-lg shadow-red-500/20 uppercase tracking-[0.12em] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer font-bold"
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    Reject
+                                </button>
+                            </div>
                         </div>
 
                         {property.document && (
-                            <div className="mt-6 p-5 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-[2rem] border-2 border-indigo-100/50 dark:border-indigo-900/20 flex items-center justify-between group transition-all hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                            <div className="mt-6 p-5 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border-2 border-indigo-100/50 dark:border-indigo-900/20 flex items-center justify-between group transition-all hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-110 transition-transform">
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
@@ -99,20 +199,30 @@ export default function ServicePropertyDetailsComp() {
                                         <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Official Verification PDF Attached</p>
                                     </div>
                                 </div>
-                                <a
-                                    href={`${baseImgUrl}/uploads/propertyDocument/${property.document}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-6 py-3 bg-white dark:bg-gray-800 shadow-md hover:shadow-xl rounded-2xl text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 dark:border-indigo-900/40 uppercase tracking-[0.15em] active:scale-95"
-                                >
-                                    View PDF
-                                </a>
+                                <div className="flex items-center gap-2.5">
+                                    <a
+                                        href={`${baseImgUrl}/uploads/propertyDocument/${property.document}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-5 py-3 bg-white dark:bg-gray-800 shadow-md hover:shadow-xl rounded-2xl text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 dark:border-indigo-900/40 uppercase tracking-[0.15em] active:scale-95 flex items-center gap-2"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        View PDF
+                                    </a>
+                                    <button
+                                        onClick={handleDownload}
+                                        className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-xl text-white rounded-2xl text-[10px] font-black transition-all uppercase tracking-[0.15em] active:scale-95 flex items-center gap-2 cursor-pointer border-0"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        Download
+                                    </button>
+                                </div>
                             </div>
                         )}
 
                         <div className="mt-8">
                             <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Description</h4>
-                            <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2rem] border border-gray-50 dark:border-gray-800 leading-relaxed text-gray-700 dark:text-gray-300 shadow-inner">
+                            <div className="bg-white dark:bg-gray-800/40 p-6 rounded-2xl border border-gray-50 dark:border-gray-800 leading-relaxed text-gray-700 dark:text-gray-300 shadow-inner">
                                 {property.description || "No description provided."}
                             </div>
                         </div>
@@ -201,6 +311,22 @@ export default function ServicePropertyDetailsComp() {
                                             </div>
                                             <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{amn.name}</span>
                                         </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {property.propertyFeatures && property.propertyFeatures.length > 0 && (
+                            <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
+                                <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Property Features</h4>
+                                <div className="flex flex-wrap gap-2.5">
+                                    {property.propertyFeatures.map((feat) => (
+                                        <span
+                                            key={feat._id}
+                                            className="text-[9px] font-black uppercase tracking-wider px-4 py-2 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-2xl border border-indigo-100/30 dark:border-indigo-900/20 shadow-sm"
+                                        >
+                                            {feat.feature}
+                                        </span>
                                     ))}
                                 </div>
                             </div>
@@ -419,6 +545,46 @@ export default function ServicePropertyDetailsComp() {
             <div id="reviews-section" className="mt-8">
                 <ReviewListComp type="property" id={id} />
             </div>
+
+            {/* Rejection Reason Modal */}
+            {rejectionModalOpen && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 border border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            </div>
+                            <div>
+                                <h4 className="text-xl font-bold dark:text-white">Reject Property</h4>
+                                <p className="text-xs text-gray-500">Please provide a reason for rejection.</p>
+                            </div>
+                        </div>
+
+                        <textarea
+                            className="w-full h-32 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-white/[0.03] p-4 text-sm outline-none focus:ring-2 focus:ring-brand-500/20 dark:text-gray-100"
+                            placeholder="Example: Images are not clear..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                        />
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setRejectionModalOpen(false)}
+                                className="flex-1 py-3 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={!rejectionReason.trim() || approvalLoading}
+                                onClick={() => handleApproval("reject", rejectionReason)}
+                                className="flex-1 py-3 rounded-2xl font-bold bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                                {approvalLoading ? "Rejecting..." : "Reject Property"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

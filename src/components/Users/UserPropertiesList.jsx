@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router";
 import Button from "../ui/button/Button";
 import { getUserProperties } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { formatCurrency } from "../../utils/currency";
 
 export default function UserPropertiesList({ userId }) {
     const [properties, setProperties] = useState([]);
@@ -26,7 +27,7 @@ export default function UserPropertiesList({ userId }) {
             setLoading(true);
             const res = await getUserProperties(userId);
             if (res && res.data) {
-                const userData = Array.isArray(res.data) 
+                const userData = Array.isArray(res.data)
                     ? res.data.find(u => u._id === userId) || res.data[0]
                     : res.data;
                 setProperties(userData?.properties || []);
@@ -43,12 +44,12 @@ export default function UserPropertiesList({ userId }) {
     }, [userId]);
 
     return (
-        <ComponentCard title="Accommodation Portfolio">
+        <ComponentCard title="Service provider properties">
             <div className="overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="mt-2 text-xs text-gray-500">Syncing portfolio...</p>
+                        <p className="mt-2 text-xs text-gray-500">Syncing properties..</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
@@ -89,7 +90,7 @@ export default function UserPropertiesList({ userId }) {
                                             </TableCell>
                                             <TableCell className="px-5 py-3">
                                                 <div className="text-sm font-black text-gray-900 dark:text-white">
-                                                    ₹{prop.price?.toLocaleString() || 0}
+                                                    {formatCurrency(prop.price || 0)}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-5 py-3">

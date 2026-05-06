@@ -9,9 +9,10 @@ import {
     TableRow,
 } from "../ui/table";
 import Button from "../ui/button/Button";
-import { getAllServiceUsers, blockUnblockUser } from "../../api/authApi";
+import { getAllServiceUsers, blockUnblockUser, deleteServiceUser } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
+import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
@@ -27,6 +28,8 @@ export default function VendorListComp() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [openDropdownId, setOpenDropdownId] = useState(null);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [vendorToDelete, setVendorToDelete] = useState(null);
     const navigate = useNavigate();
 
     const baseURL = import.meta.env.VITE_API_URL;
@@ -84,6 +87,22 @@ export default function VendorListComp() {
         } finally {
             setLoading(false);
             setOpenDropdownId(null);
+        }
+    };
+
+    const handleDeleteVendor = async () => {
+        if (!vendorToDelete) return;
+        try {
+            setLoading(true);
+            await deleteServiceUser(vendorToDelete);
+            toast.success("Service Provider deleted successfully");
+            setDeleteOpen(false);
+            setVendorToDelete(null);
+            fetchVendors(currentPage);
+        } catch (error) {
+            toast.error(error.message || "Failed to delete service provider");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -246,8 +265,20 @@ export default function VendorListComp() {
                                                                 onItemClick={() =>
                                                                     handleBlockUnblock(vendor._id, vendor.isActive)
                                                                 }
+                                                                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                                                             >
                                                                 {vendor.isActive ? "Block" : "Unblock"}
+                                                            </DropdownItem>
+
+                                                            <DropdownItem
+                                                                onItemClick={() => {
+                                                                    setVendorToDelete(vendor._id);
+                                                                    setDeleteOpen(true);
+                                                                    setOpenDropdownId(null);
+                                                                }}
+                                                                className="flex w-full font-normal text-left text-red-500 rounded-lg hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                                                            >
+                                                                Delete
                                                             </DropdownItem>
                                                         </Dropdown>
                                                     </div>
@@ -278,6 +309,14 @@ export default function VendorListComp() {
                     }}
                 />
             )}
+
+            <DeleteConfirmationModal
+                open={deleteOpen}
+                onClose={() => setDeleteOpen(false)}
+                onConfirm={handleDeleteVendor}
+                title="Delete Service Provider"
+                message="Are you sure you want to delete this service provider? This action cannot be undone."
+            />
         </ComponentCard>
     );
 }

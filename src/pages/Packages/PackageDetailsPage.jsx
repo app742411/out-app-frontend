@@ -17,6 +17,7 @@ import {
     Calendar,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { formatCurrency } from "../../utils/currency";
 
 export default function PackageDetailsPage() {
     const { id } = useParams();
@@ -109,11 +110,11 @@ export default function PackageDetailsPage() {
                         <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-50 dark:border-gray-800">
                             <div className="text-center p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03]">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Bundle Price</p>
-                                <p className="text-2xl font-black text-brand-500">₹{pkg.price?.toLocaleString()}</p>
+                                <p className="text-2xl font-black text-brand-500">{formatCurrency(pkg.price)}</p>
                             </div>
                             <div className="text-center p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03]">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Services Cost</p>
-                                <p className="text-2xl font-black text-orange-500">₹{totalServiceCost.toLocaleString()}</p>
+                                <p className="text-2xl font-black text-orange-500">{formatCurrency(totalServiceCost)}</p>
                             </div>
                             <div className="text-center p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03]">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Created</p>
@@ -164,7 +165,7 @@ export default function PackageDetailsPage() {
                                             <div className="flex items-center justify-between gap-4">
                                                 <h4 className="text-sm font-bold text-gray-900 dark:text-white capitalize">{service.name}</h4>
                                                 <span className="text-sm font-black text-orange-600 dark:text-orange-400 whitespace-nowrap">
-                                                    ₹{service.price?.toLocaleString()}
+                                                    {formatCurrency(service.price)}
                                                 </span>
                                             </div>
                                             <p className="text-xs text-gray-400 mt-1 leading-relaxed line-clamp-2">
@@ -243,17 +244,17 @@ export default function PackageDetailsPage() {
                         <div className="space-y-3">
                             <div className="flex justify-between items-center text-xs">
                                 <span className="text-gray-400">Property Stay</span>
-                                <span className="font-bold">₹{(pkg.price - totalServiceCost).toLocaleString()}</span>
+                                <span className="font-bold">{formatCurrency(pkg.price - totalServiceCost)}</span>
                             </div>
                             {pkg.services?.map((s) => (
                                 <div key={s._id} className="flex justify-between items-center text-xs">
                                     <span className="text-gray-400 capitalize">{s.name}</span>
-                                    <span className="font-bold">₹{s.price?.toLocaleString()}</span>
+                                    <span className="font-bold">{formatCurrency(s.price)}</span>
                                 </div>
                             ))}
                             <div className="border-t border-white/10 pt-3 mt-3 flex justify-between items-center">
                                 <span className="text-xs font-bold text-gray-300">Total Bundle</span>
-                                <span className="text-lg font-black text-brand-400">₹{pkg.price?.toLocaleString()}</span>
+                                <span className="text-lg font-black text-brand-400">{formatCurrency(pkg.price)}</span>
                             </div>
                         </div>
                     </div>

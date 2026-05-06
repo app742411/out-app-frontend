@@ -9,8 +9,9 @@ import {
     TableRow,
 } from "../ui/table";
 import { Eye, Package, Home, Wrench } from "lucide-react";
-import { getPackagesByUserAdmin } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { formatCurrency } from "../../utils/currency";
+import { getPackagesByUserAdmin } from "../../api/authApi";
 
 export default function VendorPackagesList({ userId }) {
     const [packages, setPackages] = useState([]);
@@ -90,7 +91,7 @@ export default function VendorPackagesList({ userId }) {
 
                                             {/* Price */}
                                             <TableCell className="px-5 py-3 text-center">
-                                                <span className="text-sm font-black text-gray-900 dark:text-white">₹{pkg.price?.toLocaleString()}</span>
+                                                <span className="text-sm font-black text-gray-900 dark:text-white">{formatCurrency(pkg.price)}</span>
                                             </TableCell>
 
                                             {/* Status */}

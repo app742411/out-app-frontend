@@ -4,6 +4,8 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { useUser } from "../../context/UserContext.jsx";
+import { logout } from "../../api/authApi";
+import { LogOut } from "lucide-react";
 
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -18,12 +20,18 @@ export default function UserDropdown() {
 
 
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsOpen(false); // Close dropdown on logout
-    setUser(null); // Clear context
-    navigate("/signin");
-    toast.success("Logged out successfully!");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout API failed:", error);
+    } finally {
+      localStorage.removeItem("token");
+      setIsOpen(false); // Close dropdown on logout
+      setUser(null); // Clear context
+      navigate("/signin");
+      toast.success("Logged out successfully!");
+    }
   };
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -127,9 +135,10 @@ export default function UserDropdown() {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-red-500 rounded-lg group text-theme-sm hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-500/10"
         >
-          Sign out
+          <LogOut className="size-4" />
+          Log Out
         </button>
       </Dropdown>
     </div>

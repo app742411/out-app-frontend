@@ -7,7 +7,8 @@ import {
     TableHeader,
     TableRow,
 } from "../ui/table";
-import { getAllBookings, getCompletedBookings } from "../../api/authApi";
+import { getAllBookings, getCompletedBookings, deletePendingBooking } from "../../api/authApi";
+import { MoreVertical, Eye, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
@@ -24,7 +25,30 @@ export default function BookingListComp({ defaultStatus = "all" }) {
     const [paymentStatus, setPaymentStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [activeMenuId, setActiveMenuId] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedBookingId, setSelectedBookingId] = useState(null);
     const navigate = useNavigate();
+
+    const handleDeletePendingBooking = (bookingId) => {
+        setSelectedBookingId(bookingId);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeletePendingBooking = async (bookingId) => {
+        try {
+            setLoading(true);
+            await deletePendingBooking(bookingId);
+            toast.success("Pending booking deleted successfully");
+            fetchBookings(currentPage);
+        } catch (error) {
+            console.error("Delete Pending Booking Error:", error);
+            toast.error(error.message || "Failed to delete pending booking");
+        } finally {
+            setLoading(false);
+            setSelectedBookingId(null);
+        }
+    };
 
     const fetchBookings = async (page = 1) => {
         try {
@@ -232,12 +256,49 @@ export default function BookingListComp({ defaultStatus = "all" }) {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-5 py-4 text-right">
-                                                <button
-                                                    onClick={() => navigate(`/booking-details/${booking._id}`)}
-                                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
-                                                >
-                                                    View
-                                                </button>
+                                                 <div className="relative inline-block text-left">
+                                                     <button
+                                                         onClick={(e) => {
+                                                             e.stopPropagation();
+                                                             setActiveMenuId(activeMenuId === booking._id ? null : booking._id);
+                                                         }}
+                                                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-500 dark:text-gray-400"
+                                                     >
+                                                         <MoreVertical size={16} />
+                                                     </button>
+                                                     {activeMenuId === booking._id && (
+                                                         <>
+                                                             <div 
+                                                                 className="fixed inset-0 z-40" 
+                                                                 onClick={() => setActiveMenuId(null)}
+                                                             />
+                                                             <div className="absolute right-0 mt-2 w-36 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-1.5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
+                                                                 <button
+                                                                     onClick={() => {
+                                                                         setActiveMenuId(null);
+                                                                         navigate(`/booking-details/${booking._id}`);
+                                                                     }}
+                                                                     className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-brand-500 transition-colors"
+                                                                 >
+                                                                     <Eye size={14} className="text-gray-400" />
+                                                                     View Details
+                                                                 </button>
+                                                                 {booking.bookingStatus?.toLowerCase() === "pending" && (
+                                                                     <button
+                                                                         onClick={() => {
+                                                                             setActiveMenuId(null);
+                                                                             handleDeletePendingBooking(booking._id);
+                                                                         }}
+                                                                         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                                                     >
+                                                                         <Trash2 size={14} className="text-red-500" />
+                                                                         Delete
+                                                                     </button>
+                                                                 )}
+                                                             </div>
+                                                         </>
+                                                     )}
+                                                 </div>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -263,6 +324,42 @@ export default function BookingListComp({ defaultStatus = "all" }) {
                         fetchBookings(newPage);
                     }}
                 />
+            )}
+
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/20 text-red-600 mb-4">
+                            <Trash2 size={28} />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Pending Booking</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                            Are you sure you want to delete this pending booking now? If not deleted, it will automatically expire after 24 hours from the booking time.
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    setSelectedBookingId(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setIsDeleteModalOpen(false);
+                                    if (selectedBookingId) {
+                                        await confirmDeletePendingBooking(selectedBookingId);
+                                    }
+                                }}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-md shadow-red-500/10"
+                            >
+                                Delete Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </ComponentCard>
     );

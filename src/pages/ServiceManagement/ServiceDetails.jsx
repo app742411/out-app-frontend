@@ -8,6 +8,8 @@ import { ArrowLeft, MapPin, Calendar, Clock, Tag, User, Mail, Smartphone } from 
 import { getSingleServiceAdmin } from "../../api/authApi";
 import toast from "react-hot-toast";
 import ReviewListComp from "../../components/Reviews/ReviewListComp";
+import apiClient from "../../api/apiClient";
+import { formatCurrency, formatDuration } from "../../utils/currency";
 
 const ServiceDetails = () => {
   const { id } = useParams();
@@ -31,6 +33,26 @@ const ServiceDetails = () => {
     };
     fetchService();
   }, [id, navigate]);
+
+  const handleDownload = async (e) => {
+    e.preventDefault();
+    try {
+      const fileUrl = `/uploads/serviceDocument/${service.document}`;
+      const res = await apiClient.get(fileUrl, { responseType: "blob" });
+      const blob = res.data;
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = service.document || "service_document.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Failed to download file:", error);
+      window.open(`${baseURL}/uploads/serviceDocument/${service.document}`, "_blank");
+    }
+  };
 
   if (loading) {
     return (
@@ -95,14 +117,24 @@ const ServiceDetails = () => {
                         <p className="text-[9px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-[0.2em] mt-0.5">Verification PDF Attached</p>
                       </div>
                     </div>
-                    <a
-                      href={`${baseURL}/uploads/serviceDocument/${service.document}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-6 py-3 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md rounded-2xl text-[10px] font-black text-brand-600 hover:bg-brand-500 hover:text-white transition-all border border-brand-100 dark:border-brand-900/40 uppercase tracking-widest active:scale-95"
-                    >
-                      View Document
-                    </a>
+                    <div className="flex items-center gap-2.5">
+                      <a
+                        href={`${baseURL}/uploads/serviceDocument/${service.document}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-3 bg-white dark:bg-gray-800 shadow-md hover:shadow-xl rounded-2xl text-[10px] font-black text-brand-600 hover:bg-brand-500 hover:text-white transition-all border border-brand-100 dark:border-brand-900/40 uppercase tracking-[0.15em] active:scale-95 flex items-center gap-2 cursor-pointer font-bold"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        View Document
+                      </a>
+                      <button
+                        onClick={handleDownload}
+                        className="px-5 py-3 bg-brand-500 hover:bg-brand-600 shadow-md hover:shadow-xl text-white rounded-2xl text-[10px] font-black transition-all uppercase tracking-[0.15em] active:scale-95 flex items-center gap-2 cursor-pointer border-0 font-bold"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Download
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -139,13 +171,13 @@ const ServiceDetails = () => {
                     <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Pricing</p>
                     <span className="text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded font-bold uppercase">{service.priceType || 'FLAT'}</span>
                   </div>
-                  <p className="text-2xl font-bold text-brand-500">₹{service.price}</p>
+                  <p className="text-2xl font-bold text-brand-500">{formatCurrency(service.price)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Session Duration</p>
                   <p className="text-sm font-bold dark:text-white flex items-center gap-1.5 mt-0.5">
                     <Clock size={14} className="text-brand-500" />
-                    {service.duration || 0} Minutes
+                    {formatDuration(service.duration)}
                   </p>
                 </div>
                 <div>
@@ -157,7 +189,7 @@ const ServiceDetails = () => {
               </div>
             </div>
           </ComponentCard>
-          
+
           <div className="mt-8">
             <ReviewListComp type="service" id={id} />
           </div>
@@ -191,7 +223,7 @@ const ServiceDetails = () => {
             </div>
 
             <div className="mt-8">
-              <Button variant="outline" className="w-full" size="sm" onClick={() => navigate(`/user-details/${service.user?._id}`)}>
+              <Button variant="outline" className="w-full" size="sm" onClick={() => navigate(`/vendor-details/${service.user?._id}`)}>
                 View Vendor Profile
               </Button>
             </div>

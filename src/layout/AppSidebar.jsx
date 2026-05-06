@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { LogOut } from "lucide-react";
+import toast from "react-hot-toast";
+import { useUser } from "../context/UserContext";
+import { logout } from "../api/authApi";
 
 // Assume these icons are imported from an icon library
 import {
@@ -57,8 +61,8 @@ const navItems = [
       { name: "All Bookings", path: "/bookings", pro: false },
       { name: "Upcoming Bookings", path: "/bookings/upcoming", pro: false },
       { name: "Completed Bookings", path: "/bookings/completed", pro: false },
-      { name: "Cancelled Bookings", path: "/bookings/cancelled", pro: false },
-      { name: "Refund Requests", path: "/bookings/refunds", pro: false },
+      // { name: "Cancelled Bookings", path: "/bookings/cancelled", pro: false },
+      { name: "Cancelled & Refund Requests", path: "/bookings/refunds", pro: false },
     ],
   },
   {
@@ -115,6 +119,8 @@ const othersItems = [
 const AppSidebar = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { setUser } = useUser();
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const [subMenuHeight, setSubMenuHeight] = useState({});
@@ -160,6 +166,19 @@ const AppSidebar = () => {
       [key]: el ? el.scrollHeight : 0,
     }));
   }, [openSubmenu]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout API failed:", error);
+    } finally {
+      localStorage.removeItem("token");
+      setUser(null);
+      navigate("/signin");
+      toast.success("Logged out successfully!");
+    }
+  };
 
   const handleSubmenuToggle = (index, menuType) => {
     setOpenSubmenu((prevOpenSubmenu) => {
@@ -335,7 +354,7 @@ const AppSidebar = () => {
           )}
         </Link>
       </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+      <div className="flex flex-col flex-1 overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
@@ -358,6 +377,22 @@ const AppSidebar = () => {
             </div>
           </div>
         </nav>
+
+        {/* Logout Button */}
+        <div className="mt-auto pb-10">
+          <button
+            onClick={handleLogout}
+            className={`menu-item group text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 ${!isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"
+              }`}
+          >
+            <span className="menu-item-icon-size text-red-500">
+              <LogOut className="size-6" />
+            </span>
+            {(isExpanded || isHovered || isMobileOpen) && (
+              <span className="menu-item-text font-medium">Log Out</span>
+            )}
+          </button>
+        </div>
       </div>
     </aside>
   );
