@@ -32,7 +32,11 @@ export default function LandingHeader({ isDarkMode }) {
                         <a href="#why-us" className="text-gray-600 dark:text-gray-300 hover:text-brand-500 dark:hover:text-brand-400 font-medium transition-colors">Why Us</a>
                     </nav>
                     <div className="flex items-center space-x-3 md:space-x-5">
-                        <Link to="/signin" className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-brand-500 dark:hover:text-brand-400 font-medium transition-colors">Member Sign In</Link>
+                        {localStorage.getItem("token") ? (
+                            <Link to="/dashboard" className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-brand-500 dark:hover:text-brand-400 font-medium transition-colors">Dashboard</Link>
+                        ) : (
+                            <Link to="/signin" className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-brand-500 dark:hover:text-brand-400 font-medium transition-colors">Member Sign In</Link>
+                        )}
                         <Link to="/contact-us" className="bg-brand-500 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-medium hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 hover:-translate-y-0.5 whitespace-nowrap">
                             Contact Us
                         </Link>

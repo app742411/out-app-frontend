@@ -143,10 +143,13 @@ export default function App() {
             <Route path="/forget-password" element={<ForgetPassword />} />
             <Route path="/verify-OTP" element={<OTPVerification />} />
             <Route path="/update-password" element={<UpdatePassword />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact-us" element={<ContactUsPage />} />
           </Route>
+
+          {/* Open Routes (accessible whether logged in or out) */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
