@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Clock,
   Tag,
-  Trash2
+  Trash2,
+  Star
 } from "lucide-react";
 import { getAllServicesAdmin, getPendingServices, updateServiceApproval, deleteService } from "../../api/authApi";
 import toast from "react-hot-toast";
@@ -126,7 +127,7 @@ const ServiceList = () => {
   const getImageUrl = (service) => {
     if (service.media && service.media.images && service.media.images.length > 0) {
       const cleanBaseURL = baseURL ? baseURL.replace(/\/$/, "") : "";
-      return `${cleanBaseURL}/uploads/serviceIcon/${service.media.images[0]}`;
+      return `${cleanBaseURL}/uploads/serviceMedia/${service.media.images[0]}`;
     }
     return "/images/home/properties2.webp";
   };
@@ -219,18 +220,30 @@ const ServiceList = () => {
                       {service.name || "Unnamed Service"}
                     </h3>
                     <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                      <MapPin className="w-3 h-3" /> {service.location?.city || "Unknown City"}, {service.location?.state || ""}
+                      <MapPin className="w-3 h-3" /> {service.location?.city || "Unknown City"}, {service.location?.state || ""}, {service.location?.country || ""}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3 py-3 border-y border-gray-50 dark:border-gray-800/50">
-                    <div className="w-8 h-8 rounded-full bg-brand-50/50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs uppercase">
-                      {service.user?.firstName?.charAt(0) || "U"}
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-brand-50/50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs uppercase">
+                      {service.provider?.profile || service.user?.profile ? (
+                        <img
+                          src={`${baseURL}/uploads/users/${service.provider?.profile || service.user?.profile}`}
+                          alt="Vendor"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerText = (service.provider?.name?.charAt(0) || service.user?.firstName?.charAt(0) || "U").toUpperCase();
+                          }}
+                        />
+                      ) : (
+                        service.provider?.name?.charAt(0) || service.user?.firstName?.charAt(0) || "U"
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase text-gray-400 font-bold tracking-tighter">Vendor</p>
+                      <p className="text-[10px] uppercase text-gray-400 font-bold tracking-tighter">Service provider</p>
                       <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate capitalize">
-                        {service.user?.firstName} {service.user?.lastName}
+                        {service.provider?.name || (service.user ? `${service.user.firstName || ""} ${service.user.lastName || ""}` : "Unknown")}
                       </p>
                     </div>
                   </div>
@@ -245,6 +258,16 @@ const ServiceList = () => {
                       <Clock className="w-3.5 h-3.5" />
                       <span className="truncate">{formatDuration(service.duration)}</span>
                     </div>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
+                      <Star className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" />
+                      <span className="font-medium">{Number(service.avgRating || 0).toFixed(1)} ({service.totalReviews || 0})</span>
+                    </div>
+                    {service.workingHours && (
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
+                        <Clock className="w-3.5 h-3.5 opacity-60" />
+                        <span className="truncate">{service.workingHours.start} - {service.workingHours.end}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Buttons */}

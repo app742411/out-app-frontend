@@ -37,7 +37,7 @@ const ServiceDetails = () => {
   const handleDownload = async (e) => {
     e.preventDefault();
     try {
-      const fileUrl = `/uploads/serviceDocument/${service.document}`;
+      const fileUrl = `/uploads/documents/${service.document}`;
       const res = await apiClient.get(fileUrl, { responseType: "blob" });
       const blob = res.data;
       const blobUrl = window.URL.createObjectURL(blob);
@@ -50,7 +50,7 @@ const ServiceDetails = () => {
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error("Failed to download file:", error);
-      window.open(`${baseURL}/uploads/serviceDocument/${service.document}`, "_blank");
+      window.open(`${baseURL}/uploads/documents/${service.document}`, "_blank");
     }
   };
 
@@ -79,7 +79,7 @@ const ServiceDetails = () => {
                   {service.media.images.map((img, idx) => (
                     <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
                       <img
-                        src={`${baseURL}/uploads/serviceIcon/${img}`}
+                        src={`${baseURL}/uploads/serviceMedia/${img}`}
                         alt={`Gallery ${idx}`}
                         className="w-full h-full object-cover"
                       />
@@ -119,7 +119,7 @@ const ServiceDetails = () => {
                     </div>
                     <div className="flex items-center gap-2.5">
                       <a
-                        href={`${baseURL}/uploads/serviceDocument/${service.document}`}
+                        href={`${baseURL}/uploads/documents/${service.document}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-5 py-3 bg-white dark:bg-gray-800 shadow-md hover:shadow-xl rounded-2xl text-[10px] font-black text-brand-600 hover:bg-brand-500 hover:text-white transition-all border border-brand-100 dark:border-brand-900/40 uppercase tracking-[0.15em] active:scale-95 flex items-center gap-2 cursor-pointer font-bold"
