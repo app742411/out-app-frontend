@@ -256,49 +256,49 @@ export default function BookingListComp({ defaultStatus = "all" }) {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-5 py-4 text-right">
-                                                 <div className="relative inline-block text-left">
-                                                     <button
-                                                         onClick={(e) => {
-                                                             e.stopPropagation();
-                                                             setActiveMenuId(activeMenuId === booking._id ? null : booking._id);
-                                                         }}
-                                                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-500 dark:text-gray-400"
-                                                     >
-                                                         <MoreVertical size={16} />
-                                                     </button>
-                                                     {activeMenuId === booking._id && (
-                                                         <>
-                                                             <div 
-                                                                 className="fixed inset-0 z-40" 
-                                                                 onClick={() => setActiveMenuId(null)}
-                                                             />
-                                                             <div className="absolute right-0 mt-2 w-36 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-1.5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
-                                                                 <button
-                                                                     onClick={() => {
-                                                                         setActiveMenuId(null);
-                                                                         navigate(`/booking-details/${booking._id}`);
-                                                                     }}
-                                                                     className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-brand-500 transition-colors"
-                                                                 >
-                                                                     <Eye size={14} className="text-gray-400" />
-                                                                     View Details
-                                                                 </button>
-                                                                 {booking.bookingStatus?.toLowerCase() === "pending" && (
-                                                                     <button
-                                                                         onClick={() => {
-                                                                             setActiveMenuId(null);
-                                                                             handleDeletePendingBooking(booking._id);
-                                                                         }}
-                                                                         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                                                     >
-                                                                         <Trash2 size={14} className="text-red-500" />
-                                                                         Delete
-                                                                     </button>
-                                                                 )}
-                                                             </div>
-                                                         </>
-                                                     )}
-                                                 </div>
+                                                <div className="relative inline-block text-left">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveMenuId(activeMenuId === booking._id ? null : booking._id);
+                                                        }}
+                                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-500 dark:text-gray-400"
+                                                    >
+                                                        <MoreVertical size={16} />
+                                                    </button>
+                                                    {activeMenuId === booking._id && (
+                                                        <>
+                                                            <div
+                                                                className="fixed inset-0 z-40"
+                                                                onClick={() => setActiveMenuId(null)}
+                                                            />
+                                                            <div className="absolute right-0 mt-2 w-36 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-1.5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setActiveMenuId(null);
+                                                                        navigate(`/booking-details/${booking._id}`);
+                                                                    }}
+                                                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-brand-500 transition-colors"
+                                                                >
+                                                                    <Eye size={14} className="text-gray-400" />
+                                                                    View Details
+                                                                </button>
+                                                                {booking.bookingStatus?.toLowerCase() === "pending" && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setActiveMenuId(null);
+                                                                            handleDeletePendingBooking(booking._id);
+                                                                        }}
+                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                                                    >
+                                                                        <Trash2 size={14} className="text-red-500" />
+                                                                        Delete
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))

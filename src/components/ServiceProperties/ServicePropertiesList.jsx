@@ -25,6 +25,19 @@ import {
 
 const ITEMS_PER_PAGE = 10;
 
+const getApprovalStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+        case "approved":
+            return "bg-emerald-500 text-white";
+        case "rejected":
+            return "bg-red-500 text-white";
+        case "pending":
+            return "bg-amber-500 text-white";
+        default:
+            return "bg-gray-500 text-white";
+    }
+};
+
 export default function ServicePropertiesList() {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -237,6 +250,11 @@ export default function ServicePropertiesList() {
                                         onLoad={(e) => e.currentTarget.classList.remove('opacity-0')}
                                         className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-0 bg-gray-100 dark:bg-gray-800"
                                     />
+                                    <div className="absolute top-4 left-4">
+                                        <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${getApprovalStatusColor(prop.approvalStatus)}`}>
+                                            {prop.approvalStatus || "pending"}
+                                        </span>
+                                    </div>
                                     <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                         <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${prop.status === 'publish' || prop.status === 'completed'
                                             ? 'bg-green-500 text-white'
@@ -335,7 +353,7 @@ export default function ServicePropertiesList() {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-3 gap-2 pt-2">
+                                        <div className="grid grid-cols-4 gap-2 pt-2">
                                             <button
                                                 onClick={() => navigate(`/property-details/${prop._id}`)}
                                                 className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn"
@@ -355,10 +373,21 @@ export default function ServicePropertiesList() {
                                             <button
                                                 disabled={approvalLoading === prop._id}
                                                 onClick={() => setRejectionModal({ show: true, propId: prop._id, reason: "" })}
-                                                className="flex flex-col items-center justify-center p-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all shadow-md shadow-red-500/20 disabled:opacity-50"
+                                                className="flex flex-col items-center justify-center p-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-md shadow-orange-500/20 disabled:opacity-50"
                                             >
                                                 <XCircle className="w-4 h-4 mb-0.5" />
                                                 <span className="text-[9px] font-bold uppercase">Reject</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setPropertyToDelete(prop._id);
+                                                    setDeleteOpen(true);
+                                                }}
+                                                className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500/30 transition-all group/btn"
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="w-4 h-4 text-gray-400 group-hover/btn:text-red-500 transition-colors" />
+                                                <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-red-500">Delete</span>
                                             </button>
                                         </div>
                                     )}

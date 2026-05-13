@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
-import { getMessages, closeTicket, reopenTicket } from "../../api/authApi";
+import { getMessages, closeTicket, reopenTicket, sendChatMessage } from "../../api/authApi";
 import { useUser } from "../../context/UserContext";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import Button from "../ui/button/Button";
 import toast from "react-hot-toast";
 
@@ -13,11 +14,19 @@ export default function ChatInterface({ conversation, onClose }) {
     const [isUserOnline, setIsUserOnline] = useState(false);
     const [ticket, setTicket] = useState(null);
     const [showInfo, setShowInfo] = useState(false);
+    const [lightboxMedia, setLightboxMedia] = useState(null);
+    const [attachments, setAttachments] = useState([]);
+    const [isRecording, setIsRecording] = useState(false);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
 
     const { user: currentUser } = useUser();
     const messagesEndRef = useRef(null);
     const socketRef = useRef(null);
     const typingTimeoutRef = useRef(null);
+    const queryClient = useQueryClient();
+    const chatContainerRef = useRef(null);
+    const scrollHeightRef = useRef(0);
 
     const adminId = currentUser?._id;
     const conversationId = conversation?._id;
@@ -32,9 +41,21 @@ export default function ChatInterface({ conversation, onClose }) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const lastMessageId = useRef(null);
+
+    useEffect(() => {
+        if (messages.length > 0) {
+            const currentLastMessage = messages[messages.length - 1]._id;
+            if (lastMessageId.current !== currentLastMessage || messages.length <= 20) {
+                scrollToBottom();
+                lastMessageId.current = currentLastMessage;
+            }
+        }
+    }, [messages]);
+
     useEffect(() => {
         scrollToBottom();
-    }, [messages, typingUser]);
+    }, [typingUser]);
 
     useEffect(() => {
         if (!adminId) return;
@@ -119,33 +140,167 @@ export default function ChatInterface({ conversation, onClose }) {
             console.log("🤝 Socket EMITTING checkOnlineStatus:", otherUserId);
             socketRef.current.emit("checkOnlineStatus", otherUserId);
         }, 200);
-
-        const loadMessages = async () => {
-            try {
-                setLoading(true);
-                const res = await getMessages(conversationId);
-                if (res?.data) setMessages(res.data);
-                if (res?.ticket) setTicket(res.ticket || conversation.ticket);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadMessages();
     }, [conversationId]);
 
-    const handleSendMessage = (e) => {
-        e.preventDefault();
-        const text = newMessage.trim();
-        if (!text) return;
-        console.log("📤 Socket EMITTING sendMessage:", { conversationId, senderId: adminId, message: text });
-        socketRef.current.emit("sendMessage", { conversationId, senderId: adminId, message: text });
-        setNewMessage("");
+    const {
+        data: messagesData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading: isMessagesLoading
+    } = useInfiniteQuery({
+        queryKey: ["messages", conversationId],
+        queryFn: ({ pageParam = null }) => getMessages(conversationId, pageParam),
+        getNextPageParam: (lastPage) => lastPage.pagination?.hasMore ? lastPage.pagination.nextCursor : undefined,
+        enabled: !!conversationId
+    });
 
-        // Auto move to IN_PROGRESS locally when admin replies
-        if (ticket?.status === "OPEN") {
-            setTicket(prev => ({ ...prev, status: "IN_PROGRESS" }));
+    useEffect(() => {
+        if (messagesData?.pages) {
+            const allMessages = [...messagesData.pages].reverse().flatMap(page => page.data);
+            setMessages(allMessages);
+            
+            if (scrollHeightRef.current > 0 && chatContainerRef.current) {
+                setTimeout(() => {
+                    if (chatContainerRef.current) {
+                        const newScrollHeight = chatContainerRef.current.scrollHeight;
+                        chatContainerRef.current.scrollTop = newScrollHeight - scrollHeightRef.current;
+                        scrollHeightRef.current = 0;
+                    }
+                }, 0);
+            }
+
+            const firstPage = messagesData.pages[0];
+            if (firstPage?.ticket) {
+                setTicket(firstPage.ticket || conversation.ticket);
+            }
+        }
+        setLoading(isMessagesLoading);
+    }, [messagesData, isMessagesLoading, conversation]);
+
+    const handleScroll = (e) => {
+        if (e.target.scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
+            scrollHeightRef.current = e.target.scrollHeight;
+            fetchNextPage();
+        }
+    };
+
+    const sendMessageMutation = useMutation({
+        mutationFn: sendChatMessage,
+        onSuccess: () => {
+            if (ticket?.status === "OPEN") {
+                setTicket(prev => ({ ...prev, status: "IN_PROGRESS" }));
+            }
+            queryClient.invalidateQueries(["messages", conversationId]);
+        },
+        onError: (error) => {
+            console.error("Failed to send message:", error);
+            toast.error("Failed to send message");
+        }
+    });
+
+    const closeTicketMutation = useMutation({
+        mutationFn: closeTicket,
+        onSuccess: (res) => {
+            if (res.success) {
+                toast.success("Ticket closed");
+                setTicket(prev => ({ ...prev, status: "CLOSED" }));
+            }
+        },
+        onError: (err) => toast.error(err?.message || "Failed to close ticket")
+    });
+
+    const reopenTicketMutation = useMutation({
+        mutationFn: reopenTicket,
+        onSuccess: (res) => {
+            if (res.success) {
+                toast.success("Ticket reopened");
+                setTicket(prev => ({ ...prev, status: "IN_PROGRESS" }));
+            }
+        },
+        onError: (err) => toast.error(err?.message || "Failed to reopen ticket")
+    });
+
+    const handleSendMessage = (e) => {
+        if (e) e.preventDefault();
+        const text = newMessage.trim();
+        if (!text && attachments.length === 0) return;
+
+        // Optimistic Update
+        const tempId = `temp-${Date.now()}`;
+        const tempAttachments = attachments.map(file => ({
+            url: URL.createObjectURL(file),
+            fileName: file.name,
+            originalName: file.name,
+            mimeType: file.type,
+            isTemp: true
+        }));
+
+        const tempMessage = {
+            _id: tempId,
+            conversationId,
+            senderId: adminId,
+            message: text,
+            attachments: tempAttachments,
+            createdAt: new Date().toISOString(),
+            isSending: true,
+            sender: currentUser
+        };
+
+        setMessages(prev => [...prev, tempMessage]);
+        setNewMessage("");
+        setAttachments([]);
+
+        const formData = new FormData();
+        formData.append("conversationId", conversationId);
+        formData.append("senderId", adminId);
+        formData.append("message", text);
+
+        attachments.forEach((file) => {
+            const type = file.type;
+            if (type.startsWith("image/")) formData.append("chatImage", file);
+            else if (type.startsWith("video/")) formData.append("chatVideo", file);
+            else if (type.startsWith("audio/")) formData.append("chatAudio", file);
+            else formData.append("chatDocument", file);
+        });
+
+        sendMessageMutation.mutate(formData);
+
+        if (socketRef.current && socketRef.current.connected) {
+            console.log("📤 Socket EMITTING sendMessage via socket because it is connected.");
+            socketRef.current.emit("sendMessage", { conversationId, senderId: adminId, message: text });
+        }
+    };
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            mediaRecorderRef.current.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+            mediaRecorderRef.current.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
+                const audioFile = new File([audioBlob], `voice_message_${Date.now()}.mp3`, { type: 'audio/mp3' });
+                setAttachments(prev => [...prev, audioFile]);
+                audioChunksRef.current = []; // Reset
+            };
+            audioChunksRef.current = [];
+            mediaRecorderRef.current.start();
+            setIsRecording(true);
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            toast.error("Microphone access denied");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
         }
     };
 
@@ -161,26 +316,14 @@ export default function ChatInterface({ conversation, onClose }) {
         }, 1000);
     };
 
-    const handleCloseTicket = async () => {
+    const handleCloseTicket = () => {
         if (!ticket?._id) return;
-        try {
-            const res = await closeTicket(ticket._id);
-            if (res.success) {
-                toast.success("Ticket closed");
-                setTicket(prev => ({ ...prev, status: "CLOSED" }));
-            }
-        } catch (err) { toast.error(err?.message || "Failed to close ticket"); }
+        closeTicketMutation.mutate(ticket._id);
     };
 
-    const handleReopenTicket = async () => {
+    const handleReopenTicket = () => {
         if (!ticket?._id) return;
-        try {
-            const res = await reopenTicket(ticket._id);
-            if (res.success) {
-                toast.success("Ticket reopened");
-                setTicket(prev => ({ ...prev, status: "IN_PROGRESS" }));
-            }
-        } catch (err) { toast.error(err?.message || "Failed to reopen ticket"); }
+        reopenTicketMutation.mutate(ticket._id);
     };
 
     return (
@@ -243,8 +386,17 @@ export default function ChatInterface({ conversation, onClose }) {
                 </div>
 
                 {/* MESSAGES */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/20 dark:bg-transparent scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
-                    {loading ? (
+                <div 
+                    ref={chatContainerRef}
+                    onScroll={handleScroll}
+                    className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/20 dark:bg-transparent scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800"
+                >
+                    {isFetchingNextPage && (
+                        <div className="flex justify-center py-2">
+                            <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    )}
+                    {loading && messages.length === 0 ? (
                         <div className="flex h-full flex-col items-center justify-center opacity-60">
                             <div className="w-10 h-10 border-4 border-brand/20 border-t-brand rounded-full animate-spin mb-3"></div>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hydrating History</p>
@@ -268,24 +420,93 @@ export default function ChatInterface({ conversation, onClose }) {
                                 <div key={msg._id || i} className={`flex items-end gap-3 ${isMe ? 'flex-row-reverse animate-in slide-in-from-right-4' : 'flex-row animate-in slide-in-from-left-4'} duration-300`}>
                                     <div className={`w-8 h-8 shrink-0 rounded-xl overflow-hidden shadow-sm border-2 border-white dark:border-gray-800 transition-opacity ${!showAvatar && 'opacity-0'}`}>
                                         <img
-                                            src={msg.senderId?.toString() === adminId?.toString() || msg.sender?.senderType === "Admin"
-                                                ? (currentUser?.profile || currentUser?.profileImage ? `${Base_URL}/uploads/users/${currentUser.profile || currentUser.profileImage}` : `https://ui-avatars.com/api/?name=Admin&background=000&color=fff`)
-                                                : (otherUser?.profile || otherUser?.profileImage ? `${Base_URL}/uploads/users/${otherUser.profile || otherUser.profileImage}` : `https://ui-avatars.com/api/?name=${otherUserName}&background=random`)}
+                                            src={msg.sender?.profile || msg.sender?.profileImage 
+                                                ? `${Base_URL}/uploads/users/${msg.sender.profile || msg.sender.profileImage}` 
+                                                : `https://ui-avatars.com/api/?name=${msg.sender?.firstName || "User"}&background=${isMe ? '000' : 'random'}&color=fff`}
                                             className="w-full h-full object-cover"
                                             alt="avatar"
                                             onError={(e) => { e.target.onerror = null; e.target.src = "/images/user/user-01.jpg"; }}
                                         />
                                     </div>
                                     <div className={`flex flex-col max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                        <div className={`px-5 py-3 text-sm transition-all relative group shadow-sm ${isMe
-                                            ? 'bg-indigo-50 text-indigo-900 border border-indigo-100/50 rounded-3xl rounded-br-lg'
-                                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-3xl rounded-bl-lg border border-gray-100 dark:border-gray-800 shadow-sm'
+                                        <div className={`px-4 py-2.5 pb-6 text-sm transition-all relative shadow-sm flex flex-col gap-2 ${isMe
+                                            ? 'bg-indigo-50 text-indigo-900 border border-indigo-100/50 rounded-2xl rounded-br-md'
+                                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl rounded-bl-md border border-gray-100 dark:border-gray-800 shadow-sm'
                                             }`}>
-                                            {msg.message}
+
+                                            {/* Render Media */}
+                                            {msg.attachments?.filter(a => a.mimeType?.startsWith('image/')).length > 0 && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {msg.attachments.filter(a => a.mimeType?.startsWith('image/')).map((img, idx) => (
+                                                        <div key={idx} className="relative group cursor-pointer" onClick={() => setLightboxMedia({ type: 'image', url: img.isTemp ? img.url : `${Base_URL}/${img.url || `uploads/chatImage/${img.fileName}`}` })}>
+                                                            <img src={img.isTemp ? img.url : `${Base_URL}/${img.url || `uploads/chatImage/${img.fileName}`}`} className={`w-32 h-32 object-cover rounded-xl border border-black/10 shadow-sm transition-all ${msg.isSending ? 'opacity-60 blur-[2px]' : 'group-hover:opacity-90'}`} alt="attachment" />
+                                                            {msg.isSending && (
+                                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                                    <div className="w-8 h-8 border-4 border-white/40 border-t-white rounded-full animate-spin shadow-sm"></div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {msg.attachments?.filter(a => a.mimeType?.startsWith('video/')).length > 0 && (
+                                                <div className="flex flex-col gap-2">
+                                                    {msg.attachments.filter(a => a.mimeType?.startsWith('video/')).map((vid, idx) => (
+                                                        <div key={idx} className="relative group cursor-pointer" onClick={() => setLightboxMedia({ type: 'video', url: vid.isTemp ? vid.url : `${Base_URL}/${vid.url || `uploads/chatVideo/${vid.fileName}`}` })}>
+                                                            <video src={vid.isTemp ? vid.url : `${Base_URL}/${vid.url || `uploads/chatVideo/${vid.fileName}`}`} className={`max-w-[200px] rounded-xl shadow-sm ${msg.isSending ? 'opacity-60 blur-[2px]' : ''}`} />
+                                                            {msg.isSending && (
+                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                    <div className="w-8 h-8 border-4 border-white/40 border-t-white rounded-full animate-spin shadow-sm"></div>
+                                                                </div>
+                                                            )}
+                                                            {!msg.isSending && (
+                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                    <div className="w-10 h-10 bg-black/40 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:bg-black/60 transition-colors shadow-lg">
+                                                                        <svg className="w-4 h-4 text-white translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {msg.attachments?.filter(a => a.mimeType?.startsWith('audio/')).length > 0 && (
+                                                <div className="flex flex-col gap-2">
+                                                    {msg.attachments.filter(a => a.mimeType?.startsWith('audio/')).map((aud, idx) => (
+                                                        <div key={idx} className="relative">
+                                                            <audio src={aud.isTemp ? aud.url : `${Base_URL}/${aud.url || `uploads/chatAudio/${aud.fileName}`}`} controls className={`w-[200px] h-10 ${msg.isSending ? 'opacity-50 pointer-events-none' : ''}`} />
+                                                            {msg.isSending && (
+                                                                <div className="absolute -right-5 top-1/2 -translate-y-1/2">
+                                                                    <div className="w-3 h-3 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {msg.attachments?.filter(a => !a.mimeType?.startsWith('image/') && !a.mimeType?.startsWith('video/') && !a.mimeType?.startsWith('audio/')).length > 0 && (
+                                                <div className="flex flex-col gap-2">
+                                                    {msg.attachments.filter(a => !a.mimeType?.startsWith('image/') && !a.mimeType?.startsWith('video/') && !a.mimeType?.startsWith('audio/')).map((doc, idx) => (
+                                                        <a key={idx} href={doc.isTemp ? '#' : `${Base_URL}/${doc.url || `uploads/chatDocument/${doc.fileName}`}`} target={doc.isTemp ? undefined : "_blank"} rel="noreferrer" className={`flex items-center gap-2 text-xs font-bold underline p-2 rounded-lg shadow-sm border ${isMe ? 'bg-indigo-100/50 border-indigo-200 text-indigo-800' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200'} ${msg.isSending ? 'opacity-60 pointer-events-none' : ''}`}>
+                                                            {msg.isSending ? (
+                                                                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                                            ) : "📄"}
+                                                            {doc.originalName || doc.fileName}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {msg.message && <span className="break-words mr-8">{msg.message}</span>}
+                                            <div className={`absolute bottom-1 right-2 flex items-center gap-1 font-bold ${isMe ? 'text-indigo-400' : 'text-gray-400'}`}>
+                                                <span className="text-[9px]">
+                                                    {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+                                                </span>
+                                                {msg.isSending && (
+                                                    <svg className="w-3 h-3 animate-spin opacity-70" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className="text-[9px] text-gray-400 mt-1.5 px-2 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
-                                        </span>
                                     </div>
                                 </div>
                             );
@@ -296,19 +517,47 @@ export default function ChatInterface({ conversation, onClose }) {
 
                 {/* INPUT */}
                 <div className="px-6 py-5 bg-white dark:bg-gray-900 border-t border-gray-50 dark:border-gray-800 sticky bottom-0">
+                    {attachments.length > 0 && (
+                        <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-thin">
+                            {attachments.map((file, idx) => (
+                                <div key={idx} className="relative flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg text-xs font-medium pr-8 border border-gray-200 dark:border-gray-700">
+                                    <span className="truncate max-w-[100px] dark:text-white">{file.name}</span>
+                                    <button type="button" onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))} className="absolute right-2 text-gray-400 hover:text-red-500">
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <form onSubmit={handleSendMessage} className="relative flex items-center group bg-gray-50 dark:bg-gray-800 rounded-2xl p-1 shadow-inner">
+                        <label className="p-3 ml-1 cursor-pointer text-gray-400 hover:text-brand transition-colors rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700" title="Attach Files">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                            <input type="file" multiple className="hidden" onChange={(e) => setAttachments(prev => [...prev, ...Array.from(e.target.files)])} accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+                        </label>
+                        <button
+                            type="button"
+                            onClick={isRecording ? stopRecording : startRecording}
+                            className={`p-3 mr-1 transition-colors rounded-xl ${isRecording ? 'text-red-500 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-brand hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                            title={isRecording ? "Stop Recording" : "Record Voice Message"}
+                        >
+                            {isRecording ? (
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                            )}
+                        </button>
                         <input
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onInput={handleTyping}
                             placeholder="Type your reply..."
-                            className="w-full pl-6 pr-24 py-3.5 rounded-xl bg-transparent text-sm transition-all outline-none text-gray-900 dark:text-white"
+                            className="w-full pl-3 pr-24 py-3.5 rounded-xl bg-transparent text-sm transition-all outline-none text-gray-900 dark:text-white"
                         />
                         <div className="absolute right-1.5 flex items-center gap-1">
                             <button
                                 type="submit"
-                                disabled={!newMessage.trim()}
+                                disabled={!newMessage.trim() && attachments.length === 0}
                                 className="bg-brand text-black px-6 py-2.5 rounded-xl font-black text-[10px] tracking-[0.1em] shadow-xl shadow-brand/20 hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 uppercase"
                             >
                                 Send Reply
@@ -372,6 +621,21 @@ export default function ChatInterface({ conversation, onClose }) {
                             <p className="text-xs text-gray-600 dark:text-white font-bold">{new Date(ticket.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })} at {new Date(ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* LIGHTBOX FOR IMAGES AND VIDEOS */}
+            {lightboxMedia && (
+                <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setLightboxMedia(null)}>
+                    <button onClick={() => setLightboxMedia(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all shadow-lg hover:scale-110">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+                    </button>
+                    {lightboxMedia.type === 'image' && (
+                        <img src={lightboxMedia.url} onClick={(e) => e.stopPropagation()} className="max-w-[90vw] max-h-[90vh] object-contain rounded-xl shadow-2xl animate-in zoom-in duration-300" alt="Preview" />
+                    )}
+                    {lightboxMedia.type === 'video' && (
+                        <video src={lightboxMedia.url} controls autoPlay onClick={(e) => e.stopPropagation()} className="max-w-[90vw] max-h-[90vh] rounded-xl shadow-2xl animate-in zoom-in duration-300" />
+                    )}
                 </div>
             )}
         </div>

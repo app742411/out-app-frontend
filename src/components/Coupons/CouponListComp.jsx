@@ -76,9 +76,9 @@ export default function CouponListComp({ coupons, loading, fetchCoupons, setEdit
                                     </TableCell>
                                     <TableCell className="px-5 py-4 text-sm">
                                         <div className="flex flex-col whitespace-nowrap text-gray-600 dark:text-gray-400">
-                                            <span>{coupon.startDate ? new Date(coupon.startDate).toLocaleDateString() : 'N/A'}</span>
+                                            <span>{coupon.startDate ? new Date(coupon.startDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</span>
                                             <span className="text-gray-400 dark:text-gray-600 text-[10px]">to</span>
-                                            <span>{coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleDateString() : 'N/A'}</span>
+                                            <span>{coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="px-5 py-4">

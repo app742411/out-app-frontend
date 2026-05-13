@@ -650,9 +650,12 @@ export const getAdminConversations = async (chatType, page = 1) => {
   }
 };
 
-export const getMessages = async (conversationId) => {
+export const getMessages = async (conversationId, cursor = null) => {
   try {
-    const res = await apiClient.get(`/api/chat/messages/${conversationId}`);
+    const url = cursor 
+      ? `/api/chat/messages/${conversationId}?cursor=${cursor}`
+      : `/api/chat/messages/${conversationId}`;
+    const res = await apiClient.get(url);
     return res.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -1033,6 +1036,28 @@ export const deleteService = async (id) => {
 export const logout = async () => {
   try {
     const res = await apiClient.post("/api/admin/logout");
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+// export const sendMessageApi = async (conversationId, message) => {
+//   try {
+//     const res = await apiClient.post(/api/chat/sendMessage, { conversationId, message });
+//     return res.data;
+//   } catch (error) {
+//     throw error.response?.data || error;
+//   }
+// };
+
+export const sendChatMessage = async (formData) => {
+  try {
+    const res = await apiClient.post("/api/chat/send", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   } catch (error) {
     throw error.response?.data || error;

@@ -2,14 +2,11 @@ import React, { useEffect, useState } from "react";
 import { getAdminConversations } from "../../api/authApi";
 import { useUser } from "../../context/UserContext";
 import ChatInterface from "./ChatInterface";
+import { useQuery } from "@tanstack/react-query";
 
 export default function SupportListComp({ chatType }) {
-    const [conversations, setConversations] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [selectedConv, setSelectedConv] = useState(null);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
 
     const { user: currentUser } = useUser();
 
@@ -17,29 +14,15 @@ export default function SupportListComp({ chatType }) {
         setPage(1);
     }, [chatType]);
 
-    useEffect(() => {
-        const fetchConversations = async () => {
-            if (!currentUser?._id) return;
-            setLoading(true);
-            setError(null);
-            try {
-                const result = await getAdminConversations(chatType, page);
-                if (result.success) {
-                    setConversations(result.data || []);
-                    setTotalPages(result.totalPages || 1);
-                } else {
-                    setConversations([]);
-                }
-            } catch (err) {
-                setError("Failed to fetch conversations");
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const { data: queryData, isLoading: loading, error: queryError } = useQuery({
+        queryKey: ["adminConversations", chatType, page],
+        queryFn: () => getAdminConversations(chatType, page),
+        enabled: !!currentUser?._id
+    });
 
-        fetchConversations();
-    }, [chatType, page]);
+    const conversations = queryData?.success ? (queryData.data || []) : [];
+    const totalPages = queryData?.success ? (queryData.totalPages || 1) : 1;
+    const error = queryError ? "Failed to fetch conversations" : null;
 
     const filteredConversations = conversations.filter(conv => {
         if (chatType === "USER_SUPPORT") return !!conv.userId;

@@ -18,111 +18,95 @@ import { getAllServicesAdmin, getPendingServices, updateServiceApproval, deleteS
 import toast from "react-hot-toast";
 import { formatCurrency, formatDuration } from "../../utils/currency";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const ITEMS_PER_PAGE = 10;
 
+const getApprovalStatusColor = (status) => {
+  switch (status?.toLowerCase()) {
+    case "approved":
+      return "bg-emerald-500 text-white";
+    case "rejected":
+      return "bg-red-500 text-white";
+    case "pending":
+      return "bg-amber-500 text-white";
+    default:
+      return "bg-gray-500 text-white";
+  }
+};
+
 const ServiceList = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState("active");
   const [rejectionModal, setRejectionModal] = useState({ show: false, serviceId: null, reason: "" });
-  const [approvalLoading, setApprovalLoading] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const baseURL = import.meta.env.VITE_API_URL;
 
-  const fetchServices = async (page = 1, isBackgroundPoll = false) => {
-    try {
-      if (!isBackgroundPoll) setLoading(true);
-      if (activeTab === "pending") {
-        const res = await getPendingServices();
-        setServices(res.data || []);
-        setTotalPages(1); // Pending list might not be paginated same way
-        setCurrentPage(1);
-      } else {
-        const res = await getAllServicesAdmin({
-          page,
-          limit: ITEMS_PER_PAGE,
-          search,
-        });
-        setServices(res.data || []);
-        setTotalPages(res.totalPages || 1);
-        setCurrentPage(res.page || page);
-      }
-    } catch (error) {
-      if (!isBackgroundPoll) toast.error("Failed to load services");
-    } finally {
-      if (!isBackgroundPoll) setLoading(false);
-    }
-  };
-
-  const handleApproval = async (id, action, reason = "") => {
-    try {
-      setApprovalLoading(id);
-      const res = await updateServiceApproval(id, action, reason);
-      if (res.success) {
-        toast.success(`Service ${action === "approve" ? "approved" : "rejected"} successfully`);
-        setRejectionModal({ show: false, serviceId: null, reason: "" });
-        fetchServices(currentPage);
-      } else {
-        toast.error(res.message || "Action failed");
-      }
-    } catch (error) {
-      toast.error(error?.message || "Failed to perform action");
-    } finally {
-      setApprovalLoading(null);
-    }
-  };
-
-  const handleDeleteService = async () => {
-    if (!serviceToDelete) return;
-    try {
-      setLoading(true);
-      await deleteService(serviceToDelete);
-      toast.success("Service deleted successfully");
-      setDeleteOpen(false);
-      setServiceToDelete(null);
-      fetchServices(currentPage);
-    } catch (error) {
-      toast.error(error.message || "Failed to delete service");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchServices(1);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
     }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
+    return () => clearTimeout(timer);
   }, [search]);
 
   useEffect(() => {
-    fetchServices(currentPage);
-  }, [currentPage, activeTab]);
+    setCurrentPage(1);
+  }, [activeTab]);
 
-  // Real-time data refresh on focus or tab visibility to avoid continuous background polling
-  useEffect(() => {
-    const handleRefresh = () => {
-      if (document.visibilityState === "visible") {
-        fetchServices(currentPage, true);
+  const { data: queryData, isLoading: loading } = useQuery({
+    queryKey: ["services", activeTab, currentPage, debouncedSearch],
+    queryFn: async () => {
+      if (activeTab === "pending") {
+        return await getPendingServices();
+      } else {
+        return await getAllServicesAdmin({ page: currentPage, limit: ITEMS_PER_PAGE, search: debouncedSearch });
       }
-    };
+    }
+  });
 
-    window.addEventListener("focus", handleRefresh);
-    document.addEventListener("visibilitychange", handleRefresh);
+  const services = queryData?.data || [];
+  const totalPages = activeTab === "pending" ? 1 : (queryData?.totalPages || 1);
 
-    return () => {
-      window.removeEventListener("focus", handleRefresh);
-      document.removeEventListener("visibilitychange", handleRefresh);
-    };
-  }, [currentPage, search, activeTab]);
+  const approveMutation = useMutation({
+    mutationFn: ({ id, action, reason }) => updateServiceApproval(id, action, reason),
+    onSuccess: (res, variables) => {
+      if (res.success) {
+        toast.success(`Service ${variables.action === "approve" ? "approved" : "rejected"} successfully`);
+        setRejectionModal({ show: false, serviceId: null, reason: "" });
+        queryClient.invalidateQueries(["services"]);
+      } else {
+        toast.error(res.message || "Action failed");
+      }
+    },
+    onError: (error) => toast.error(error?.message || "Failed to perform action")
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteService(id),
+    onSuccess: () => {
+      toast.success("Service deleted successfully");
+      setDeleteOpen(false);
+      setServiceToDelete(null);
+      queryClient.invalidateQueries(["services"]);
+    },
+    onError: (error) => toast.error(error.message || "Failed to delete service")
+  });
+
+  const handleApproval = (id, action, reason = "") => {
+    approveMutation.mutate({ id, action, reason });
+  };
+
+  const handleDeleteService = () => {
+    if (!serviceToDelete) return;
+    deleteMutation.mutate(serviceToDelete);
+  };
 
   const getImageUrl = (service) => {
     if (service.media && service.media.images && service.media.images.length > 0) {
@@ -197,6 +181,11 @@ const ServiceList = () => {
                     onError={(e) => { e.target.src = "/images/home/properties2.webp"; }}
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-0 bg-gray-100 dark:bg-gray-800"
                   />
+                  <div className="absolute top-4 left-4">
+                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${getApprovalStatusColor(service.approvalStatus)}`}>
+                      {service.approvalStatus || "pending"}
+                    </span>
+                  </div>
                   <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                     <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${service.isActive
                       ? 'bg-green-500 text-white'
@@ -294,7 +283,7 @@ const ServiceList = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2 pt-2">
+                    <div className="grid grid-cols-4 gap-2 pt-2">
                       <button
                         onClick={() => navigate(`/service-details/${service._id}`)}
                         className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn outline-none"
@@ -304,20 +293,31 @@ const ServiceList = () => {
                         <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
                       </button>
                       <button
-                        disabled={approvalLoading === service._id}
+                        disabled={approveMutation.isPending && approveMutation.variables?.id === service._id}
                         onClick={() => handleApproval(service._id, "approve")}
                         className="flex flex-col items-center justify-center p-2 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold transition-all shadow-md shadow-green-500/20 disabled:opacity-50 outline-none"
                       >
-                        {approvalLoading === service._id ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle className="w-4 h-4" />}
+                        {approveMutation.isPending && approveMutation.variables?.id === service._id ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle className="w-4 h-4" />}
                         <span className="text-[9px] mt-1 font-bold uppercase text-white">Approve</span>
                       </button>
                       <button
-                        disabled={approvalLoading === service._id}
+                        disabled={approveMutation.isPending && approveMutation.variables?.id === service._id}
                         onClick={() => setRejectionModal({ show: true, serviceId: service._id, reason: "" })}
-                        className="flex flex-col items-center justify-center p-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all shadow-md shadow-red-500/20 disabled:opacity-50 outline-none"
+                        className="flex flex-col items-center justify-center p-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 outline-none"
                       >
                         <XCircle className="w-4 h-4" />
                         <span className="text-[9px] mt-1 font-bold uppercase text-white">Reject</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setServiceToDelete(service._id);
+                          setDeleteOpen(true);
+                        }}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500/30 transition-all group/btn outline-none"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4 text-gray-400 group-hover/btn:text-red-500 transition-colors" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-red-500">Delete</span>
                       </button>
                     </div>
                   )}
@@ -374,11 +374,11 @@ const ServiceList = () => {
                 Cancel
               </button>
               <button
-                disabled={!rejectionModal.reason.trim() || approvalLoading}
+                disabled={!rejectionModal.reason.trim() || approveMutation.isPending}
                 onClick={() => handleApproval(rejectionModal.serviceId, "reject", rejectionModal.reason)}
                 className="flex-1 py-3 rounded-2xl font-bold bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
               >
-                {approvalLoading ? "Rejecting..." : "Confirm Reject"}
+                {approveMutation.isPending ? "Rejecting..." : "Confirm Reject"}
               </button>
             </div>
           </div>

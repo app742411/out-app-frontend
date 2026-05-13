@@ -93,7 +93,7 @@ export default function IndividualUserBooking() {
                 <TableCell isHeader className="px-5 py-3 text-left">
                   Order ID
                 </TableCell>
-                <TableCell isHeader className="px-5 py-3 text-right">
+                <TableCell isHeader className="px-5 py-3 text-center">
                   Action
                 </TableCell>
               </TableRow>
@@ -139,7 +139,7 @@ export default function IndividualUserBooking() {
                       {booking.orderId || "-"}
                     </TableCell>
 
-                    <TableCell className="px-5 py-3 text-right">
+                    <TableCell className="px-5 py-3 text-center">
                       <button
                         onClick={() => navigate(`/booking-details/${booking._id}`)}
                         className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm transition-colors"

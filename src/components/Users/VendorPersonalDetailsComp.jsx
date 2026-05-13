@@ -111,7 +111,7 @@ export default function VendorPersonalDetailsComp() {
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Contact Details</p>
                                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{vendor.email}</p>
                                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-1">
-                                    {vendor.phone ? `${vendor.phoneCode || ""} ${vendor.phone}` : "-"}
+                                    {vendor.phone || "-"}
                                 </p>
                             </div>
 

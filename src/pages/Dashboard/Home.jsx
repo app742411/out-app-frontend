@@ -10,6 +10,8 @@ import ArrivalsDepartures from "../../components/dashboard/ArrivalsDepartures";
 import RecentServices from "../../components/ecommerce/RecentServices";
 import { getAdminDashboard1 } from "../../api/authApi";
 
+import QuickActions from "../../components/dashboard/QuickActions";
+
 export default function Home() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,8 @@ export default function Home() {
       <div className="space-y-6">
         {/* Top KPIs */}
         <DashboardMetrics data={dashboardData} />
+
+        {/* <QuickActions /> */}
 
         <div className="grid grid-cols-12 gap-6">
           {/* Revenue Overview & Occupancy */}

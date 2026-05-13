@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
@@ -10,34 +10,33 @@ import toast from "react-hot-toast";
 import ReviewListComp from "../../components/Reviews/ReviewListComp";
 import apiClient from "../../api/apiClient";
 import { formatCurrency, formatDuration } from "../../utils/currency";
+import { useQuery } from "@tanstack/react-query";
 
 const ServiceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [service, setService] = useState(null);
-  const [loading, setLoading] = useState(true);
   const baseURL = import.meta.env.VITE_API_URL;
 
+  const { data: serviceResponse, isLoading: loading, error } = useQuery({
+    queryKey: ["serviceDetails", id],
+    queryFn: () => getSingleServiceAdmin(id),
+    enabled: !!id,
+    retry: false
+  });
+
+  const service = serviceResponse?.data;
+
   useEffect(() => {
-    const fetchService = async () => {
-      try {
-        setLoading(true);
-        const res = await getSingleServiceAdmin(id);
-        setService(res.data);
-      } catch (error) {
-        toast.error("Failed to load service details");
-        navigate("/service-management");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchService();
-  }, [id, navigate]);
+    if (error) {
+      toast.error("Failed to load service details");
+      navigate("/service-management");
+    }
+  }, [error, navigate]);
 
   const handleDownload = async (e) => {
     e.preventDefault();
     try {
-      const fileUrl = `/uploads/documents/${service.document}`;
+      const fileUrl = `/propertyDocument/${service.document}`;
       const res = await apiClient.get(fileUrl, { responseType: "blob" });
       const blob = res.data;
       const blobUrl = window.URL.createObjectURL(blob);
@@ -50,7 +49,7 @@ const ServiceDetails = () => {
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error("Failed to download file:", error);
-      window.open(`${baseURL}/uploads/documents/${service.document}`, "_blank");
+      window.open(`${baseURL}/uploads/propertyDocument/${service.document}`, "_blank");
     }
   };
 
@@ -119,7 +118,7 @@ const ServiceDetails = () => {
                     </div>
                     <div className="flex items-center gap-2.5">
                       <a
-                        href={`${baseURL}/uploads/documents/${service.document}`}
+                        href={`${baseURL}/uploads/propertyDocument/${service.document}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-5 py-3 bg-white dark:bg-gray-800 shadow-md hover:shadow-xl rounded-2xl text-[10px] font-black text-brand-600 hover:bg-brand-500 hover:text-white transition-all border border-brand-100 dark:border-brand-900/40 uppercase tracking-[0.15em] active:scale-95 flex items-center gap-2 cursor-pointer font-bold"
@@ -186,6 +185,16 @@ const ServiceDetails = () => {
                     {service.isActive ? "Active on Platform" : "Hidden from Platform"}
                   </span>
                 </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mt-2">Approval Status</p>
+                  <span className={`mt-1 inline-block px-3 py-1 text-xs font-semibold rounded-full uppercase ${
+                    service.approvalStatus === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 
+                    service.approvalStatus === 'rejected' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 
+                    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  }`}>
+                    {service.approvalStatus || 'pending'}
+                  </span>
+                </div>
               </div>
             </div>
           </ComponentCard>
@@ -197,34 +206,43 @@ const ServiceDetails = () => {
 
         {/* Sidebar Info */}
         <div className="space-y-6">
-          <ComponentCard title="Vendor Details">
+          <ComponentCard title="Provider Details">
             <div className="flex flex-col items-center text-center pb-4 border-b dark:border-gray-800 mb-6">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-brand-500/20 p-1 mb-4">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-brand-500/20 p-1 mb-4 relative">
                 <img
-                  src={`${baseURL}/uploads/users/${service.user?.profile}`}
-                  alt="Vendor"
+                  src={`${baseURL}/uploads/users/${service.provider?.profile}`}
+                  alt="Provider"
                   className="w-full h-full object-cover rounded-full"
                   onError={(e) => e.target.src = "/images/user/user-01.jpg"}
                 />
+                {service.provider?.isVerified && (
+                  <div className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full border-2 border-white dark:border-gray-900">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                  </div>
+                )}
               </div>
-              <h3 className="font-bold text-lg dark:text-white capitalize">{service.user?.firstName} {service.user?.lastName}</h3>
-              <p className="text-sm text-gray-500">Registered Vendor</p>
+              <h3 className="font-bold text-lg dark:text-white capitalize">
+                {service.provider?.name || `${service.provider?.firstName || ""} ${service.provider?.lastName || ""}`.trim() || "Unknown Provider"}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {service.provider?.isVerified ? "Verified Provider" : "Registered Provider"}
+              </p>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Mail className="text-gray-400" size={18} />
-                <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{service.user?.email}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{service.provider?.email || "Not provided"}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Smartphone className="text-gray-400" size={18} />
-                <span className="text-sm text-gray-600 dark:text-gray-400">Not provided</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{service.provider?.phone || "Not provided"}</span>
               </div>
             </div>
 
             <div className="mt-8">
-              <Button variant="outline" className="w-full" size="sm" onClick={() => navigate(`/vendor-details/${service.user?._id}`)}>
-                View Vendor Profile
+              <Button variant="outline" className="w-full" size="sm" onClick={() => navigate(`/vendor-details/${service.provider?._id}`)}>
+                View Provider Profile
               </Button>
             </div>
           </ComponentCard>
