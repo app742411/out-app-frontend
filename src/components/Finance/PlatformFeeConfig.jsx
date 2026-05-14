@@ -5,6 +5,7 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { updatePlatformFee } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { Select } from "../ui/select/Select";
 
 const PlatformFeeConfig = ({ initialData, onUpdate }) => {
     const [feeType, setFeeType] = useState("PERCENTAGE");
@@ -39,14 +40,14 @@ const PlatformFeeConfig = ({ initialData, onUpdate }) => {
             <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                     <Label>Fee Type</Label>
-                    <select
-                        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 p-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-white mt-1"
+                    <Select
+                        className="mt-1"
                         value={feeType}
                         onChange={(e) => setFeeType(e.target.value)}
                     >
                         <option value="PERCENTAGE">Percentage (%)</option>
                         <option value="FLAT">Flat Amount</option>
-                    </select>
+                    </Select>
                 </div>
 
                 <div>

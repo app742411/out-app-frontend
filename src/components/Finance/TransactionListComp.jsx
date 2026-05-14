@@ -7,6 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "../ui/table";
+import { Select } from "../ui/select/Select";
 import { getAllPaymentTransactions } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
@@ -77,11 +78,9 @@ export default function TransactionListComp() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-gray-400" />
-                    <select 
-                        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500/20"
+                    <Select 
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
                     >
@@ -89,7 +88,7 @@ export default function TransactionListComp() {
                         <option value="success">Success</option>
                         <option value="pending">Pending</option>
                         <option value="failed">Failed</option>
-                    </select>
+                    </Select>
                 </div>
             </div>
 

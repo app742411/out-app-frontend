@@ -12,10 +12,12 @@ import Button from "../ui/button/Button";
 import { getAllServiceUsers, blockUnblockUser, deleteServiceUser } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
+import { Select } from "../ui/select/Select";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
+import { timeAgo } from "../../utils/date";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -112,24 +114,27 @@ export default function VendorListComp() {
     return (
         <ComponentCard title="All Service Providers" className="">
             {/* Search + Filter */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 bg-transparent">
-                <input
-                    type="text"
-                    placeholder="Search service providers by name, email, userId..."
-                    className="border rounded-lg p-2 w-full md:w-1/2 dark:bg-gray-800 dark:text-white"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 bg-transparent">
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        placeholder="Search service providers by name, email, userId..."
+                        className="border border-gray-300 dark:border-gray-700 rounded-lg p-2 w-full dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
 
-                <select
-                    className="border rounded-lg p-2 dark:bg-gray-800 dark:text-white"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
+                <div className="w-full md:w-56">
+                    <Select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </Select>
+                </div>
             </div>
 
             {/* Table */}
@@ -211,7 +216,7 @@ export default function VendorListComp() {
                                             </TableCell>
 
                                             <TableCell className="px-5 py-3">
-                                                {vendor.phone ? `${vendor.phoneCode || ""} ${vendor.phone}` : "-"}
+                                                {vendor.phone ? vendor.phone : "-"}
                                             </TableCell>
 
                                             <TableCell className="px-5 py-3 capitalize">
@@ -232,7 +237,10 @@ export default function VendorListComp() {
                                             </TableCell>
 
                                             <TableCell className="px-5 py-3">
-                                                {vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : "-"}
+                                                <div className="flex flex-col">
+                                                    <span>{vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : "-"}</span>
+                                                    <span className="text-[10px] text-gray-400">{vendor.createdAt ? timeAgo(vendor.createdAt) : "-"}</span>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="px-5 py-3 text-right">
                                                 <div className="flex items-center justify-end justify-start">

@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { 
-    getWithdrawRequests, 
-    updateWithdrawStatus 
+import {
+    getWithdrawRequests,
+    updateWithdrawStatus
 } from "../../api/authApi";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHeader, 
-    TableRow 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableRow
 } from "../ui/table";
+import Select from "../ui/select/Select";
 import Badge from "../ui/badge/Badge";
 import Button from "../ui/button/Button";
 import toast from "react-hot-toast";
-import { 
+import {
     Calendar,
     User,
     CreditCard,
@@ -66,7 +67,7 @@ export default function WithdrawRequestsList() {
         }
     };
 
-    const filteredRequests = requests.filter(req => 
+    const filteredRequests = requests.filter(req =>
         req.user?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         req.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         req.bankDetails?.bankName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,7 +79,7 @@ export default function WithdrawRequestsList() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-white/[0.03] p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input 
+                    <input
                         type="text"
                         placeholder="Search by vendor name, email or bank..."
                         className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-transparent focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
@@ -87,12 +88,12 @@ export default function WithdrawRequestsList() {
                     />
                 </div>
                 <div className="flex gap-2">
-                    <select className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-transparent text-sm outline-none">
+                    <Select>
                         <option value="">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
-                    </select>
+                    </Select>
                 </div>
             </div>
 
@@ -149,8 +150,8 @@ export default function WithdrawRequestsList() {
                                         </TableCell>
                                         <TableCell className="py-4 px-5 text-center">
                                             <Badge size="xs" color={
-                                                req.status === 'approved' ? 'success' : 
-                                                req.status === 'pending' ? 'warning' : 'error'
+                                                req.status === 'approved' ? 'success' :
+                                                    req.status === 'pending' ? 'warning' : 'error'
                                             }>
                                                 {req.status}
                                             </Badge>
@@ -168,15 +169,15 @@ export default function WithdrawRequestsList() {
                                         <TableCell className="py-4 px-5 text-right">
                                             {req.status === 'pending' && (
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <Button 
-                                                        size="sm" 
+                                                    <Button
+                                                        size="sm"
                                                         className="bg-green-500 hover:bg-green-600 h-8 px-3"
                                                         onClick={() => handleAction(req._id, 'approved')}
                                                     >
                                                         <CheckCircle size={14} className="mr-1" /> Approve
                                                     </Button>
-                                                    <Button 
-                                                        size="sm" 
+                                                    <Button
+                                                        size="sm"
                                                         variant="outline"
                                                         className="text-red-500 border-red-500 hover:bg-red-50 h-8 px-3"
                                                         onClick={() => {
@@ -218,7 +219,7 @@ export default function WithdrawRequestsList() {
                                 <XCircle size={20} />
                             </button>
                         </div>
-                        
+
                         <p className="text-sm text-gray-500 mb-6">
                             You are about to reject the withdrawal request for <span className="font-bold text-gray-700 dark:text-gray-300">{selectedRequest?.user?.firstName}</span> of <span className="font-bold text-brand-500">SAR {selectedRequest?.amount}</span>. Please provide a reason.
                         </p>
@@ -226,7 +227,7 @@ export default function WithdrawRequestsList() {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rejection Reason</label>
-                                <textarea 
+                                <textarea
                                     className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-white/[0.02] focus:ring-2 focus:ring-red-500/20 outline-none transition-all text-sm min-h-[100px]"
                                     placeholder="e.g. Insufficient wallet balance, Invalid bank details..."
                                     value={rejectReason}
@@ -235,14 +236,14 @@ export default function WithdrawRequestsList() {
                             </div>
 
                             <div className="flex gap-3 pt-2">
-                                <Button 
-                                    className="flex-1 h-11" 
+                                <Button
+                                    className="flex-1 h-11"
                                     variant="outline"
                                     onClick={() => setShowRejectModal(false)}
                                 >
                                     Cancel
                                 </Button>
-                                <Button 
+                                <Button
                                     className="flex-1 h-11 bg-red-500 hover:bg-red-600"
                                     onClick={() => handleAction(selectedRequest?._id, 'rejected', rejectReason)}
                                     disabled={!rejectReason.trim() || updatingStatus}

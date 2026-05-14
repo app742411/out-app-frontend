@@ -19,7 +19,7 @@ import {
 import Button from "../ui/button/Button";
 import { PencilIcon, TrashBinIcon } from "../../icons";
 import { Pencil, Trash2, X, Check, Search, Filter } from "lucide-react";
-
+import { Select } from "../ui/select/Select";
 import {
   getCategories,
   deleteCategory,
@@ -98,15 +98,15 @@ const CategoryList = forwardRef(({ onEdit }, ref) => {
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-500 hidden md:block">Sort by:</span>
             <div className="relative">
-              <select
-                className="appearance-none pl-4 pr-10 py-2.5 text-sm text-gray-800 dark:text-white/90 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-xl focus:border-brand-300 dark:focus:border-brand-500/30 focus:outline-none transition-all cursor-pointer min-w-[160px]"
+              <Select
+                // className="appearance-none pl-4 pr-10 py-2.5 text-sm text-gray-800 dark:text-white/90 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-xl focus:border-brand-300 dark:focus:border-brand-500/30 focus:outline-none transition-all cursor-pointer min-w-[160px]"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
                 <option value="asc">Ascending (A-Z)</option>
                 <option value="desc">Descending (Z-A)</option>
                 <option value="latest">Latest Added</option>
-              </select>
+              </Select>
               <span className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
                 <Filter size={14} />
               </span>

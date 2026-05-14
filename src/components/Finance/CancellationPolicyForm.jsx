@@ -4,6 +4,7 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { PlusIcon, TrashBinIcon } from "../../icons";
+import Select from "../ui/select/Select";
 
 const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving }) => {
     const [policies, setPolicies] = useState([]);
@@ -78,14 +79,14 @@ const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {policies.map((policy, pIdx) => (
-                <ComponentCard 
-                    key={pIdx} 
+                <ComponentCard
+                    key={pIdx}
                     title={
                         <div className="flex justify-between items-center w-full">
                             <span>Policy #{pIdx + 1}: {policy.name || "Unnamed Policy"}</span>
                             {policies.length > 1 && (
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => handleRemovePolicy(pIdx)}
                                     className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                                 >
@@ -98,8 +99,7 @@ const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-4">
                         <div className="space-y-2">
                             <Label>Policy Name</Label>
-                            <select
-                                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 p-2.5 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                            <Select
                                 value={policy.name}
                                 onChange={(e) => handlePolicyChange(pIdx, "name", e.target.value)}
                             >
@@ -107,7 +107,7 @@ const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving 
                                 <option value="Flexible">Flexible</option>
                                 <option value="Moderate">Moderate</option>
                                 <option value="Strict">Strict</option>
-                            </select>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label>Cancellation Fee (Optional)</Label>
@@ -145,15 +145,15 @@ const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving 
                             {policy.rules.map((rule, rIdx) => (
                                 <div key={rIdx} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl relative">
                                     {policy.rules.length > 1 && (
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={() => handleRemoveRule(pIdx, rIdx)}
                                             className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
                                         >
                                             <TrashBinIcon className="size-4" />
                                         </button>
                                     )}
-                                    
+
                                     <div className="space-y-2">
                                         <Label>From</Label>
                                         <Input
@@ -164,14 +164,13 @@ const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving 
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Unit</Label>
-                                        <select
-                                            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 p-2.5 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                        <Select
                                             value={rule.unit}
                                             onChange={(e) => handleRuleChange(pIdx, rIdx, "unit", e.target.value)}
                                         >
                                             <option value="days">Days</option>
                                             <option value="hours">Hours</option>
-                                        </select>
+                                        </Select>
                                     </div>
                                     <div className="md:col-span-1 space-y-2">
                                         <Label>Refund (%)</Label>

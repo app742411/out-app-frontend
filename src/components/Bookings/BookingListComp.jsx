@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
 import { useNavigate } from "react-router";
+import { Select } from "../ui/select/Select";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -104,49 +105,54 @@ export default function BookingListComp({ defaultStatus = "all" }) {
     return (
         <ComponentCard title="All Bookings" className="">
             {/* Filters */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 flex-wrap">
-                <input
-                    type="text"
-                    placeholder="Search by Order ID..."
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 w-full md:w-1/4 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6 bg-transparent">
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        placeholder="Search by Order ID..."
+                        className="h-11 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm transition-all focus:border-black focus:ring-4 focus:ring-black/5 dark:text-white/90"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
 
-                <select
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    value={bookingStatus}
-                    onChange={(e) => setBookingStatus(e.target.value)}
-                >
-                    <option value="all">All Status</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
-                </select>
+                <div className="w-full md:w-44">
+                    <Select
+                        value={bookingStatus}
+                        onChange={(e) => setBookingStatus(e.target.value)}
+                    >
+                        <option value="all">All Status</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                    </Select>
+                </div>
 
-                <select
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    value={bookingType}
-                    onChange={(e) => setBookingType(e.target.value)}
-                >
-                    <option value="">All Types</option>
-                    <option value="PROPERTY">Property</option>
-                    <option value="SERVICE">Service</option>
-                    <option value="PACKAGE">Package</option>
-                    <option value="PROPERTY_SERVICE">Property Service</option>
-                </select>
+                <div className="w-full md:w-44">
+                    <Select
+                        value={bookingType}
+                        onChange={(e) => setBookingType(e.target.value)}
+                    >
+                        <option value="">All Types</option>
+                        <option value="PROPERTY">Property</option>
+                        <option value="SERVICE">Service</option>
+                        <option value="PACKAGE">Package</option>
+                        <option value="PROPERTY_SERVICE">Property Service</option>
+                    </Select>
+                </div>
 
-                <select
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    value={paymentStatus}
-                    onChange={(e) => setPaymentStatus(e.target.value)}
-                >
-                    <option value="">All Payments</option>
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                    <option value="failed">Failed</option>
-                </select>
+                <div className="w-full md:w-44">
+                    <Select
+                        value={paymentStatus}
+                        onChange={(e) => setPaymentStatus(e.target.value)}
+                    >
+                        <option value="">All Payments</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                    </Select>
+                </div>
             </div>
 
             {/* Table */}

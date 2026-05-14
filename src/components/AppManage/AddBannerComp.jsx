@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createBanner, updateBanner } from "../../api/authApi";
 import Button from "../ui/button/Button";
-
+import Select from "../ui/select/Select";
 const BANNER_TYPES = ["OFFER", "PROMOTION", "ANNOUNCEMENT"];
 
 export default function AddBannerComp({ fetchBanners, editBanner, setEditBanner }) {
@@ -105,15 +105,15 @@ export default function AddBannerComp({ fetchBanners, editBanner, setEditBanner 
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Banner Type
                     </label>
-                    <select
+                    <Select
                         value={bannerType}
                         onChange={(e) => setBannerType(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+
                     >
                         {BANNER_TYPES.map(type => (
                             <option key={type} value={type}>{type}</option>
                         ))}
-                    </select>
+                    </Select>
                 </div>
 
                 <div>

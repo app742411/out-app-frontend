@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
 import { Search, Filter, TrendingUp, TrendingDown } from "lucide-react";
-
+import Select from "../ui/select/Select";
 export default function WalletTransactionListComp() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -72,11 +72,10 @@ export default function WalletTransactionListComp() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-gray-400" />
-                    <select 
-                        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500/20"
+                    <Select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
                     >
@@ -84,7 +83,7 @@ export default function WalletTransactionListComp() {
                         <option value="completed">Completed</option>
                         <option value="pending">Pending</option>
                         <option value="failed">Failed</option>
-                    </select>
+                    </Select>
                 </div>
             </div>
 

@@ -19,6 +19,7 @@ import {
   toggleServiceCategoryStatus,
 } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { Select } from "../ui/select/Select";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -108,14 +109,13 @@ const ServiceCategoryList = forwardRef(({ onEdit }, ref) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <select
-              className="appearance-none pl-4 pr-10 py-2.5 text-sm text-gray-800 dark:text-white/90 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-xl focus:border-brand-500 transition-all focus:outline-none cursor-pointer min-w-[160px]"
+            <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
               <option value="asc">Name (A-Z)</option>
               <option value="desc">Name (Z-A)</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -167,8 +167,8 @@ const ServiceCategoryList = forwardRef(({ onEdit }, ref) => {
                         <TableCell className="px-5 py-2 text-center">
                           <span
                             className={`px-3 py-1 text-xs font-medium rounded-full ${category.isActive
-                                ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                                : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                              : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
                               }`}
                           >
                             {category.isActive ? "Active" : "Inactive"}

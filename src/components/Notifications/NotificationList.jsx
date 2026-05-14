@@ -14,6 +14,7 @@ import { getAllNotificationsAdmin, adminDeleteNotifications } from "../../api/au
 import { useSocket } from "../../context/SocketContext";
 import toast from "react-hot-toast";
 import NotificationDetailsModal from "./NotificationDetailsModal";
+import Select from "../ui/select/Select";
 
 export default function NotificationList() {
     const { notifications, setNotifications } = useSocket();
@@ -128,17 +129,17 @@ export default function NotificationList() {
                     </div>
 
                     <div className="relative group">
-                        <select
+                        <Select
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
-                            className="pl-4 pr-10 py-2 text-xs font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 border-none rounded-xl appearance-none cursor-pointer focus:ring-2 focus:ring-brand/20 transition-all text-gray-700 dark:text-gray-200"
+                        // className="pl-4 pr-10 py-2 text-xs font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 border-none rounded-xl appearance-none cursor-pointer focus:ring-2 focus:ring-brand/20 transition-all text-gray-700 dark:text-gray-200"
                         >
                             <option value="all">All Types</option>
                             <option value="BOOKING">Bookings</option>
                             <option value="CHAT">Conversations</option>
                             <option value="PAYMENT">Payments</option>
                             <option value="REFUND">Refunds</option>
-                        </select>
+                        </Select>
                         <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
                     </div>
                 </div>
@@ -170,8 +171,8 @@ export default function NotificationList() {
                                 key={notification._id}
                                 onClick={() => handleNotificationClick(notification._id)}
                                 className={`group relative flex items-start gap-4 p-5 rounded-[2rem] border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-brand/5 hover:scale-[1.01] active:scale-100 ${!notification.isRead
-                                        ? 'bg-white dark:bg-white/[0.03] border-brand/20 shadow-lg shadow-brand/5'
-                                        : 'bg-gray-50/50 dark:bg-transparent border-gray-100 dark:border-gray-800 opacity-80'
+                                    ? 'bg-white dark:bg-white/[0.03] border-brand/20 shadow-lg shadow-brand/5'
+                                    : 'bg-gray-50/50 dark:bg-transparent border-gray-100 dark:border-gray-800 opacity-80'
                                     }`}
                             >
                                 <div className={`shrink-0 flex items-center justify-center w-16 h-16 rounded-2xl ${colors} dark:bg-opacity-10 shadow-sm transition-transform group-hover:scale-110 duration-500`}>

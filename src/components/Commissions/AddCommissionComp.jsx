@@ -4,6 +4,7 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { createCommission, updateCommission, getCategories } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { Select } from "../ui/select/Select";
 
 export default function AddCommissionComp({ fetchCommissions, editCommission = null, setEditCommission = null }) {
     const [loading, setLoading] = useState(false);
@@ -133,16 +134,16 @@ export default function AddCommissionComp({ fetchCommissions, editCommission = n
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <Label>Scope</Label>
-                    <select
+                    <Select
                         name="scope"
                         value={formData.scope}
                         onChange={handleChange}
-                        disabled={!!editCommission} // Often scope shouldn't change on edit, but if it can, remove this
-                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white disabled:opacity-50"
+                        disabled={!!editCommission}
+                        className="mt-1"
                     >
                         <option value="GLOBAL">Global</option>
                         <option value="CATEGORY">Category Specific</option>
-                    </select>
+                    </Select>
                 </div>
 
                 {formData.scope === "CATEGORY" && (
@@ -208,15 +209,15 @@ export default function AddCommissionComp({ fetchCommissions, editCommission = n
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label>Commission Type</Label>
-                        <select
+                        <Select
                             name="commissionType"
                             value={formData.commissionType}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            className="mt-1"
                         >
                             <option value="PERCENTAGE">Percentage (%)</option>
                             <option value="FLAT">Flat Amount</option>
-                        </select>
+                        </Select>
                     </div>
                     <div>
                         <Label>Commission Value</Label>

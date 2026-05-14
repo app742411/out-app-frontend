@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ComponentCard from "../common/ComponentCard";
 import { Link, useNavigate } from "react-router";
 import Button from "../ui/button/Button";
-import { getAllProperties, getPendingProperties, updatePropertyApproval, deleteProperty } from "../../api/authApi";
+import { getAllProperties, getPendingProperties, updatePropertyApproval, deleteProperty, toggleRecommendedProperty } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
@@ -20,7 +20,8 @@ import {
     CheckCircle,
     XCircle,
     AlertCircle,
-    Trash2
+    Trash2,
+    Star
 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
@@ -49,6 +50,7 @@ export default function ServicePropertiesList() {
     const [activeTab, setActiveTab] = useState("active"); // "active" or "pending"
     const [rejectionModal, setRejectionModal] = useState({ show: false, propId: null, reason: "" });
     const [approvalLoading, setApprovalLoading] = useState(null);
+    const [recommendLoading, setRecommendLoading] = useState(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [propertyToDelete, setPropertyToDelete] = useState(null);
 
@@ -145,6 +147,23 @@ export default function ServicePropertiesList() {
             toast.error(error?.message || "Failed to perform action");
         } finally {
             setApprovalLoading(null);
+        }
+    };
+
+    const handleToggleRecommended = async (id) => {
+        try {
+            setRecommendLoading(id);
+            const res = await toggleRecommendedProperty(id);
+            if (res.success) {
+                toast.success(res.message || "Recommendation status updated");
+                fetchProperties();
+            } else {
+                toast.error(res.message || "Failed to update recommendation");
+            }
+        } catch (error) {
+            toast.error(error?.message || "Something went wrong");
+        } finally {
+            setRecommendLoading(null);
         }
     };
 
@@ -255,7 +274,27 @@ export default function ServicePropertiesList() {
                                             {prop.approvalStatus || "pending"}
                                         </span>
                                     </div>
-                                    <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                    <div className="absolute top-4 right-4 flex gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                        {activeTab === "active" && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleRecommended(prop._id);
+                                                }}
+                                                disabled={recommendLoading === prop._id}
+                                                className={`p-2 rounded-full shadow-lg transition-all ${prop.isRecommended
+                                                    ? 'bg-yellow-400 text-white'
+                                                    : 'bg-white/80 dark:bg-black/60 text-gray-400 hover:text-yellow-500'
+                                                    }`}
+                                                title={prop.isRecommended ? "Remove from Recommended" : "Set as Recommended"}
+                                            >
+                                                {recommendLoading === prop._id ? (
+                                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <Star size={16} fill={prop.isRecommended ? "currentColor" : "none"} />
+                                                )}
+                                            </button>
+                                        )}
                                         <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${prop.status === 'publish' || prop.status === 'completed'
                                             ? 'bg-green-500 text-white'
                                             : 'bg-orange-500 text-white'
@@ -273,9 +312,14 @@ export default function ServicePropertiesList() {
                                 {/* Content Section */}
                                 <div className="p-5 space-y-4">
                                     <div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white truncate text-lg group-hover:text-brand-500 transition-colors">
-                                            {prop.name || "Unnamed Property"}
-                                        </h3>
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-bold text-gray-900 dark:text-white truncate text-lg group-hover:text-brand-500 transition-colors">
+                                                {prop.name || "Unnamed Property"}
+                                            </h3>
+                                            {prop.isRecommended && (
+                                                <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 px-2 py-0.5 rounded-full">Recommended</span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                             <MapPin className="w-3 h-3" /> {prop.address?.city || "Unknown City"}
                                         </p>
@@ -324,14 +368,6 @@ export default function ServicePropertiesList() {
                                                 <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
                                                 <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
                                             </button>
-                                            {/* <button
-                                                onClick={() => navigate(`/property-details/${prop._id}?tab=bookings`)}
-                                                className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:border-orange-500/30 transition-all group/btn"
-                                                title="Bookings"
-                                            >
-                                                <BookOpen className="w-4 h-4 text-gray-400 group-hover/btn:text-orange-500 transition-colors" />
-                                                <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-orange-500">Books</span>
-                                            </button> */}
                                             <button
                                                 onClick={() => navigate(`/property-calendar/${prop._id}`)}
                                                 className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-500/30 transition-all group/btn"
@@ -401,7 +437,6 @@ export default function ServicePropertiesList() {
                     )}
                 </div>
             )}
-
             {!loading && totalPages > 0 && (
                 <div className="flex justify-center pt-8">
                     <Pagination

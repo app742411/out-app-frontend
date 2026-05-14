@@ -6,6 +6,7 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.css";
 import { createCoupon, getCategories, getAllProperties, updateCoupon } from "../../api/authApi";
 import toast from "react-hot-toast";
+import { Select } from "../ui/select/Select";
 
 export default function AddCouponComp({ fetchCoupons, editCoupon = null, setEditCoupon = null }) {
     const [loading, setLoading] = useState(false);
@@ -199,15 +200,14 @@ export default function AddCouponComp({ fetchCoupons, editCoupon = null, setEdit
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label>Discount Type</Label>
-                        <select
+                        <Select
                             name="discountType"
                             value={formData.discountType}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                         >
                             <option value="PERCENTAGE">Percentage</option>
                             <option value="FLAT">Flat Amount</option>
-                        </select>
+                        </Select>
                     </div>
                     <div>
                         <Label>Discount Value</Label>

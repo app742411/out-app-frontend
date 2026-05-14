@@ -210,6 +210,16 @@ export const getUserProperties = async (userId) => {
   }
 };
 
+export const toggleRecommendedProperty = async (propertyId) => {
+  try {
+    const res = await apiClient.patch(`/api/admin/toggleRecommendedProperty/${propertyId}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+
 // COUPONS API
 export const createCoupon = async (payload) => {
   try {
@@ -652,7 +662,7 @@ export const getAdminConversations = async (chatType, page = 1) => {
 
 export const getMessages = async (conversationId, cursor = null) => {
   try {
-    const url = cursor 
+    const url = cursor
       ? `/api/chat/messages/${conversationId}?cursor=${cursor}`
       : `/api/chat/messages/${conversationId}`;
     const res = await apiClient.get(url);
@@ -740,6 +750,17 @@ export const getBookingDetails = async (id) => {
 export const getPropertyBookings = async (propertyId, { page = 1, limit = 10 } = {}) => {
   try {
     const res = await apiClient.get(`/api/admin/property-bookings/${propertyId}`, {
+      params: { page, limit }
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getServiceBookings = async (serviceId, { page = 1, limit = 10 } = {}) => {
+  try {
+    const res = await apiClient.get(`/api/admin/service-bookings/${serviceId}`, {
       params: { page, limit }
     });
     return res.data;
