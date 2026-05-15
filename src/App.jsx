@@ -4,6 +4,7 @@ import NotFound from "./pages/OtherPage/NotFound";
 import LandingPage from "./pages/LandingPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import DeleteAccount from "./pages/DeleteAccount";
 import UserProfiles from "./pages/UserProfiles";
 import ContactUsPage from "./pages/ContactUs/ContactUsPage";
 import Videos from "./pages/UiElements/Videos";
@@ -149,6 +150,7 @@ export default function App() {
           {/* Open Routes (accessible whether logged in or out) */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -109,16 +109,16 @@ const othersItems = [
     name: "Notification",
     path: "/notifications",
   },
-  {
-    icon: <PageIcon />,
-    name: "Privacy Policy",
-    path: "/privacy-policy",
-  },
-  {
-    icon: <PageIcon />,
-    name: "Terms of Service",
-    path: "/terms-of-service",
-  },
+  // {
+  //   icon: <PageIcon />,
+  //   name: "Privacy Policy",
+  //   path: "/privacy-policy",
+  // },
+  // {
+  //   icon: <PageIcon />,
+  //   name: "Terms of Service",
+  //   path: "/terms-of-service",
+  // },
   // {
   //   icon: <PlugInIcon />,
   //   name: "Settings",

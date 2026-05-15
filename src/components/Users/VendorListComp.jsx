@@ -27,6 +27,7 @@ export default function VendorListComp() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [approvalFilter, setApprovalFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -46,6 +47,7 @@ export default function VendorListComp() {
                 limit: ITEMS_PER_PAGE,
                 search,
                 status: statusFilter,
+                isApproved: approvalFilter,
             });
 
             setVendors(res.data || []);
@@ -60,7 +62,7 @@ export default function VendorListComp() {
 
     useEffect(() => {
         fetchVendors(1);
-    }, [search, statusFilter]);
+    }, [search, statusFilter, approvalFilter]);
 
     useEffect(() => {
         const handleRefresh = () => {
@@ -76,7 +78,7 @@ export default function VendorListComp() {
             window.removeEventListener("focus", handleRefresh);
             document.removeEventListener("visibilitychange", handleRefresh);
         };
-    }, [currentPage, search, statusFilter]);
+    }, [currentPage, search, statusFilter, approvalFilter]);
 
     const handleBlockUnblock = async (vendorId, currentStatus) => {
         try {
@@ -135,6 +137,18 @@ export default function VendorListComp() {
                         <option value="inactive">Inactive</option>
                     </Select>
                 </div>
+
+                <div className="w-full md:w-56">
+                    <Select
+                        value={approvalFilter}
+                        onChange={(e) => setApprovalFilter(e.target.value)}
+                    >
+                        <option value="">All Approval Status</option>
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
+                    </Select>
+                </div>
             </div>
 
             {/* Table */}
@@ -166,6 +180,9 @@ export default function VendorListComp() {
                                     </TableCell>
                                     <TableCell isHeader className="px-5 py-3">
                                         Status
+                                    </TableCell>
+                                    <TableCell isHeader className="px-5 py-3">
+                                        Approval
                                     </TableCell>
                                     <TableCell isHeader className="px-5 py-3">
                                         Joined Date
@@ -225,7 +242,7 @@ export default function VendorListComp() {
                                                 </span>
                                             </TableCell>
 
-                                            <TableCell className="px-5 py-3">
+                                            <TableCell className="px-5 py-3 text-center">
                                                 <span
                                                     className={`px-3 py-1 rounded-full text-xs font-medium ${vendor.isActive
                                                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
@@ -233,6 +250,19 @@ export default function VendorListComp() {
                                                         }`}
                                                 >
                                                     {vendor.isActive ? "Active" : "Inactive"}
+                                                </span>
+                                            </TableCell>
+
+                                            <TableCell className="px-5 py-3">
+                                                <span
+                                                    className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${vendor.isApproved === "approved"
+                                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                                                        : vendor.isApproved === "pending"
+                                                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                                        }`}
+                                                >
+                                                    {vendor.isApproved || "pending"}
                                                 </span>
                                             </TableCell>
 
@@ -296,7 +326,7 @@ export default function VendorListComp() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-6 text-gray-500">
+                                        <TableCell colSpan={10} className="text-center py-6 text-gray-500">
                                             No service providers found
                                         </TableCell>
                                     </TableRow>

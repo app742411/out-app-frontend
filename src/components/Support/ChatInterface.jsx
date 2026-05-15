@@ -336,7 +336,9 @@ export default function ChatInterface({ conversation, onClose }) {
                         <div className="relative group">
                             <div className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-gray-50 dark:ring-gray-800 group-hover:ring-brand/30 transition-all duration-300 shadow-sm">
                                 <img
-                                    src={otherUser?.profile || otherUser?.profileImage ? `${Base_URL}/uploads/users/${otherUser.profile || otherUser.profileImage}` : "/images/user/user-01.jpg"}
+                                    src={otherUser?.profile || otherUser?.profileImage 
+                                        ? `${Base_URL}/uploads/${otherUser?.senderType === "Admin" ? "adminProfileImage" : "users"}/${otherUser.profile || otherUser.profileImage}` 
+                                        : "/images/user/user-01.jpg"}
                                     className="w-full h-full object-cover"
                                     alt="avatar"
                                     onError={(e) => { e.target.onerror = null; e.target.src = "/images/user/user-01.jpg"; }}
@@ -421,7 +423,7 @@ export default function ChatInterface({ conversation, onClose }) {
                                     <div className={`w-8 h-8 shrink-0 rounded-xl overflow-hidden shadow-sm border-2 border-white dark:border-gray-800 transition-opacity ${!showAvatar && 'opacity-0'}`}>
                                         <img
                                             src={msg.sender?.profile || msg.sender?.profileImage 
-                                                ? `${Base_URL}/uploads/users/${msg.sender.profile || msg.sender.profileImage}` 
+                                                ? `${Base_URL}/uploads/${msg.sender?.senderType === "Admin" ? "adminProfileImage" : "users"}/${msg.sender.profile || msg.sender.profileImage}` 
                                                 : `https://ui-avatars.com/api/?name=${msg.sender?.firstName || "User"}&background=${isMe ? '000' : 'random'}&color=fff`}
                                             className="w-full h-full object-cover"
                                             alt="avatar"

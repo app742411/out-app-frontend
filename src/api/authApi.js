@@ -73,6 +73,7 @@ export const getAllServiceUsers = async ({
   limit = 10,
   search = "",
   status = "",
+  isApproved = "",
 } = {}) => {
   try {
     const res = await apiClient.get("/api/admin/get-all-service-users", {
@@ -81,6 +82,7 @@ export const getAllServiceUsers = async ({
         limit,
         search,
         status, // 'active' or 'inactive'
+        isApproved,
       },
     });
     return res.data;

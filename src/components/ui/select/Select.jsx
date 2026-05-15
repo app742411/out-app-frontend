@@ -41,10 +41,10 @@ export const Select = ({ value, onChange, children, className = "", disabled = f
             <div
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className={`flex h-11 w-full items-center justify-between rounded-lg border appearance-none px-4 py-2.5 text-sm transition-all shadow-theme-xs
-                    ${disabled 
-                        ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700' 
-                        : isOpen 
-                            ? 'border-black ring-4 ring-black/5 bg-white dark:bg-gray-900 cursor-pointer' 
+                    ${disabled
+                        ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700'
+                        : isOpen
+                            ? 'border-black ring-4 ring-black/5 bg-white dark:bg-gray-900 cursor-pointer'
                             : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-600 cursor-pointer'
                     }`}
             >

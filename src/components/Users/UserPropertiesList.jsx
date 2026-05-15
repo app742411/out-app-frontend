@@ -101,7 +101,7 @@ export default function UserPropertiesList({ userId }) {
                                                     {prop.status || "Draft"}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="px-5 py-3 text-right text-[10px]">
+                                            <TableCell className="px-5 py-3 text-left text-[10px]">
                                                 <button
                                                     onClick={() => navigate(`/property-details/${prop._id}`)}
                                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 text-brand-500 font-bold shadow-sm border border-gray-100 dark:border-gray-700 hover:border-brand-500 transition-all"
