@@ -295,6 +295,7 @@ export default function VendorListComp() {
                                                                     navigate(`/vendor-details/${vendor._id}`);
                                                                     setOpenDropdownId(null);
                                                                 }}
+                                                                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                                                             >
                                                                 View
                                                             </DropdownItem>

@@ -115,22 +115,22 @@ export default function BookingDetailsComp() {
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase">Check-In</label>
-                                <p className="font-medium">{booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : "N/A"}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : "N/A"}</p>
                                 <p className="text-xs text-gray-400">{activeProperty?.policies?.checkInTime || "N/A"}</p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase">Check-Out</label>
-                                <p className="font-medium">{booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : "N/A"}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : "N/A"}</p>
                                 <p className="text-xs text-gray-400">{activeProperty?.policies?.checkOutTime || "N/A"}</p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase">Guests</label>
-                                <p className="font-medium">{booking.adults || 0} Adults, {booking.children || 0} Children</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{booking.adults || 0} Adults, {booking.children || 0} Children</p>
                                 <p className="text-xs text-gray-400">Capacity: {activeProperty?.maxGuests ? `Up to ${activeProperty.maxGuests} guests` : "N/A"}</p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase">Booked On</label>
-                                <p className="font-medium">{booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A"}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A"}</p>
                             </div>
                         </div>
                     </ComponentCard>
@@ -142,7 +142,7 @@ export default function BookingDetailsComp() {
                                 {services.map((s, idx) => (
                                     <div key={idx} className="flex justify-between items-center p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500">
+                                            <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 dark:text-white">
                                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                                             </div>
                                             <div>
@@ -232,7 +232,7 @@ export default function BookingDetailsComp() {
                                         onError={(e) => { e.currentTarget.src = "/images/user/user-01.jpg"; }}
                                     />
                                 ) : (
-                                    <span className="text-2xl font-bold text-brand-500">
+                                    <span className="text-2xl font-bold text-brand-500 dark:text-white">
                                         {user?.email?.charAt(0).toUpperCase()}
                                     </span>
                                 )}
@@ -243,7 +243,7 @@ export default function BookingDetailsComp() {
                         <div className="space-y-4 border-t pt-4">
                             <div>
                                 <label className="text-xs text-gray-500 uppercase">Phone Number</label>
-                                <p className="font-medium text-sm">{user?.phone || "N/A"}</p>
+                                <p className="font-medium text-sm text-gray-900 dark:text-white">{user?.phone || "N/A"}</p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase">User ID</label>
@@ -251,7 +251,7 @@ export default function BookingDetailsComp() {
                             </div>
                         </div>
                     </ComponentCard>
-
+ 
                     {booking.paymentTransaction && (
                         <ComponentCard title="Payment & Transaction">
                             <div className="space-y-4">
@@ -269,7 +269,7 @@ export default function BookingDetailsComp() {
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500 uppercase">Currency</label>
-                                    <p className="font-medium">{booking.paymentTransaction.currency}</p>
+                                    <p className="font-medium text-gray-900 dark:text-white">{booking.paymentTransaction.currency}</p>
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500 uppercase">Transaction ID</label>
@@ -277,8 +277,8 @@ export default function BookingDetailsComp() {
                                 </div>
                                 {booking.paymentTransaction.rawResponse?.couponId && (
                                     <div>
-                                        <label className="text-xs text-brand-500 uppercase font-semibold">Coupon Used</label>
-                                        <p className="font-mono text-[10px] text-brand-600 break-all">{booking.paymentTransaction.rawResponse.couponId}</p>
+                                        <label className="text-xs text-brand-500 dark:text-white uppercase font-semibold">Coupon Used</label>
+                                        <p className="font-mono text-[10px] text-brand-600 dark:text-brand-400 break-all">{booking.paymentTransaction.rawResponse.couponId}</p>
                                     </div>
                                 )}
                             </div>
@@ -328,7 +328,7 @@ export default function BookingDetailsComp() {
                             </div>
                             <div className="flex justify-between font-bold text-xl pt-4 border-t mt-4">
                                 <span className="text-gray-900 dark:text-white">Total Amount</span>
-                                <span className="text-brand-500">
+                                <span className="text-brand-500 dark:text-white">
                                     {booking.paymentTransaction?.currency || "SAR"} {(booking.totalAmount || booking.amount || 0).toLocaleString()}
                                 </span>
                             </div>

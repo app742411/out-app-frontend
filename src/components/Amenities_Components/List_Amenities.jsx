@@ -117,7 +117,7 @@ const List_Amenities = forwardRef(({ onEdit }, ref) => {
             <input
               type="text"
               placeholder="Search amenities..."
-              className="w-full pl-11 pr-4 py-2.5 text-sm text-gray-800 dark:text-white/90 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-xl focus:border-brand-300 dark:focus:border-brand-500/30 focus:outline-none transition-all"
+              className="w-full pl-11 pr-4 py-2.5 text-sm text-gray-800 dark:text-white bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 rounded-xl focus:border-brand-300 dark:focus:border-brand-500/30 focus:outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

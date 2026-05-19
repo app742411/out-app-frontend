@@ -218,7 +218,7 @@ export default function ServicePropertiesList() {
                     <input
                         type="text"
                         placeholder="Search properties, owners..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />

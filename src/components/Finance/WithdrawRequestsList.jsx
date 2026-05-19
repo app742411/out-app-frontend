@@ -82,7 +82,7 @@ export default function WithdrawRequestsList() {
                     <input
                         type="text"
                         placeholder="Search by vendor name, email or bank..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-transparent focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-transparent focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />

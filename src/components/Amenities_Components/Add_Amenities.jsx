@@ -121,7 +121,7 @@ const Add_Amenities = ({ onAmenitiesAdded, editData, onCancel }) => {
                 placeholder="Amenity Name"
                 value={item.name}
                 onChange={(e) => updateName(index, e.target.value)}
-                className="flex-grow rounded-lg border border-gray-300 dark:border-gray-700 p-3 bg-white dark:bg-gray-900"
+                className="flex-grow rounded-lg border border-gray-300 dark:border-gray-700 p-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-brand-500/20"
               />
 
               {/* Selected Icon Preview */}
@@ -129,7 +129,7 @@ const Add_Amenities = ({ onAmenitiesAdded, editData, onCancel }) => {
                 {SelectedIcon ? (
                   <SelectedIcon size={20} className="text-gray-700 dark:text-gray-300" />
                 ) : (
-                  <span className="text-xs text-gray-500">None</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">None</span>
                 )}
               </div>
 
@@ -138,6 +138,7 @@ const Add_Amenities = ({ onAmenitiesAdded, editData, onCancel }) => {
                 type="button"
                 size="sm"
                 variant="outline"
+                className="dark:text-white dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700/50"
                 onClick={() =>
                   setOpenPickerIndex(
                     openPickerIndex === index ? null : index

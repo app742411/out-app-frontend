@@ -1,8 +1,12 @@
+import React from "react";
+import { twMerge } from "tailwind-merge";
+import { clsx } from "clsx";
+
 const Button = ({
   children,
   size = "md",
   variant = "primary",
-   type = "button",
+  type = "button",
   startIcon,
   endIcon,
   onClick,
@@ -20,7 +24,7 @@ const Button = ({
       "bg-brand-500 text-white hover:bg-brand-600 disabled:bg-brand-300",
 
     outline:
-      "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/5",
+      "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-white/5",
 
     success:
       "bg-green-600 text-white hover:bg-green-700 disabled:bg-green-300",
@@ -45,11 +49,16 @@ const Button = ({
 
   return (
     <button
-    type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg transition font-medium ${className}
-        ${sizeClasses[size]} 
-        ${variantClasses[variant]}
-        ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+      type={type}
+      className={clsx(
+        twMerge(
+          "inline-flex items-center justify-center gap-2 rounded-lg transition font-medium",
+          variantClasses[variant],
+          sizeClasses[size],
+          disabled && "cursor-not-allowed opacity-50",
+          className
+        )
+      )}
       onClick={onClick}
       disabled={disabled}
     >

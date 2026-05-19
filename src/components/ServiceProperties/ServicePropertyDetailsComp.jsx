@@ -354,7 +354,17 @@ export default function ServicePropertyDetailsComp() {
                                     </div>
                                     <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/20">
                                         <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">Gradient ({property.pool.gradient?.type || 'N/A'})</p>
-                                        <p className="font-bold text-gray-900 dark:text-white">Depth: {property.pool.gradient?.feet1}ft - {property.pool.gradient?.feet2}ft</p>
+                                        <p className="font-bold text-gray-900 dark:text-white">
+                                            Depth: {property.pool.gradient?.feet1}ft - {property.pool.gradient?.feet2}ft
+                                            {(() => {
+                                                const f1 = parseFloat(property.pool.gradient?.feet1);
+                                                const f2 = parseFloat(property.pool.gradient?.feet2);
+                                                if (!isNaN(f1) && !isNaN(f2)) {
+                                                    return ` (${(f1 * 0.3048).toFixed(2)}m - ${(f2 * 0.3048).toFixed(2)}m)`;
+                                                }
+                                                return null;
+                                            })()}
+                                        </p>
                                     </div>
                                     <div className="md:col-span-1">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Pool Features</p>

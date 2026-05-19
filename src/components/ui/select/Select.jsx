@@ -44,13 +44,13 @@ export const Select = ({ value, onChange, children, className = "", disabled = f
                     ${disabled
                         ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700'
                         : isOpen
-                            ? 'border-black ring-4 ring-black/5 bg-white dark:bg-gray-900 cursor-pointer'
-                            : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-600 cursor-pointer'
+                            ? 'border-black ring-4 ring-black/5 bg-white dark:bg-gray-900 cursor-pointer text-gray-800 dark:text-white'
+                            : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-600 cursor-pointer text-gray-800 dark:text-white'
                     }`}
             >
                 <span className="truncate">{selectedOption?.label}</span>
                 <div className={`flex items-center ml-2 ${disabled ? 'text-gray-300' : 'text-gray-400'}`}>
-                    <ChevronDown size={18} strokeWidth={2} className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-black' : ''}`} />
+                    <ChevronDown size={18} strokeWidth={2} className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-black dark:text-white' : ''}`} />
                 </div>
             </div>
 
@@ -63,7 +63,7 @@ export const Select = ({ value, onChange, children, className = "", disabled = f
                             onClick={() => handleSelect(option.value)}
                             className={`px-4 py-2.5 text-sm cursor-pointer transition-colors
                                 ${value === option.value
-                                    ? 'bg-black text-white'
+                                    ? 'bg-black dark:bg-white/10 text-white dark:text-white font-semibold'
                                     : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                                 }`}
                         >
