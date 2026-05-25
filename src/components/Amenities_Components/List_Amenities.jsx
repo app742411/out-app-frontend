@@ -72,7 +72,6 @@ const List_Amenities = forwardRef(({ onEdit }, ref) => {
       setNextPageNum(res.nextPage);
       setPreviousPageNum(res.previousPage);
     } catch (error) {
-      console.log("AMENITY ERROR:", error);
       toast.error("Failed to load amenities");
     } finally {
       setLoading(false);

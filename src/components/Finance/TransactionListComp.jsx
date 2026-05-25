@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
 import { useNavigate } from "react-router";
-import { Eye, Search, Filter } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 
 export default function TransactionListComp() {
     const [transactions, setTransactions] = useState([]);
@@ -79,8 +79,7 @@ export default function TransactionListComp() {
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-400" />
-                    <Select 
+                    <Select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
                     >
@@ -142,7 +141,7 @@ export default function TransactionListComp() {
                                             <TableCell className="px-5 py-4 text-xs text-gray-500">
                                                 {new Date(trx.createdAt).toLocaleDateString()}
                                             </TableCell>
-                                            <TableCell className="px-5 py-4 text-right">
+                                            <TableCell className="px-5 py-4 text-left">
                                                 <button
                                                     onClick={() => navigate(`/transaction-details/${trx._id}`)}
                                                     className="p-2 hover:bg-brand-50 rounded-lg text-brand-500 transition-colors"

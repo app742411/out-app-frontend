@@ -95,6 +95,11 @@ const othersItems = [
     path: "/profile",
   },
   {
+    icon: <PlugInIcon />,
+    name: "Account Settings",
+    path: "/account",
+  },
+  {
     icon: <PageIcon />,
     name: "Support",
     path: "/support",

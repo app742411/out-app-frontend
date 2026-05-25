@@ -6,18 +6,25 @@ import {
     MessageSquare,
     Clock,
     Trash2,
-    Filter,
+    Home,
+    Shield,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 import ComponentCard from "../common/ComponentCard";
 import Badge from "../ui/badge/Badge";
-import { getAllNotificationsAdmin, adminDeleteNotifications } from "../../api/authApi";
+import {
+    getAllNotificationsAdmin,
+    adminDeleteNotifications,
+    getNotificationDetails
+} from "../../api/authApi";
 import { useSocket } from "../../context/SocketContext";
 import toast from "react-hot-toast";
 import NotificationDetailsModal from "./NotificationDetailsModal";
 import Select from "../ui/select/Select";
 
 export default function NotificationList() {
-    const { notifications, setNotifications } = useSocket();
+    const { notifications, setNotifications, setNotificationCount } = useSocket();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [filterType, setFilterType] = useState("all");
     const [activeTab, setActiveTab] = useState("active");
@@ -48,13 +55,62 @@ export default function NotificationList() {
         fetchNotifications();
     }, [filterType, activeTab]);
 
-    const handleNotificationClick = (id) => {
-        setSelectedId(id);
-        setIsModalOpen(true);
+    const handleNotificationClick = async (notification) => {
+        const id = notification._id;
+        const refId = notification.referenceId;
+        const type = notification.type?.toUpperCase() || notification.referenceType?.toUpperCase();
+
+        // 1. Mark as read locally immediately to update the count in UI
+        const wasUnread = !notification.isRead;
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+        if (wasUnread) {
+            setNotificationCount(prev => Math.max(0, prev - 1));
+        }
+
+        // 2. Call backend in background to mark as read in database
+        try {
+            getNotificationDetails(id);
+        } catch (e) {
+            // Asynchronous background call
+        }
+
+        // 3. Direct redirection if path exists
+        let path = null;
+        switch (type) {
+            case "BOOKING":
+                const bookingId = refId || notification.data?.bookingId;
+                if (bookingId) path = `/booking-details/${bookingId}`;
+                break;
+            case "PROPERTY":
+                const propertyId = refId || notification.data?.propertyId;
+                if (propertyId) path = `/property-details/${propertyId}`;
+                break;
+            case "SERVICE":
+                const serviceId = refId || notification.data?.serviceId;
+                if (serviceId) path = `/service-details/${serviceId}`;
+                break;
+            case "CHAT":
+            case "CONVERSATION":
+                path = "/support";
+                break;
+            case "PAYMENT":
+            case "REFUND":
+            case "TRANSACTION":
+                path = refId ? `/transaction-details/${refId}` : `/transaction-logs`;
+                break;
+        }
+
+        if (path) {
+            navigate(path);
+        } else {
+            // Fallback to opening details modal
+            setSelectedId(id);
+            setIsModalOpen(true);
+        }
     };
 
     const handleDelete = async (e, id) => {
-        e.stopPropagation(); // Don't trigger modal
+        e.stopPropagation(); // Don't trigger redirection
         try {
             await adminDeleteNotifications([id]);
             setNotifications(notifications.filter(n => n._id !== id));
@@ -72,6 +128,7 @@ export default function NotificationList() {
             const ids = notifications.map(n => n._id);
             await adminDeleteNotifications(ids);
             setNotifications([]);
+            setNotificationCount(0);
             toast.success("All notifications deleted");
         } catch (error) {
             toast.error("Failed to clear notifications");
@@ -79,21 +136,25 @@ export default function NotificationList() {
     };
 
     const getIcon = (type) => {
-        switch (type) {
+        switch (type?.toUpperCase()) {
             case "BOOKING": return Calendar;
             case "PAYMENT": return CreditCard;
             case "REFUND": return Trash2;
             case "CHAT": return MessageSquare;
+            case "PROPERTY": return Home;
+            case "SERVICE": return Shield;
             default: return Bell;
         }
     };
 
     const getColor = (type) => {
-        switch (type) {
+        switch (type?.toUpperCase()) {
             case "BOOKING": return "text-blue-500 bg-blue-50";
             case "PAYMENT": return "text-green-500 bg-green-50";
             case "REFUND": return "text-red-500 bg-red-50";
             case "CHAT": return "text-purple-500 bg-purple-50";
+            case "PROPERTY": return "text-amber-500 bg-amber-50";
+            case "SERVICE": return "text-teal-500 bg-teal-50";
             default: return "text-gray-500 bg-gray-50";
         }
     };
@@ -107,6 +168,7 @@ export default function NotificationList() {
     };
 
     return (
+
         <ComponentCard
             title="System Notifications"
             desc="Stay updated with the latest activities across bookings, properties, and finance."
@@ -140,7 +202,6 @@ export default function NotificationList() {
                             <option value="PAYMENT">Payments</option>
                             <option value="REFUND">Refunds</option>
                         </Select>
-                        <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
                     </div>
                 </div>
 
@@ -169,8 +230,8 @@ export default function NotificationList() {
                         return (
                             <div
                                 key={notification._id}
-                                onClick={() => handleNotificationClick(notification._id)}
-                                className={`group relative flex items-start gap-4 p-5 rounded-[2rem] border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-brand/5 hover:scale-[1.01] active:scale-100 ${!notification.isRead
+                                onClick={() => handleNotificationClick(notification)}
+                                className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-brand/5 hover:scale-[1.01] active:scale-100 ${!notification.isRead
                                     ? 'bg-white dark:bg-white/[0.03] border-brand/20 shadow-lg shadow-brand/5'
                                     : 'bg-gray-50/50 dark:bg-transparent border-gray-100 dark:border-gray-800 opacity-80'
                                     }`}
@@ -182,9 +243,12 @@ export default function NotificationList() {
                                 <div className="flex-1 min-w-0 pr-10">
                                     <div className="flex flex-wrap items-center gap-2 mb-2">
                                         <Badge size="xs" color={
-                                            notification.type === 'BOOKING' ? 'blue' :
+                                            notification.type === 'BOOKING' ? 'info' :
                                                 notification.type === 'PAYMENT' ? 'success' :
-                                                    notification.type === 'REFUND' ? 'error' : 'warning'
+                                                    notification.type === 'REFUND' ? 'error' :
+                                                        notification.type === 'CHAT' ? 'primary' :
+                                                            notification.type === 'PROPERTY' ? 'warning' :
+                                                                notification.type === 'SERVICE' ? 'success' : 'primary'
                                         }>
                                             {notification.type}
                                         </Badge>

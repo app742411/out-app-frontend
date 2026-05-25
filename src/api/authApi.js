@@ -578,9 +578,9 @@ export const createCommission = async (payload) => {
   }
 };
 
-export const getCommissions = async () => {
+export const getCommissions = async (params = {}) => {
   try {
-    const res = await apiClient.get("/api/admin/getAllCommissions");
+    const res = await apiClient.get("/api/admin/getAllCommissions", { params });
     return res.data;
   } catch (error) {
     throw error.response?.data || error;

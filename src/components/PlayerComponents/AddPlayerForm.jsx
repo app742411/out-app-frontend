@@ -137,8 +137,7 @@ const AddPlayerForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("⚽ Player Profile Submitted:", formData);
-    toast.success("Player data saved successfully (see console)");
+    toast.success("Player data saved successfully");
   };
 
   return (

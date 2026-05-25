@@ -24,7 +24,7 @@ export default function ArrivalsDepartures({ data: dashboardData }) {
     };
 
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+        <div className="h-full rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
                     Today's Movement
@@ -45,7 +45,7 @@ export default function ArrivalsDepartures({ data: dashboardData }) {
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="flex-grow space-y-4">
                 {(activeTab === "arrivals" ? data.arrivals : data.departures).length > 0 ? (
                     (activeTab === "arrivals" ? data.arrivals : data.departures).map((item) => (
                         <div key={item._id} className="flex items-center justify-between p-3 rounded-xl border border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">

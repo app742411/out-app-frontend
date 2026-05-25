@@ -13,7 +13,6 @@ export default function UserMetaCard({ user }) {
   const { isOpen, openModal, closeModal } = useModal();
 
   const handleSave = () => {
-    console.log("Saving changes...");
     closeModal();
   };
 

@@ -60,8 +60,6 @@ export const SocketProvider = ({ children }) => {
         };
 
         newSocket.on("notification", (notification) => {
-            console.log("📩 Global Notification received:", notification);
-            
             // 🔔 show toast
             showToast(notification.title);
             

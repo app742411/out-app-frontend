@@ -66,36 +66,28 @@ export default function ChatInterface({ conversation, onClose }) {
                 token: localStorage.getItem("token")
             }
         });
-        console.log("Socket instance initialized:", socket);
         socketRef.current = socket;
 
         socket.on("connect", () => {
-            console.log("🟢 Socket CONNECTED to everything. ID:", socket.id);
             socket.emit("registerUser", adminId);
             if (conversationId) {
-                console.log("📖 Socket EMITTING markAsRead:", { conversationId, userId: adminId });
                 socket.emit("markAsRead", { conversationId, userId: adminId });
             }
         });
 
         socket.on("connect_error", (error) => {
-            console.error("🔴 Socket CONNECTION ERROR:", error.message);
         });
 
         socket.on("disconnect", (reason) => {
-            console.warn("🟡 Socket DISCONNECTED. Reason:", reason);
         });
 
         socket.on("reconnect_attempt", (attempt) => {
-            console.log("⏳ Socket RECONNECTING... attempt:", attempt);
         });
 
         socket.on("reconnect", (attempt) => {
-            console.log("🟢 Socket RECONNECTED. Total attempts:", attempt);
         });
 
         socket.on("receiveMessage", (msg) => {
-            console.log("📩 Socket RECEIVED Message:", msg);
             if (msg.conversationId === conversationId) setMessages((prev) => [...prev, msg]);
         });
 
@@ -108,22 +100,18 @@ export default function ChatInterface({ conversation, onClose }) {
         });
 
         socket.on("userOnline", (id) => {
-            console.log("👤 Socket: userOnline - ID:", id);
             if (id?.toString() === otherUserId?.toString()) setIsUserOnline(true);
         });
 
         socket.on("userOffline", (id) => {
-            console.log("👤 Socket: userOffline - ID:", id);
             if (id?.toString() === otherUserId?.toString()) setIsUserOnline(false);
         });
 
         socket.on("onlineStatusResult", (data) => {
-            console.log("👤 Socket: onlineStatusResult - Data:", data);
             if (data.userId?.toString() === otherUserId?.toString()) setIsUserOnline(data.isOnline);
         });
 
         socket.on("errorMessage", (msg) => {
-            console.error("💥 Socket ERROR message:", msg);
             toast.error(msg)
         });
 
@@ -132,12 +120,9 @@ export default function ChatInterface({ conversation, onClose }) {
 
     useEffect(() => {
         if (!conversationId || !socketRef.current) return;
-        console.log("🤝 Socket EMITTING joinConversation:", conversationId);
         socketRef.current.emit("joinConversation", conversationId);
-        console.log("📖 Socket EMITTING markAsRead:", { conversationId, userId: adminId });
         socketRef.current.emit("markAsRead", { conversationId, userId: adminId });
         setTimeout(() => {
-            console.log("🤝 Socket EMITTING checkOnlineStatus:", otherUserId);
             socketRef.current.emit("checkOnlineStatus", otherUserId);
         }, 200);
     }, [conversationId]);
@@ -194,7 +179,6 @@ export default function ChatInterface({ conversation, onClose }) {
             queryClient.invalidateQueries(["messages", conversationId]);
         },
         onError: (error) => {
-            console.error("Failed to send message:", error);
             toast.error("Failed to send message");
         }
     });
@@ -267,7 +251,6 @@ export default function ChatInterface({ conversation, onClose }) {
         sendMessageMutation.mutate(formData);
 
         if (socketRef.current && socketRef.current.connected) {
-            console.log("📤 Socket EMITTING sendMessage via socket because it is connected.");
             socketRef.current.emit("sendMessage", { conversationId, senderId: adminId, message: text });
         }
     };
@@ -291,7 +274,6 @@ export default function ChatInterface({ conversation, onClose }) {
             mediaRecorderRef.current.start();
             setIsRecording(true);
         } catch (error) {
-            console.error("Error accessing microphone:", error);
             toast.error("Microphone access denied");
         }
     };
@@ -305,12 +287,10 @@ export default function ChatInterface({ conversation, onClose }) {
     };
 
     const handleTyping = () => {
-        console.log("📤 Socket EMITTING typing...");
         socketRef.current.emit("typing", { conversationId, senderId: adminId });
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => {
             if (socketRef.current) {
-                console.log("📤 Socket EMITTING stopTyping...");
                 socketRef.current.emit("stopTyping", { conversationId, senderId: adminId });
             }
         }, 1000);

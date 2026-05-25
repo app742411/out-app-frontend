@@ -34,7 +34,6 @@ export default function UpdatePasswordForm() {
     setLoading(true);
     try {
       const data = await resetPassword(token, password, confirmPassword);
-      console.log("Password reset response:", data);
 
       // Show success popup
       toast.success(data.message || "Password updated successfully!");

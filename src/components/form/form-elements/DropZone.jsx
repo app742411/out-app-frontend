@@ -7,8 +7,6 @@ const DropzoneComponent = ({
   maxFiles = 1,
 }) => {
   const onDrop = (acceptedFiles) => {
-    console.log("Files dropped:", acceptedFiles);
-
     // 👉 Send files to parent
     if (onChange) {
       onChange(acceptedFiles);

@@ -39,8 +39,6 @@ export default function ForgetPasswordForm() {
     // API call
     const data = await sendForgotPasswordOTP(email);
 
-    console.log("🟢 API Response:", data);
-
     toast.success(data.message || "OTP sent successfully!");
     navigate("/verify-otp", { state: { email } });
   } catch (err) {

@@ -47,6 +47,7 @@ import FinanceSettings from "./pages/Finance/FinanceSettings";
 import TransactionsPage from "./pages/Finance/TransactionsPage";
 import TransactionDetailsPage from "./pages/Finance/TransactionDetailsPage";
 import AdminSettings from "./pages/Settings/AdminSettings";
+import AccountSettings from "./pages/Settings/AccountSettings";
 import ReportsPage from "./pages/Reports/ReportsPage";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import EarningsReportPage from "./pages/Finance/EarningsReportPage";
@@ -133,7 +134,8 @@ export default function App() {
               <Route path="/transaction-details/:id" element={<TransactionDetailsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/settings" element={<AdminSettings />} />
+               <Route path="/settings" element={<AdminSettings />} />
+              <Route path="/account" element={<AccountSettings />} />
             </Route>
           </Route>
           {/* Public Routes */}

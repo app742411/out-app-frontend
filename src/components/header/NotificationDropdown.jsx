@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useSocket } from "../../context/SocketContext";
-import { getAdminNotifications, adminDeleteNotifications } from "../../api/authApi";
+import {
+  getAdminNotifications,
+  adminDeleteNotifications,
+  getNotificationDetails
+} from "../../api/authApi";
 import toast from "react-hot-toast";
 import NotificationDetailsModal from "../Notifications/NotificationDetailsModal";
 
@@ -13,6 +17,7 @@ export default function NotificationDropdown() {
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -45,11 +50,62 @@ export default function NotificationDropdown() {
     setIsOpen(false);
   }
 
-  const handleNotificationClick = (id) => {
-    setSelectedId(id);
-    setIsModalOpen(true);
+  const handleNotificationClick = async (notification) => {
+    const id = notification._id;
+    const refId = notification.referenceId;
+    const type = notification.type?.toUpperCase() || notification.referenceType?.toUpperCase();
+
+    // 1. Mark as read locally immediately to update the count in UI
+    const wasUnread = !notification.isRead;
+    setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    if (wasUnread) {
+      setNotificationCount(prev => Math.max(0, prev - 1));
+    }
+
+    // 2. Call backend in background to mark as read in database
+    try {
+      getNotificationDetails(id);
+    } catch (e) {
+      // Asynchronous background call
+    }
+
     closeDropdown();
+
+    // 3. Direct redirection if path exists
+    let path = null;
+    switch (type) {
+      case "BOOKING":
+        const bookingId = refId || notification.data?.bookingId;
+        if (bookingId) path = `/booking-details/${bookingId}`;
+        break;
+      case "PROPERTY":
+        const propertyId = refId || notification.data?.propertyId;
+        if (propertyId) path = `/property-details/${propertyId}`;
+        break;
+      case "SERVICE":
+        const serviceId = refId || notification.data?.serviceId;
+        if (serviceId) path = `/service-details/${serviceId}`;
+        break;
+      case "CHAT":
+      case "CONVERSATION":
+        path = "/support";
+        break;
+      case "PAYMENT":
+      case "REFUND":
+      case "TRANSACTION":
+        path = refId ? `/transaction-details/${refId}` : `/transaction-logs`;
+        break;
+    }
+
+    if (path) {
+      navigate(path);
+    } else {
+      // Fallback to opening details modal
+      setSelectedId(id);
+      setIsModalOpen(true);
+    }
   };
+
 
   const handleDeleteAll = async () => {
     if (notifications.length === 0) return;
@@ -133,15 +189,23 @@ export default function NotificationDropdown() {
             notifications.map((notification, index) => (
               <li key={notification._id || index}>
                 <button
-                  onClick={() => handleNotificationClick(notification._id)}
+                  onClick={() => handleNotificationClick(notification)}
                   className="w-full text-left flex gap-3 rounded-xl border-b border-gray-100 p-3 px-4.5 py-4 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5 transition-all duration-200"
                 >
                   <span className={`relative block w-full h-10 rounded-full z-1 max-w-10 min-w-10 flex items-center justify-center shadow-lg ${notification.type === "BOOKING" ? "bg-blue-500" :
-                      notification.type === "PAYMENT" ? "bg-green-500" :
-                        notification.type === "REFUND" ? "bg-red-500" :
-                          notification.type === "CHAT" ? "bg-indigo-500" : "bg-brand"
+                    notification.type === "PAYMENT" ? "bg-green-500" :
+                      notification.type === "REFUND" ? "bg-red-500" :
+                        notification.type === "CHAT" ? "bg-indigo-500" :
+                          notification.type === "PROPERTY" ? "bg-amber-500" :
+                            notification.type === "SERVICE" ? "bg-teal-500" : "bg-brand"
                     }`}>
-                    {notification.type === "BOOKING" ? "📅" : notification.type === "PAYMENT" ? "💰" : notification.type === "CHAT" ? "💬" : "🔔"}
+                    {
+                      notification.type === "BOOKING" ? "📅" :
+                        notification.type === "PAYMENT" ? "💰" :
+                          notification.type === "CHAT" ? "💬" :
+                            notification.type === "PROPERTY" ? "🏠" :
+                              notification.type === "SERVICE" ? "🛡️" : "🔔"
+                    }
                     {!notification.isRead && <span className="absolute top-0 right-0 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white bg-error-500 dark:border-gray-900"></span>}
                   </span>
 

@@ -11,7 +11,7 @@ import { getAllWalletTransactions } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
-import { Search, Filter, TrendingUp, TrendingDown } from "lucide-react";
+import { Search, TrendingUp, TrendingDown } from "lucide-react";
 import Select from "../ui/select/Select";
 export default function WalletTransactionListComp() {
     const [transactions, setTransactions] = useState([]);
@@ -74,7 +74,6 @@ export default function WalletTransactionListComp() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-400" />
                     <Select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}

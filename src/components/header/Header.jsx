@@ -15,7 +15,7 @@ const Header = ({ onClick, onToggle }) => {
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-40 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
-          
+
           {/* Mobile Sidebar Toggle */}
           <button
             className="block w-10 h-10 text-gray-500 lg:hidden dark:text-gray-400"
@@ -80,7 +80,7 @@ const Header = ({ onClick, onToggle }) => {
           </button>
 
           {/* Desktop Search Bar */}
-          <div className="hidden lg:block">
+          {/* <div className="hidden lg:block">
             <form>
               <div className="relative">
                 <button className="absolute -translate-y-1/2 left-4 top-1/2">
@@ -109,14 +109,13 @@ const Header = ({ onClick, onToggle }) => {
                 </button>
               </div>
             </form>
-          </div>
+          </div> */}
         </div>
 
         {/* Right Side Menus */}
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end`}
         >
           <div className="flex items-center gap-2">
             <ThemeToggleButton />

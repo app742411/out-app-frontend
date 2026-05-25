@@ -87,10 +87,9 @@ export default function PlayerListComp() {
   }, [search, sortBy]);
 
   // Edit/Delete handlers
-  const handleEdit = (id) => console.log("Edit player ID:", id);
+  const handleEdit = (id) => {};
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this player?")) {
-      console.log("Delete player ID:", id);
     }
   };
   return (

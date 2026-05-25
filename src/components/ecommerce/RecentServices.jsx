@@ -6,9 +6,11 @@ import {
     TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
+import { useNavigate } from "react-router";
 
 import React, { useState, useEffect } from "react";
 export default function RecentServices({ data: dashboardData }) {
+    const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const baseURL = import.meta.env.VITE_API_URL;
 
@@ -45,11 +47,14 @@ export default function RecentServices({ data: dashboardData }) {
                 </h3>
 
                 <div className="flex items-center gap-3">
-                    <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400">
+                    {/* <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400">
                         Filter
-                    </button>
+                    </button> */}
 
-                    <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400">
+                    <button 
+                        onClick={() => navigate('/service-management')}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
+                    >
                         See all
                     </button>
                 </div>

@@ -1,32 +1,32 @@
 import React from "react";
 import { Link } from "react-router";
-import { PlusCircle, Home, CalendarPlus, UserPlus, Tag } from "lucide-react";
+import { PlusCircle, Home, Calendar, Briefcase, Tag } from "lucide-react";
 
 export default function QuickActions() {
   const actions = [
     {
-      title: "Add Property",
-      icon: <Home className="w-5 h-5" />,
-      path: "/property-setup",
+      title: "Bookings List",
+      icon: <Calendar className="w-5 h-5" />,
+      path: "/bookings",
       color: "bg-blue-500",
       hoverColor: "hover:bg-blue-600",
     },
     {
-      title: "Add Service",
-      icon: <PlusCircle className="w-5 h-5" />,
-      path: "/service-setup",
-      color: "bg-brand-500",
-      hoverColor: "hover:bg-brand-600",
+      title: "Services List",
+      icon: <Briefcase className="w-5 h-5" />,
+      path: "/service-management",
+      color: "bg-amber-500",
+      hoverColor: "hover:bg-amber-600",
     },
     {
-      title: "Add Vendor",
-      icon: <UserPlus className="w-5 h-5" />,
-      path: "/vendors",
+      title: "Properties List",
+      icon: <Home className="w-5 h-5" />,
+      path: "/properties",
       color: "bg-emerald-500",
       hoverColor: "hover:bg-emerald-600",
     },
     {
-      title: "Create Coupon",
+      title: "Coupons List",
       icon: <Tag className="w-5 h-5" />,
       path: "/coupanmange",
       color: "bg-purple-500",

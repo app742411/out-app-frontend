@@ -20,7 +20,7 @@ import { formatCurrency, formatDuration } from "../../utils/currency";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const getApprovalStatusColor = (status) => {
   switch (status?.toLowerCase()) {
@@ -71,8 +71,13 @@ const ServiceList = () => {
     }
   });
 
-  const services = queryData?.data || [];
-  const totalPages = activeTab === "pending" ? 1 : (queryData?.totalPages || 1);
+  const allServices = queryData?.data || [];
+  const services = activeTab === "pending"
+    ? allServices.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : allServices;
+  const totalPages = activeTab === "pending"
+    ? Math.ceil(allServices.length / ITEMS_PER_PAGE)
+    : (queryData?.totalPages || 1);
 
   const approveMutation = useMutation({
     mutationFn: ({ id, action, reason }) => updateServiceApproval(id, action, reason),
@@ -118,13 +123,32 @@ const ServiceList = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Service Management</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Manage and oversee all listed services efficiently.</p>
+      {/* Tabs and Search Row */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-2 md:pb-0">
+        {/* Tab Switcher */}
+        <div className="flex -mb-px">
+          <button
+            onClick={() => setActiveTab("active")}
+            className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "active"
+              ? "border-brand-500 text-brand-500"
+              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+          >
+            Active Services
+          </button>
+          <button
+            onClick={() => setActiveTab("pending")}
+            className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "pending"
+              ? "border-brand-500 text-brand-500"
+              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+          >
+            Pending Approval
+          </button>
         </div>
 
-        <div className="relative w-full md:w-96">
+        {/* Search Bar */}
+        <div className="relative w-full md:w-96 md:mb-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
@@ -134,28 +158,6 @@ const ServiceList = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-      </div>
-
-      {/* Tab Switcher */}
-      <div className="flex border-b border-gray-100 dark:border-gray-800">
-        <button
-          onClick={() => setActiveTab("active")}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "active"
-            ? "border-brand-500 text-brand-500"
-            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            }`}
-        >
-          Active Services
-        </button>
-        <button
-          onClick={() => setActiveTab("pending")}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "pending"
-            ? "border-brand-500 text-brand-500"
-            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            }`}
-        >
-          Pending Approval
-        </button>
       </div>
 
       {loading ? (
@@ -333,16 +335,14 @@ const ServiceList = () => {
       )}
 
       {!loading && totalPages > 1 && (
-        <div className="mt-6 flex justify-end">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(newPage) => {
-              setCurrentPage(newPage);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(newPage) => {
+            setCurrentPage(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       )}
 
       {/* Rejection Reason Modal */}

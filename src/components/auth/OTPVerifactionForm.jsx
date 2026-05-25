@@ -58,11 +58,9 @@ export default function OTPVerificationForm() {
 
     setLoading(true);
     setErrors("");
-    console.log("Verifying OTP:", { email, otp: otpStr });
 
     try {
       const data = await verifyOTP(email, otpStr);
-      console.log("OTP Verify Response:", data);
 
       toast.success(data.message || "OTP verified successfully!");
 

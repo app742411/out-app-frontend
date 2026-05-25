@@ -10,12 +10,35 @@ export default function CommissionManage() {
     const [commissions, setCommissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editCommission, setEditCommission] = useState(null);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        totalPages: 1,
+        previousDisabled: true,
+        nextDisabled: true,
+        total: 0,
+        limit: 10
+    });
+    const [filters, setFilters] = useState({
+        scope: "",
+        type: "",
+        isActive: ""
+    });
 
-    const fetchCommissions = async () => {
+    const fetchCommissions = async (page = 1, currentFilters = filters) => {
         try {
             setLoading(true);
-            const res = await getCommissions();
-            // Map the nested payload from example 
+            const params = {
+                page,
+                limit: 10
+            };
+            if (currentFilters.scope) params.scope = currentFilters.scope;
+            if (currentFilters.type) params.type = currentFilters.type;
+            if (currentFilters.isActive !== "") {
+                params.isActive = currentFilters.isActive === "true";
+            }
+
+            const res = await getCommissions(params);
+            
             if (res.data && Array.isArray(res.data)) {
                 setCommissions(res.data);
             } else if (Array.isArray(res)) {
@@ -23,6 +46,15 @@ export default function CommissionManage() {
             } else {
                 setCommissions([]);
             }
+
+            setPagination({
+                page: res.page || page,
+                limit: res.limit || 10,
+                total: res.total || 0,
+                totalPages: res.totalPages || 1,
+                previousDisabled: res.previousDisabled ?? true,
+                nextDisabled: res.nextDisabled ?? true
+            });
         } catch (error) {
             toast.error(error.message || "Failed to fetch commissions");
             console.error(error);
@@ -32,7 +64,7 @@ export default function CommissionManage() {
     };
 
     useEffect(() => {
-        fetchCommissions();
+        fetchCommissions(1);
     }, []);
 
     return (
@@ -44,7 +76,7 @@ export default function CommissionManage() {
                 {/* Left Side: Add/Edit Form */}
                 <div className="xl:col-span-1">
                     <AddCommissionComp
-                        fetchCommissions={fetchCommissions}
+                        fetchCommissions={() => fetchCommissions(pagination.page)}
                         editCommission={editCommission}
                         setEditCommission={setEditCommission}
                     />
@@ -55,6 +87,9 @@ export default function CommissionManage() {
                     <CommissionListComp
                         commissions={commissions}
                         loading={loading}
+                        pagination={pagination}
+                        filters={filters}
+                        setFilters={setFilters}
                         fetchCommissions={fetchCommissions}
                         setEditCommission={setEditCommission}
                     />

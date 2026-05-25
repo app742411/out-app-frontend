@@ -51,7 +51,7 @@ export default function Home() {
         {/* Top KPIs */}
         <DashboardMetrics data={dashboardData} />
 
-        {/* <QuickActions /> */}
+        <QuickActions />
 
         <div className="grid grid-cols-12 gap-6">
           {/* Revenue Overview & Occupancy */}
@@ -63,11 +63,11 @@ export default function Home() {
           </div>
 
           {/* Bookings & Daily Movement */}
-          <div className="col-span-12 xl:col-span-8">
-            <RecentBookings data={dashboardData} />
-          </div>
           <div className="col-span-12 xl:col-span-4">
             <ArrivalsDepartures data={dashboardData} />
+          </div>
+          <div className="col-span-12 xl:col-span-8">
+            <RecentBookings data={dashboardData} />
           </div>
 
           {/* Performance & Distributions */}

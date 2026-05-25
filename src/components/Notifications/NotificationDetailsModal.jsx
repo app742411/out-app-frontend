@@ -10,7 +10,10 @@ import {
     User, 
     Hash,
     Info,
-    ArrowRight
+    ArrowRight,
+    Home,
+    Shield,
+    Trash2
 } from "lucide-react";
 import Badge from "../ui/badge/Badge";
 import { Link } from "react-router";
@@ -56,21 +59,95 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
     if (!isOpen) return null;
 
     const getIcon = (type) => {
-        switch (type) {
+        switch (type?.toUpperCase()) {
             case "BOOKING": return Calendar;
             case "PAYMENT": return CreditCard;
+            case "REFUND": return Trash2;
             case "CHAT": return MessageSquare;
+            case "PROPERTY": return Home;
+            case "SERVICE": return Shield;
             default: return Bell;
         }
     };
 
     const getColors = (type) => {
-        switch (type) {
+        switch (type?.toUpperCase()) {
             case "BOOKING": return "bg-blue-500 shadow-blue-500/20 text-white";
             case "PAYMENT": return "bg-green-500 shadow-green-500/20 text-white";
+            case "REFUND": return "bg-red-500 shadow-red-500/20 text-white";
             case "CHAT": return "bg-purple-500 shadow-purple-500/20 text-white";
+            case "PROPERTY": return "bg-amber-500 shadow-amber-500/20 text-white";
+            case "SERVICE": return "bg-teal-500 shadow-teal-500/20 text-white";
             default: return "bg-brand shadow-brand/20 text-white";
         }
+    };
+
+    const getBadgeColor = (type) => {
+        switch (type?.toUpperCase()) {
+            case "BOOKING": return "info";
+            case "PAYMENT": return "success";
+            case "REFUND": return "error";
+            case "CHAT": return "primary";
+            case "PROPERTY": return "warning";
+            case "SERVICE": return "success";
+            default: return "primary";
+        }
+    };
+
+    const getRedirection = (notification) => {
+        if (!notification) return null;
+        const refId = notification.referenceId;
+        const type = notification.type?.toUpperCase() || notification.referenceType?.toUpperCase();
+        
+        switch (type) {
+            case "BOOKING":
+                const bookingId = refId || notification.data?.bookingId;
+                if (bookingId) {
+                    return {
+                        to: `/booking-details/${bookingId}`,
+                        label: "View Full Booking"
+                    };
+                }
+                break;
+            case "PROPERTY":
+                const propertyId = refId || notification.data?.propertyId;
+                if (propertyId) {
+                    return {
+                        to: `/property-details/${propertyId}`,
+                        label: "View Property Details"
+                    };
+                }
+                break;
+            case "SERVICE":
+                const serviceId = refId || notification.data?.serviceId;
+                if (serviceId) {
+                    return {
+                        to: `/service-details/${serviceId}`,
+                        label: "View Service Details"
+                    };
+                }
+                break;
+            case "CHAT":
+            case "CONVERSATION":
+                return {
+                    to: `/support`,
+                    label: "Go to Conversations"
+                };
+            case "PAYMENT":
+            case "REFUND":
+            case "TRANSACTION":
+                if (refId) {
+                    return {
+                        to: `/transaction-details/${refId}`,
+                        label: "View Transaction"
+                    };
+                }
+                return {
+                    to: `/transaction-logs`,
+                    label: "View Transaction Logs"
+                };
+        }
+        return null;
     };
 
     const formatCurrency = (amt) => {
@@ -88,6 +165,8 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
             minute: '2-digit'
         });
     };
+
+    const redirectInfo = getRedirection(details);
 
     return (
         <Modal 
@@ -109,7 +188,7 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
                                 {React.createElement(getIcon(details.type), { size: 32 })}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <Badge color={details.type === 'BOOKING' ? 'blue' : details.type === 'PAYMENT' ? 'success' : 'warning'} className="mb-2">
+                                <Badge color={getBadgeColor(details.type)} className="mb-2">
                                     {details.type}
                                 </Badge>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white leading-tight">
@@ -141,6 +220,51 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
                                 />
                             )}
                             
+                            {details.data?.propertyId && (
+                                <DetailRow 
+                                    icon={Hash} 
+                                    label="Property Identifier" 
+                                    value={details.data.propertyId} 
+                                    color="text-amber-500" 
+                                />
+                            )}
+
+                            {details.data?.serviceId && (
+                                <DetailRow 
+                                    icon={Hash} 
+                                    label="Service Identifier" 
+                                    value={details.data.serviceId} 
+                                    color="text-teal-500" 
+                                />
+                            )}
+
+                            {details.data?.conversationId && (
+                                <DetailRow 
+                                    icon={MessageSquare} 
+                                    label="Conversation ID" 
+                                    value={details.data.conversationId} 
+                                    color="text-purple-500" 
+                                />
+                            )}
+
+                            {details.data?.status && (
+                                <DetailRow 
+                                    icon={Info} 
+                                    label="Status Logic" 
+                                    value={details.data.status.toUpperCase()} 
+                                    color={details.data.status.toLowerCase() === 'approved' ? "text-green-500" : "text-amber-500"} 
+                                />
+                            )}
+
+                            {details.data?.rejectionReason && (
+                                <DetailRow 
+                                    icon={Info} 
+                                    label="Rejection Reason" 
+                                    value={details.data.rejectionReason} 
+                                    color="text-red-500" 
+                                />
+                            )}
+                            
                             {details.data?.totalAmount && (
                                 <DetailRow 
                                     icon={CreditCard} 
@@ -153,7 +277,7 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
                             {details.data?.bookingStatus && (
                                 <DetailRow 
                                     icon={Info} 
-                                    label="Status Logic" 
+                                    label="Booking Status" 
                                     value={details.data.bookingStatus.toUpperCase()} 
                                     color="text-orange-500" 
                                 />
@@ -177,19 +301,19 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
 
                         {/* Action Primary */}
                         <div className="flex gap-3 mt-4">
-                            {details.referenceId && details.referenceType === 'Booking' && (
+                            {redirectInfo ? (
                                 <Link 
-                                    to={`/booking-details/${details.referenceId}`}
+                                    to={redirectInfo.to}
                                     onClick={onClose}
                                     className="flex-1 flex items-center justify-center gap-2 py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-brand/20 active:scale-95 duration-200"
                                 >
-                                    View Full Booking
+                                    {redirectInfo.label}
                                     <ArrowRight size={18} />
                                 </Link>
-                            )}
+                            ) : null}
                             <button 
                                 onClick={onClose}
-                                className="px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
+                                className={`px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95 ${!redirectInfo ? "w-full" : ""}`}
                             >
                                 Close
                             </button>
@@ -208,3 +332,4 @@ export default function NotificationDetailsModal({ isOpen, onClose, notification
         </Modal>
     );
 }
+
