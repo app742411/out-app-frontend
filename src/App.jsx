@@ -22,7 +22,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ForgetPassword from "./pages/AuthPages/ForgetPassword";
-import OTPVerification from "./pages/AuthPages/OtpVerification";
+import OTPVerification from "./pages/AuthPages/OTPVerification";
 import UpdatePassword from "./pages/AuthPages/UpdatePassword";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import PublicRoute from "./components/common/PublicRoute";
