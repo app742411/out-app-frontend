@@ -1,7 +1,7 @@
 import React from "react";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ChangeOldPasswordComp from "../../components/Auth/ChangeOldPasswordComp";
+import ChangeOldPasswordComp from "../../components/auth/ChangeOldPasswordComp";
 
 export default function ChangeOldPasswordPage() {
     return (
