@@ -2,35 +2,36 @@ import { useEffect } from "react";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.css";
 import Label from "./Label";
-import { CalenderIcon } from "../../icons";
+import { TimeIcon } from "../../icons";
 import Hook = flatpickr.Options.Hook;
 import DateOption = flatpickr.Options.DateOption;
 
 type PropsType = {
   id: string;
-  mode?: "single" | "multiple" | "range" | "time";
   onChange?: Hook | Hook[];
-  defaultDate?: DateOption;
+  defaultTime?: DateOption;
   label?: string;
   placeholder?: string;
+  time24hr?: boolean;
 };
 
-export default function DatePicker({
+export default function TimePicker({
   id,
-  mode,
   onChange,
   label,
-  defaultDate,
-  placeholder,
+  defaultTime,
+  placeholder = "Select time",
+  time24hr = true,
 }: PropsType) {
   useEffect(() => {
     const flatPickr = flatpickr(`#${id}`, {
-      mode: mode || "single",
-      static: true,
-      monthSelectorType: "static",
-      dateFormat: "Y-m-d",
-      defaultDate,
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: time24hr ? "H:i" : "h:i K",
+      time_24hr: time24hr,
+      defaultDate: defaultTime,
       onChange,
+      static: true,
     });
 
     return () => {
@@ -38,7 +39,7 @@ export default function DatePicker({
         flatPickr.destroy();
       }
     };
-  }, [mode, onChange, id, defaultDate]);
+  }, [onChange, id, defaultTime, time24hr]);
 
   return (
     <div>
@@ -52,7 +53,7 @@ export default function DatePicker({
         />
 
         <span className="absolute text-gray-400 dark:text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2">
-          <CalenderIcon className="size-5" />
+          <TimeIcon className="size-5" />
         </span>
       </div>
     </div>

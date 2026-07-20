@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router";
@@ -6,30 +6,29 @@ import toast from "react-hot-toast";
 import { useUser } from "../../context/UserContext.jsx";
 import { logout } from "../../api/authApi";
 import { LogOut } from "lucide-react";
-
+import LogoutModal from "../common/LogoutModal";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
-
-
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { user, setUser } = useUser();
-
   const navigate = useNavigate();
 
-
-
-  const handleLogout = async () => {
+  const handleLogoutConfirm = async () => {
     try {
       await logout();
     } catch (error) {
       console.error("Logout API failed:", error);
     } finally {
-      localStorage.removeItem("token");
-      setIsOpen(false); // Close dropdown on logout
-      setUser(null); // Clear context
-      navigate("/signin");
+      setIsOpen(false);
+      setIsLogoutModalOpen(false);
+      navigate("/");
+      setTimeout(() => {
+        localStorage.removeItem("token");
+        setUser(null);
+      }, 50);
       toast.success("Logged out successfully!");
     }
   };
@@ -38,12 +37,16 @@ export default function UserDropdown() {
   const closeDropdown = () => setIsOpen(false);
 
   return (
-    <div className="relative">
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
       <button
         onClick={toggleDropdown}
-        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
+        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400 focus:outline-hidden"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
+        <span className="mr-3 overflow-hidden rounded-full h-11 w-11 shadow-sm border border-gray-200/50 dark:border-gray-800">
           <img
             src={
               user?.profileImage
@@ -54,12 +57,13 @@ export default function UserDropdown() {
             className="object-cover w-full h-full"
           />
         </span>
-        <span className="block mr-1 font-medium text-theme-sm">
-          {user?.firstName + " " + user?.lastName || "Loading..."}
+        <span className="block mr-1 font-medium text-theme-sm text-gray-800 dark:text-white/90">
+          {user?.firstName + " " + user?.lastName || "Admin User"}
         </span>
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-brand-500" : ""
+          }`}
           width="18"
           height="20"
           viewBox="0 0 18 20"
@@ -79,24 +83,26 @@ export default function UserDropdown() {
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        className="absolute right-0 mt-1.5 flex w-[240px] flex-col rounded-2xl border border-gray-200/80 bg-white p-4 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark before:content-[''] before:absolute before:-top-2.5 before:left-0 before:right-0 before:h-2.5 before:bg-transparent"
       >
-        <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {user?.firstName + " " + user?.lastName || "Loading..."}
+        {/* User Account Info Header */}
+        <div className="pb-3 border-b border-gray-100 dark:border-gray-800">
+          <span className="block font-semibold text-gray-850 text-sm dark:text-white/90">
+            {user?.firstName + " " + user?.lastName || "Admin User"}
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {user?.email || "Loading..."}
+          <span className="mt-0.5 block text-xs text-gray-400 dark:text-gray-500 truncate">
+            {user?.email || "admin@example.com"}
           </span>
         </div>
 
-        <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+        {/* Navigation Dropdown List */}
+        <ul className="flex flex-col gap-0.5 py-2 border-b border-gray-100 dark:border-gray-800">
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
               to="/profile"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-600 rounded-lg group text-theme-sm hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-250 transition-colors duration-150"
             >
               Edit profile
             </DropdownItem>
@@ -106,7 +112,7 @@ export default function UserDropdown() {
               onItemClick={closeDropdown}
               tag="a"
               to="/change-password"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-600 rounded-lg group text-theme-sm hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-250 transition-colors duration-150"
             >
               Change password
             </DropdownItem>
@@ -116,7 +122,7 @@ export default function UserDropdown() {
               onItemClick={closeDropdown}
               tag="a"
               to="/account"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-600 rounded-lg group text-theme-sm hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-250 transition-colors duration-150"
             >
               Account settings
             </DropdownItem>
@@ -126,21 +132,31 @@ export default function UserDropdown() {
               onItemClick={closeDropdown}
               tag="a"
               to="/support"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-600 rounded-lg group text-theme-sm hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-250 transition-colors duration-150"
             >
               Support
             </DropdownItem>
           </li>
         </ul>
 
+        {/* Log Out */}
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-red-500 rounded-lg group text-theme-sm hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-500/10"
+          onClick={() => {
+            setIsOpen(false);
+            setIsLogoutModalOpen(true);
+          }}
+          className="flex items-center gap-3 w-full px-3 py-2 mt-2 font-medium text-red-500 rounded-lg text-theme-sm hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-500/10 transition-colors duration-150 cursor-pointer"
         >
           <LogOut className="size-4" />
           Log Out
         </button>
       </Dropdown>
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogoutConfirm}
+      />
     </div>
   );
 }

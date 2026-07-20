@@ -3,9 +3,9 @@ import Chart from "react-apexcharts";
 
 export default function RevenueLineChart({ data }) {
     const options = {
-        colors: ["#2d2d2d"],
+        colors: ["#4f46e5"],
         chart: {
-            fontFamily: "Outfit, sans-serif",
+            fontFamily: "Instrument Sans, sans-serif",
             type: "area",
             height: 350,
             toolbar: {
@@ -16,8 +16,8 @@ export default function RevenueLineChart({ data }) {
             type: "gradient",
             gradient: {
                 shadeIntensity: 1,
-                opacityFrom: 0.7,
-                opacityTo: 0.2,
+                opacityFrom: 0.45,
+                opacityTo: 0.02,
                 stops: [0, 90, 100]
             }
         },
@@ -26,26 +26,47 @@ export default function RevenueLineChart({ data }) {
         },
         stroke: {
             curve: "smooth",
-            width: 3,
+            width: 3.5,
         },
         xaxis: {
             categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             axisBorder: { show: false },
             axisTicks: { show: false },
+            labels: {
+                style: {
+                    colors: "#9ca3af",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                }
+            }
         },
         yaxis: {
-            title: { text: "SAR" },
+            labels: {
+                style: {
+                    colors: "#9ca3af",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                },
+                formatter: (val) => `${val.toLocaleString()}`
+            }
         },
         grid: {
-            borderColor: "#e2e8f0",
-            strokeDashArray: 4,
+            borderColor: "rgba(226, 232, 240, 0.5)",
+            strokeDashArray: 5,
             yaxis: {
                 lines: { show: true }
             }
         },
         tooltip: {
+            
             y: {
-                formatter: (val) => `SAR ${val}`
+                formatter: (val) => `SAR ${val.toLocaleString()}`
+            }
+        },
+        markers: {
+            size: 0,
+            hover: {
+                size: 5
             }
         }
     };
@@ -65,8 +86,8 @@ export default function RevenueLineChart({ data }) {
     }
 
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+        <div className="rounded-3xl border border-gray-250 bg-white/70 p-6 dark:border-gray-800/80 dark:bg-gray-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.012)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_15px_40px_rgba(70,95,255,0.03)] sm:p-6">
+            <h3 className="mb-4 text-base font-bold text-gray-800 dark:text-white/90">
                 Revenue Growth
             </h3>
             <div className="max-w-full overflow-hidden">

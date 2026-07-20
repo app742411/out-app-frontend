@@ -14,9 +14,7 @@ import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import { Select } from "../ui/select/Select";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+import { EyeIcon, TrashBinIcon, CloseLineIcon, CheckLineIcon } from "../../icons";
 import { timeAgo } from "../../utils/date";
 
 const ITEMS_PER_PAGE = 10;
@@ -30,7 +28,6 @@ export default function VendorListComp() {
     const [approvalFilter, setApprovalFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [openDropdownId, setOpenDropdownId] = useState(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [vendorToDelete, setVendorToDelete] = useState(null);
     const navigate = useNavigate();
@@ -90,7 +87,6 @@ export default function VendorListComp() {
             toast.error(error.message || "Action failed");
         } finally {
             setLoading(false);
-            setOpenDropdownId(null);
         }
     };
 
@@ -164,9 +160,6 @@ export default function VendorListComp() {
                                         S.No.
                                     </TableCell>
                                     <TableCell isHeader className="px-5 py-3">
-                                        Profile
-                                    </TableCell>
-                                    <TableCell isHeader className="px-5 py-3">
                                         User ID
                                     </TableCell>
                                     <TableCell isHeader className="px-5 py-3">
@@ -201,34 +194,32 @@ export default function VendorListComp() {
                                             <TableCell className="px-5 py-3">
                                                 {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                                             </TableCell>
-                                            <TableCell className="px-5 py-3">
-                                                <div className="w-10 h-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
-                                                    {vendor.profile ? (
-                                                        <img
-                                                            src={
-                                                                vendor.profile
-                                                                    ? `${baseURL.replace(/\/$/, "")}/uploads/users/${vendor.profile}`
-                                                                    : "/images/user/user-01.jpg"
-                                                            }
-                                                            alt={vendor.firstName}
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full font-semibold uppercase text-xs">
-                                                            {vendor.firstName?.charAt(0)}{vendor.lastName?.charAt(0)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-
                                             <TableCell className="px-5 py-3 font-medium text-gray-800 dark:text-white">
                                                 {vendor.userId || "-"}
                                             </TableCell>
-
                                             <TableCell className="px-5 py-3">
-                                                <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-800 dark:text-white capitalize line-clamp-1">{vendor.firstName} {vendor.lastName}</span>
-                                                    <span className="text-xs text-gray-500 line-clamp-1">{vendor.email || "-"}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 shrink-0 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
+                                                        {vendor.profile ? (
+                                                            <img
+                                                                src={
+                                                                    vendor.profile
+                                                                        ? `${baseURL.replace(/\/$/, "")}/uploads/users/${vendor.profile}`
+                                                                        : "/images/user/user-01.jpg"
+                                                                }
+                                                                alt={vendor.firstName}
+                                                                className="object-cover w-full h-full"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full font-semibold uppercase text-xs">
+                                                                {vendor.firstName?.charAt(0)}{vendor.lastName?.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-semibold text-gray-800 dark:text-white capitalize line-clamp-1">{vendor.firstName} {vendor.lastName}</span>
+                                                        <span className="text-xs text-gray-500 line-clamp-1">{vendor.email || "-"}</span>
+                                                    </div>
                                                 </div>
                                             </TableCell>
 
@@ -273,61 +264,51 @@ export default function VendorListComp() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-5 py-3 text-right">
-                                                <div className="flex items-center justify-end justify-start">
-                                                    <div className="relative">
-                                                        <button
-                                                            type="button"
-                                                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors dropdown-toggle"
-                                                            onClick={() =>
-                                                                setOpenDropdownId(openDropdownId === vendor._id ? null : vendor._id)
-                                                            }
-                                                        >
-                                                            <MoreDotIcon className="text-gray-400 size-5" />
-                                                        </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {/* View Button */}
+                                                    <button
+                                                        onClick={() => navigate(`/vendor-details/${vendor._id}`)}
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg transition-all duration-155 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 cursor-pointer"
+                                                        title="View"
+                                                    >
+                                                        <EyeIcon className="size-5 fill-current" />
+                                                    </button>
 
-                                                        <Dropdown
-                                                            isOpen={openDropdownId === vendor._id}
-                                                            onClose={() => setOpenDropdownId(null)}
-                                                            className="w-40 p-2 right-0 mt-2 absolute"
-                                                        >
-                                                            <DropdownItem
-                                                                onItemClick={() => {
-                                                                    navigate(`/vendor-details/${vendor._id}`);
-                                                                    setOpenDropdownId(null);
-                                                                }}
-                                                                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                                                            >
-                                                                View
-                                                            </DropdownItem>
+                                                    {/* Block/Unblock Button */}
+                                                    <button
+                                                        onClick={() => handleBlockUnblock(vendor._id, vendor.isActive)}
+                                                        className={`inline-flex items-center justify-center p-2 rounded-lg transition-all duration-155 cursor-pointer ${
+                                                            vendor.isActive
+                                                                ? "text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
+                                                                : "text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:hover:bg-green-500/20"
+                                                        }`}
+                                                        title={vendor.isActive ? "Block" : "Unblock"}
+                                                    >
+                                                        {vendor.isActive ? (
+                                                            <CloseLineIcon className="size-5" />
+                                                        ) : (
+                                                            <CheckLineIcon className="size-5" />
+                                                        )}
+                                                    </button>
 
-                                                            <DropdownItem
-                                                                onItemClick={() =>
-                                                                    handleBlockUnblock(vendor._id, vendor.isActive)
-                                                                }
-                                                                className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                                                            >
-                                                                {vendor.isActive ? "Block" : "Unblock"}
-                                                            </DropdownItem>
-
-                                                            <DropdownItem
-                                                                onItemClick={() => {
-                                                                    setVendorToDelete(vendor._id);
-                                                                    setDeleteOpen(true);
-                                                                    setOpenDropdownId(null);
-                                                                }}
-                                                                className="flex w-full font-normal text-left text-red-500 rounded-lg hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
-                                                            >
-                                                                Delete
-                                                            </DropdownItem>
-                                                        </Dropdown>
-                                                    </div>
+                                                    {/* Delete Button */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setVendorToDelete(vendor._id);
+                                                            setDeleteOpen(true);
+                                                        }}
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg transition-all duration-155 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 cursor-pointer"
+                                                        title="Delete"
+                                                    >
+                                                        <TrashBinIcon className="size-5" />
+                                                    </button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={10} className="text-center py-6 text-gray-500">
+                                        <TableCell colSpan={9} className="text-center py-6 text-gray-500">
                                             No service providers found
                                         </TableCell>
                                     </TableRow>

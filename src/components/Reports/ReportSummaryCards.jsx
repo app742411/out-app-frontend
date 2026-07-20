@@ -3,28 +3,79 @@ import {
     Users, 
     Calendar, 
     TrendingUp, 
-    DollarSign 
+    DollarSign,
+    ArrowUpRight,
+    ArrowDownRight
 } from "lucide-react";
 
-const SummaryCard = ({ title, value, icon: Icon, color, percentage, isTrendingUp }) => (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-        <div className="flex items-center justify-between">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${color}`}>
-                <Icon className="text-white" size={24} />
-            </div>
-            {percentage && (
-                <div className={`flex items-center gap-1 text-xs font-medium ${isTrendingUp ? "text-green-500" : "text-red-500"}`}>
-                    <TrendingUp className={isTrendingUp ? "" : "rotate-180"} size={16} />
-                    <span>{percentage}%</span>
-                </div>
-            )}
+const colorPresets = {
+  "bg-brand-500": {
+    containerBorder: "hover:border-brand-500/25",
+    bg: "bg-brand-50/50 dark:bg-brand-500/10",
+    border: "border-brand-500/15 dark:border-brand-500/25",
+    glow: "bg-brand-500/5 dark:bg-brand-500/10",
+    iconText: "text-brand-500",
+    shadow: "shadow-[0_8px_30px_rgba(70,95,255,0.03)] hover:shadow-[0_20px_40px_rgba(70,95,255,0.12)]"
+  },
+  "bg-blue-500": {
+    containerBorder: "hover:border-blue-500/25",
+    bg: "bg-blue-50/50 dark:bg-blue-500/10",
+    border: "border-blue-500/15 dark:border-blue-500/25",
+    glow: "bg-blue-500/5 dark:bg-blue-500/10",
+    iconText: "text-blue-500",
+    shadow: "shadow-[0_8px_30px_rgba(59,130,246,0.03)] hover:shadow-[0_20px_40px_rgba(59,130,246,0.12)]"
+  },
+  "bg-purple-500": {
+    containerBorder: "hover:border-purple-500/25",
+    bg: "bg-purple-50/50 dark:bg-purple-500/10",
+    border: "border-purple-500/15 dark:border-purple-500/25",
+    glow: "bg-purple-500/5 dark:bg-purple-500/10",
+    iconText: "text-purple-500",
+    shadow: "shadow-[0_8px_30px_rgba(168,85,247,0.03)] hover:shadow-[0_20px_40px_rgba(168,85,247,0.12)]"
+  },
+  "bg-orange-500": {
+    containerBorder: "hover:border-orange-500/25",
+    bg: "bg-orange-50/50 dark:bg-orange-500/10",
+    border: "border-orange-500/15 dark:border-orange-500/25",
+    glow: "bg-orange-500/5 dark:bg-orange-500/10",
+    iconText: "text-orange-500",
+    shadow: "shadow-[0_8px_30px_rgba(249,115,22,0.03)] hover:shadow-[0_20px_40px_rgba(249,115,22,0.12)]"
+  },
+};
+
+const SummaryCard = ({ title, value, icon: Icon, color, percentage, isTrendingUp }) => {
+  const preset = colorPresets[color] || colorPresets["bg-brand-500"];
+
+  return (
+    <div className={`relative overflow-hidden rounded-3xl border border-gray-250 bg-white/70 p-6 backdrop-blur-md transition-all duration-350 hover:-translate-y-1.5 dark:border-gray-800/80 dark:bg-gray-900/60 group ${preset.containerBorder} ${preset.shadow}`}>
+      {/* Background Glowing Blur */}
+      <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none ${preset.glow}`} />
+
+      <div className="flex items-center justify-between z-10 relative">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-350 group-hover:scale-108 ${preset.bg} ${preset.border}`}>
+          <Icon className={`${preset.iconText} transition-transform duration-350 group-hover:rotate-6`} size={22} />
         </div>
-        <div className="mt-4">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-            <h4 className="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">{value}</h4>
+        {percentage && percentage !== "0" && (
+          <div className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full border ${
+            isTrendingUp 
+              ? "bg-green-500/10 text-green-600 border-green-500/20 dark:bg-green-500/15 dark:text-green-400" 
+              : "bg-red-500/10 text-red-600 border-red-500/20 dark:bg-red-500/15 dark:text-red-400"
+          }`}>
+            {isTrendingUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+            <span>{percentage}%</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="mt-5 z-10 relative">
+        <p className="text-xs font-semibold tracking-wide uppercase text-gray-400 dark:text-gray-500">{title}</p>
+        <div className="flex items-baseline gap-2 mt-1.5">
+          <h4 className="text-2xl font-extrabold tracking-tight text-gray-850 dark:text-white">{value}</h4>
         </div>
+      </div>
     </div>
-);
+  );
+};
 
 export default function ReportSummaryCards({ metrics }) {
     const cards = [
@@ -49,7 +100,7 @@ export default function ReportSummaryCards({ metrics }) {
             value: metrics?.totalUsers || "0",
             icon: Users,
             color: "bg-purple-500",
-            percentage: "4.3",
+            percentage: null,
             isTrendingUp: true
         },
         {
@@ -57,13 +108,13 @@ export default function ReportSummaryCards({ metrics }) {
             value: `SAR ${metrics?.avgBooking?.toLocaleString() || "0"}`,
             icon: TrendingUp,
             color: "bg-orange-500",
-            percentage: "2.1",
+            percentage: null,
             isTrendingUp: true
         }
     ];
 
     return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {cards.map((card, idx) => (
                 <SummaryCard key={idx} {...card} />
             ))}

@@ -8,28 +8,95 @@ import {
     TrendingDown 
 } from "lucide-react";
 
-const MetricCard = ({ title, value, icon: Icon, subText, trend, trendValue, color }) => (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-        <div className="flex items-center justify-between">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/[0.05]`}>
-                <Icon className={`${color}`} size={24} />
-            </div>
-            {trend && (
-                <div className={`flex items-center gap-1 text-xs font-medium ${trend === 'up' ? "text-green-500" : "text-red-500"}`}>
-                    {trend === 'up' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                    <span>{trendValue}%</span>
-                </div>
-            )}
+const colorPresets = {
+  "text-brand-500": {
+    containerBorder: "hover:border-brand-500/25",
+    bg: "bg-brand-50/50 dark:bg-brand-500/10",
+    border: "border-brand-500/15 dark:border-brand-500/25",
+    glow: "bg-brand-500/5 dark:bg-brand-500/10",
+    iconText: "text-brand-500",
+    shadow: "shadow-[0_8px_30px_rgba(70,95,255,0.03)] hover:shadow-[0_20px_40px_rgba(70,95,255,0.12)]"
+  },
+  "text-blue-500": {
+    containerBorder: "hover:border-blue-500/25",
+    bg: "bg-blue-50/50 dark:bg-blue-500/10",
+    border: "border-blue-500/15 dark:border-blue-500/25",
+    glow: "bg-blue-500/5 dark:bg-blue-500/10",
+    iconText: "text-blue-500",
+    shadow: "shadow-[0_8px_30px_rgba(59,130,246,0.03)] hover:shadow-[0_20px_40px_rgba(59,130,246,0.12)]"
+  },
+  "text-purple-500": {
+    containerBorder: "hover:border-purple-500/25",
+    bg: "bg-purple-50/50 dark:bg-purple-500/10",
+    border: "border-purple-500/15 dark:border-purple-500/25",
+    glow: "bg-purple-500/5 dark:bg-purple-500/10",
+    iconText: "text-purple-500",
+    shadow: "shadow-[0_8px_30px_rgba(168,85,247,0.03)] hover:shadow-[0_20px_40px_rgba(168,85,247,0.12)]"
+  },
+  "text-orange-500": {
+    containerBorder: "hover:border-orange-500/25",
+    bg: "bg-orange-50/50 dark:bg-orange-500/10",
+    border: "border-orange-500/15 dark:border-orange-500/25",
+    glow: "bg-orange-500/5 dark:bg-orange-500/10",
+    iconText: "text-orange-500",
+    shadow: "shadow-[0_8px_30px_rgba(249,115,22,0.03)] hover:shadow-[0_20px_40px_rgba(249,115,22,0.12)]"
+  },
+  "text-green-500": {
+    containerBorder: "hover:border-green-500/25",
+    bg: "bg-green-50/50 dark:bg-green-500/10",
+    border: "border-green-500/15 dark:border-green-500/25",
+    glow: "bg-green-500/5 dark:bg-green-500/10",
+    iconText: "text-green-500",
+    shadow: "shadow-[0_8px_30px_rgba(16,185,129,0.03)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.12)]"
+  },
+  "text-red-500": {
+    containerBorder: "hover:border-red-500/25",
+    bg: "bg-red-50/50 dark:bg-red-500/10",
+    border: "border-red-500/15 dark:border-red-500/25",
+    glow: "bg-red-500/5 dark:bg-red-500/10",
+    iconText: "text-red-500",
+    shadow: "shadow-[0_8px_30px_rgba(239,68,68,0.03)] hover:shadow-[0_20px_40px_rgba(239,68,68,0.12)]"
+  },
+};
+
+const MetricCard = ({ title, value, icon: Icon, subText, trend, trendValue, color }) => {
+  const preset = colorPresets[color] || colorPresets["text-brand-500"];
+
+  return (
+    <div className={`relative overflow-hidden rounded-3xl border border-gray-250 bg-white/70 p-6 backdrop-blur-md transition-all duration-350 hover:-translate-y-1.5 dark:border-gray-800/80 dark:bg-gray-900/60 group ${preset.containerBorder} ${preset.shadow}`}>
+      {/* Background Glowing Blur */}
+      <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none ${preset.glow}`} />
+
+      <div className="flex items-center justify-between z-10 relative">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-350 group-hover:scale-108 ${preset.bg} ${preset.border}`}>
+          <Icon className={`${preset.iconText} transition-transform duration-350 group-hover:rotate-6`} size={22} />
         </div>
-        <div className="mt-4">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-            <div className="flex items-baseline gap-2 mt-1">
-                <h4 className="text-2xl font-bold text-gray-800 dark:text-white/90">{value}</h4>
-                {subText && <span className="text-xs text-gray-400 font-normal">{subText}</span>}
-            </div>
+        {trend && (
+          <div className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full border ${
+            trend === 'up' 
+              ? "bg-green-500/10 text-green-600 border-green-500/20 dark:bg-green-500/15 dark:text-green-400" 
+              : "bg-red-500/10 text-red-600 border-red-500/20 dark:bg-red-500/15 dark:text-red-400"
+          }`}>
+            {trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+            <span>{trendValue}%</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="mt-5 z-10 relative">
+        <p className="text-xs font-semibold tracking-wide uppercase text-gray-400 dark:text-gray-500">{title}</p>
+        <div className="flex items-baseline gap-2 mt-1.5">
+          <h4 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">{value}</h4>
         </div>
+        {subText && (
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium mt-1">
+            {subText}
+          </p>
+        )}
+      </div>
     </div>
-);
+  );
+};
 
 export default function DashboardMetrics({ data }) {
     const [metrics, setMetrics] = useState({
@@ -46,6 +113,7 @@ export default function DashboardMetrics({ data }) {
                 bookings: data.stats.totalBookings || 0,
                 revenue: data.stats.netRevenue || 0,
                 occupancy: data.stats.occupancyRate || 0,
+                users: data.stats.totalUsers || data.stats.totalServiceUsers || 0
             }));
         }
     }, [data]);
@@ -55,7 +123,7 @@ export default function DashboardMetrics({ data }) {
             title: "Total Bookings",
             value: metrics.bookings,
             icon: CalendarCheck,
-            color: "text-brand-500",
+            color: "text-green-500",
             trend: "up",
             trendValue: "12",
             subText: "vs last month"
@@ -90,7 +158,7 @@ export default function DashboardMetrics({ data }) {
     ];
 
     return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {cards.map((card, idx) => (
                 <MetricCard key={idx} {...card} />
             ))}

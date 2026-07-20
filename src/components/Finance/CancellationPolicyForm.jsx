@@ -192,7 +192,7 @@ const CancellationPolicyForm = ({ initialPolicies = [], onSave, loading, saving 
                     <button
                         type="button"
                         onClick={handleAddPolicy}
-                        className="flex items-center gap-2 px-6 py-2.5 border-2 border-brand-500 text-brand-500 font-semibold rounded-lg hover:bg-brand-50 transition-colors"
+                        className="flex items-center gap-2 px-6 py-2.5 border-2 border-brand-500 text-brand-500 dark:border-brand-400 dark:text-brand-400 font-semibold rounded-lg hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
                     >
                         <PlusIcon className="size-5" />
                         Add Another Policy

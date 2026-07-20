@@ -73,8 +73,8 @@ const VendorMetricsCards = ({ userId }) => {
         title="Wallet" 
         value={`₹${stats.walletBalance?.toLocaleString()}`}
         icon={Wallet}
-        iconBg="bg-brand-500/10 dark:bg-brand-500/20"
-        iconColor="text-brand-500"
+        iconBg="bg-brand-500/10 dark:bg-brand-400/20"
+        iconColor="text-brand-500 dark:text-brand-400"
         subText="Payouts"
       />
       <MetricCard 

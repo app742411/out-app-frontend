@@ -9,12 +9,14 @@ import OccupancyStats from "../../components/dashboard/OccupancyStats";
 import ArrivalsDepartures from "../../components/dashboard/ArrivalsDepartures";
 import RecentServices from "../../components/ecommerce/RecentServices";
 import { getAdminDashboard1 } from "../../api/authApi";
+import { useUser } from "../../context/UserContext";
 
 import QuickActions from "../../components/dashboard/QuickActions";
 
 export default function Home() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -48,10 +50,21 @@ export default function Home() {
       />
 
       <div className="space-y-6">
+        {/* Welcome Greeting Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white sm:text-3xl">
+            Welcome back, {user?.firstName || "Admin"}! 👋
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Here's what is happening with your platform today.
+          </p>
+        </div>
+
         {/* Top KPIs */}
         <DashboardMetrics data={dashboardData} />
 
-        <QuickActions />
+        {/* Quick Actions Row */}
+        <QuickActions isVertical={false} />
 
         <div className="grid grid-cols-12 gap-6">
           {/* Revenue Overview & Occupancy */}

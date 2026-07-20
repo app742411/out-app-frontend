@@ -5,6 +5,7 @@ import UserInfoCard from "../components/UserProfile/UserInfoCard";
 import UserAddressCard from "../components/UserProfile/UserAddressCard";
 import PageMeta from "../components/common/PageMeta";
 import { useUser } from "../context/UserContext.jsx";
+import { Link } from "react-router";
 
 
 export default function UserProfiles() {
@@ -29,6 +30,24 @@ export default function UserProfiles() {
           <div className="space-y-6">
             <UserMetaCard user={user} />
             <UserInfoCard user={user} onProfileUpdate={fetchDashboard} />
+            
+            {/* Account Security / Change Password */}
+            <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-5 dark:border-gray-800 dark:bg-white/[0.02] lg:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
+              <div>
+                <h4 className="text-base font-semibold text-gray-800 dark:text-white/90">
+                  Account Security
+                </h4>
+                <p className="mt-1 text-sm text-gray-500">
+                  Ensure your account is using a strong, secure password.
+                </p>
+              </div>
+              <Link
+                to="/change-password"
+                className="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-theme-xs transition-all hover:bg-brand-600 dark:bg-brand-500 dark:hover:bg-brand-600 shrink-0"
+              >
+                Change Password
+              </Link>
+            </div>
           </div>
         )}
       </div>

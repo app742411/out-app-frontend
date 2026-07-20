@@ -8,51 +8,12 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 
-const mockEarningsData = [
-    {
-        id: "TRX_88A1",
-        date: "2026-03-13",
-        orderId: "ORD_43971CFB",
-        serviceProvider: "Devi Lodhi Singh",
-        grossAmount: 15200,
-        platformFee: 1520,
-        tax: 2280,
-        refund: 0,
-        payout: 11400,
-        status: "completed"
-    },
-    {
-        id: "TRX_77B2",
-        date: "2026-03-12",
-        orderId: "ORD_6D41ABC6",
-        serviceProvider: "Ahmed Khan",
-        grossAmount: 8500,
-        platformFee: 850,
-        tax: 1275,
-        refund: 0,
-        payout: 6375,
-        status: "completed"
-    },
-    {
-        id: "TRX_22D4",
-        date: "2026-03-10",
-        orderId: "ORD_1A7D8F22",
-        serviceProvider: "Mohammed Ali",
-        grossAmount: 5800,
-        platformFee: 0,
-        tax: 0,
-        refund: 5800,
-        payout: 0,
-        status: "refunded"
-    }
-];
-
 export default function EarningsTable({ transactions = [], isLoading = false, onExportCSV }) {
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
+        <div className="overflow-hidden rounded-3xl border border-gray-250 bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.012)] backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-900/60 transition-all duration-300 hover:shadow-[0_15px_40px_rgba(70,95,255,0.03)]">
             <div className="p-5 sm:p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                    <h3 className="text-base font-bold text-gray-800 dark:text-white/90">
                         Detailed Earnings Transactions
                     </h3>
                     <p className="text-xs text-gray-500 mt-1">Breakdown of revenue, fees, taxes and payouts per booking.</p>
@@ -60,7 +21,7 @@ export default function EarningsTable({ transactions = [], isLoading = false, on
                 <button 
                     onClick={() => onExportCSV?.()}
                     id="export-earnings-csv"
-                    className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
+                    className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-800 border border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white bg-white/50 dark:bg-white/[0.02] rounded-xl transition-all duration-150 shadow-xs active:scale-95 uppercase tracking-wider"
                 >
                     Download CSV
                 </button>
@@ -68,16 +29,16 @@ export default function EarningsTable({ transactions = [], isLoading = false, on
             
             <div className="max-w-full overflow-x-auto">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-gray-50/50 dark:bg-white/[0.02]">
                         <TableRow>
-                            <TableCell isHeader className="py-4 px-5">Date</TableCell>
-                            <TableCell isHeader className="py-4 px-5">Order ID</TableCell>
-                            <TableCell isHeader className="py-4 px-5 text-right">Gross (SAR)</TableCell>
-                            <TableCell isHeader className="py-4 px-5 text-right">Refund (SAR)</TableCell>
-                            <TableCell isHeader className="py-4 px-5 text-right">Fee (SAR)</TableCell>
-                            <TableCell isHeader className="py-4 px-5 text-right">Tax (SAR)</TableCell>
-                            <TableCell isHeader className="py-4 px-5 text-right font-bold text-brand-500">Payout (SAR)</TableCell>
-                            <TableCell isHeader className="py-4 px-5 text-center">Status</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400">Date</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400">Order ID</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 text-right">Gross (SAR)</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 text-right">Refund (SAR)</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 text-right">Fee (SAR)</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 text-right">Tax (SAR)</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 text-right font-bold text-brand-500">Payout (SAR)</TableCell>
+                            <TableCell isHeader className="py-4 px-5 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 text-center pr-4">Status</TableCell>
                         </TableRow>
                     </TableHeader>
 
@@ -92,27 +53,27 @@ export default function EarningsTable({ transactions = [], isLoading = false, on
                             ))
                         ) : transactions.length > 0 ? (
                             transactions.map((row, idx) => (
-                                <TableRow key={row.orderId || idx}>
-                                    <TableCell className="py-4 px-5 text-sm text-gray-500 whitespace-nowrap">
+                                <TableRow key={row.orderId || idx} className="hover:bg-gray-50/30 dark:hover:bg-white/[0.01]">
+                                    <TableCell className="py-4 px-5 text-xs text-gray-500 font-medium whitespace-nowrap">
                                         {new Date(row.date).toLocaleDateString()}
                                     </TableCell>
-                                    <TableCell className="py-4 px-5 text-sm font-medium">{row.orderId}</TableCell>
-                                    <TableCell className="py-4 px-5 text-sm text-right font-medium">
+                                    <TableCell className="py-4 px-5 text-xs font-semibold text-gray-800 dark:text-white">{row.orderId}</TableCell>
+                                    <TableCell className="py-4 px-5 text-xs text-right font-bold text-gray-800 dark:text-white">
                                         {Number(row.gross || 0).toLocaleString()}
                                     </TableCell>
-                                    <TableCell className="py-4 px-5 text-sm text-right text-red-500 font-medium">
+                                    <TableCell className="py-4 px-5 text-xs text-right text-red-500 font-bold">
                                         {row.refund > 0 ? `-${Number(row.refund).toLocaleString()}` : '0'}
                                     </TableCell>
-                                    <TableCell className="py-4 px-5 text-sm text-right text-purple-500">
+                                    <TableCell className="py-4 px-5 text-xs text-right text-purple-500 font-medium">
                                         -{Number((row.platformFee || 0) + (row.adminCommission || 0)).toLocaleString()}
                                     </TableCell>
-                                    <TableCell className="py-4 px-5 text-sm text-right text-orange-500">
+                                    <TableCell className="py-4 px-5 text-xs text-right text-orange-500 font-medium">
                                         -{Number(row.tax || 0).toLocaleString()}
                                     </TableCell>
-                                    <TableCell className="py-4 px-5 text-sm text-right font-bold text-gray-900 dark:text-white">
+                                    <TableCell className="py-4 px-5 text-xs text-right font-black text-gray-900 dark:text-white">
                                         {Number(row.payout || 0).toLocaleString()}
                                     </TableCell>
-                                    <TableCell className="py-4 px-5 text-center">
+                                    <TableCell className="py-4 px-5 text-center pr-4">
                                         <Badge size="xs" color={
                                             row.status === 'completed' ? 'success' : 
                                             row.status === 'pending' ? 'warning' : 'error'
@@ -124,7 +85,7 @@ export default function EarningsTable({ transactions = [], isLoading = false, on
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={8} className="py-10 text-center text-gray-500">
+                                <TableCell colSpan={8} className="py-10 text-center text-gray-450 text-sm font-medium">
                                     No transactions found.
                                 </TableCell>
                             </TableRow>

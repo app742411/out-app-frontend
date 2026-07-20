@@ -1,7 +1,6 @@
 import React from "react";
 import { 
     DollarSign, 
-    TrendingUp, 
     ArrowUpRight, 
     ArrowDownRight, 
     Wallet,
@@ -11,25 +10,25 @@ import {
 } from "lucide-react";
 
 const SummaryCard = ({ title, value, subValue, icon: Icon, iconBg, iconColor, trend, trendValue }) => (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-center justify-between">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconBg}`}>
-                <Icon className={iconColor} size={24} />
+    <div className="relative overflow-hidden rounded-3xl border border-gray-250 bg-white/70 p-6 dark:border-gray-800/80 dark:bg-gray-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.012)] backdrop-blur-md transition-all duration-350 hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(70,95,255,0.03)] group">
+        <div className="flex items-center justify-between z-10 relative">
+            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-200/20 transition-all duration-300 group-hover:scale-108 ${iconBg}`}>
+                <Icon className={`${iconColor} transition-transform duration-300 group-hover:rotate-6`} size={22} />
             </div>
             {trend && (
-                <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trend === 'up' ? "bg-green-50 text-green-600 dark:bg-green-500/10" : "bg-red-50 text-red-600 dark:bg-red-500/10"}`}>
-                    {trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                <div className={`flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border ${trend === 'up' ? "bg-green-500/10 text-green-600 border-green-500/20 dark:bg-green-500/15 dark:text-green-400" : "bg-red-500/10 text-red-600 border-red-500/20 dark:bg-red-500/15 dark:text-red-400"}`}>
+                    {trend === 'up' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                     <span>{trendValue}%</span>
                 </div>
             )}
         </div>
-        <div className="mt-4">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-            <h4 className="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">
+        <div className="mt-5 z-10 relative">
+            <p className="text-[10px] font-bold tracking-widest uppercase text-gray-400 dark:text-gray-500">{title}</p>
+            <h4 className="mt-1.5 text-2xl font-black text-gray-850 dark:text-white">
                 SAR {Number(value).toLocaleString()}
             </h4>
             {subValue && (
-                <p className="mt-1 text-xs text-gray-400 font-normal">
+                <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500 font-medium">
                     {subValue}
                 </p>
             )}
@@ -45,8 +44,6 @@ export default function EarningsSummaryCards({ stats }) {
             icon: DollarSign,
             iconBg: "bg-brand-500/10 dark:bg-brand-500/20",
             iconColor: "text-brand-500",
-            trend: "up",
-            trendValue: "12.5",
             subValue: "Total booking volume"
         },
         {
@@ -55,8 +52,6 @@ export default function EarningsSummaryCards({ stats }) {
             icon: Wallet,
             iconBg: "bg-blue-500/10 dark:bg-blue-500/20",
             iconColor: "text-blue-500",
-            trend: "up",
-            trendValue: "8.2",
             subValue: "Net paid to owners"
         },
         {
@@ -65,8 +60,6 @@ export default function EarningsSummaryCards({ stats }) {
             icon: Percent,
             iconBg: "bg-purple-500/10 dark:bg-purple-500/20",
             iconColor: "text-purple-500",
-            trend: "up",
-            trendValue: "15.4",
             subValue: "Admin & Platform commission"
         },
         {
@@ -75,7 +68,6 @@ export default function EarningsSummaryCards({ stats }) {
             icon: Receipt,
             iconBg: "bg-orange-500/10 dark:bg-orange-500/20",
             iconColor: "text-orange-500",
-            trendValue: "2.1",
             subValue: "VAT and service costs"
         },
         {

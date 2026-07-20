@@ -3,9 +3,9 @@ import Chart from "react-apexcharts";
 
 export default function EarningsChart({ graphData }) {
     const options = {
-        colors: ["#2d2d2d", "#3b82f6", "#10b981"],
+        colors: ["#4f46e5", "#3b82f6", "#10b981"],
         chart: {
-            fontFamily: "Outfit, sans-serif",
+            fontFamily: "Instrument Sans, sans-serif",
             type: "bar",
             height: 350,
             stacked: false,
@@ -13,36 +13,70 @@ export default function EarningsChart({ graphData }) {
                 show: false,
             },
         },
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                columnWidth: '45%'
+            }
+        },
         dataLabels: {
             enabled: false,
         },
         stroke: {
-            width: [1, 1, 4],
+            width: [0, 0, 3],
             curve: 'smooth'
         },
         xaxis: {
             categories: graphData?.map(item => item.label) || ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             axisBorder: { show: false },
             axisTicks: { show: false },
+            labels: {
+                style: {
+                    colors: "#9ca3af",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                }
+            }
         },
         yaxis: {
             labels: {
+                style: {
+                    colors: "#9ca3af",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                },
                 formatter: (val) => `SAR ${val.toLocaleString()}`
             }
         },
         grid: {
-            borderColor: "#e2e8f0",
-            strokeDashArray: 4,
+            borderColor: "rgba(226, 232, 240, 0.4)",
+            strokeDashArray: 5,
             yaxis: {
                 lines: { show: true }
             }
         },
         legend: {
+            show: true,
             position: 'top',
             horizontalAlign: 'left',
-            fontFamily: 'Outfit',
+            fontFamily: 'Instrument Sans, sans-serif',
+            fontSize: "12px",
+            fontWeight: 500,
+            labels: {
+                colors: "#9ca3af"
+            },
+            markers: {
+                width: 8,
+                height: 8,
+                radius: 12,
+            },
+            itemMargin: {
+                horizontal: 12,
+                vertical: 5
+            }
         },
         tooltip: {
+            
             y: {
                 formatter: (val) => `SAR ${val.toLocaleString()}`
             }
@@ -68,8 +102,8 @@ export default function EarningsChart({ graphData }) {
     ];
 
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6 shadow-sm overflow-hidden">
-            <h3 className="mb-6 text-lg font-semibold text-gray-800 dark:text-white/90">
+        <div className="rounded-3xl border border-gray-250 bg-white/70 p-6 dark:border-gray-800/80 dark:bg-gray-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.012)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_15px_40px_rgba(70,95,255,0.03)] overflow-hidden">
+            <h3 className="mb-6 text-base font-bold text-gray-800 dark:text-white/90">
                 Revenue vs Payouts Trend
             </h3>
             <div className="overflow-hidden">

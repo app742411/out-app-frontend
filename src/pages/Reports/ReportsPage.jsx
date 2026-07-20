@@ -6,7 +6,7 @@ import BookingStatusChart from "../../components/Reports/BookingStatusChart";
 import RevenueLineChart from "../../components/Reports/RevenueLineChart";
 import PropertyBarChart from "../../components/Reports/PropertyBarChart";
 import CategoryPerformanceChart from "../../components/Reports/CategoryPerformanceChart";
-import { getAdminReports, exportEarningsCSV, exportEarningsPDF } from "../../api/authApi";
+import { getAdminReports } from "../../api/authApi";
 import { Download } from "lucide-react";
 import Button from "../../components/ui/button/Button";
 import toast from "react-hot-toast";
@@ -55,55 +55,21 @@ export default function ReportsPage() {
         }
     };
 
-    const handleExportEarnings = async (format) => {
-        try {
-            toast.loading(`Preparing Earnings ${format} report...`, { id: "exporting-earnings" });
-            const res = format === "CSV" ? await exportEarningsCSV() : await exportEarningsPDF();
-            
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Earnings_Report_${new Date().toISOString().split('T')[0]}.${format.toLowerCase()}`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-            
-            toast.success(`Earnings ${format} report downloaded!`, { id: "exporting-earnings" });
-        } catch (error) {
-            console.error("Earnings Export failed", error);
-            toast.error("Failed to generate earnings report", { id: "exporting-earnings" });
-        }
-    };
-
     return (
         <>
             <PageMeta title="Reports & Analytics | Out Admin" description="View detailed reports and analytics for the booking system." />
             <PageBreadcrumb pageTitle="Reports & Analytics" />
             
-            <div className="space-y-6">
+            <div className="space-y-6 pb-10">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between -mt-2 mb-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">View detailed reports and analytics for the booking system.</div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2 mr-2">
-                             <Button variant="outline" size="sm" onClick={() => handleExport("CSV")} id="export-summary-csv">
-                                <Download size={14} className="mr-1.5" /> Summary CSV
-                            </Button>
-                            <Button size="sm" onClick={() => handleExport("PDF")} id="export-summary-pdf">
-                                <Download size={14} className="mr-1.5" /> Summary PDF
-                            </Button>
-                        </div>
-
-                        <div className="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
-
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleExportEarnings("CSV")} id="export-earnings-csv" className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-900 dark:text-green-400">
-                                <Download size={14} className="mr-1.5" /> Earnings CSV
-                            </Button>
-                            <Button size="sm" onClick={() => handleExportEarnings("PDF")} id="export-earnings-pdf" className="bg-green-600 hover:bg-green-700">
-                                <Download size={14} className="mr-1.5" /> Earnings PDF
-                            </Button>
-                        </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Detailed overview of booking metrics and financial charts.</div>
+                    <div className="flex items-center gap-3 shrink-0">
+                         <Button variant="outline" size="sm" onClick={() => handleExport("CSV")} id="export-summary-csv">
+                            <Download size={14} className="mr-1.5" /> Summary CSV
+                        </Button>
+                        <Button size="sm" onClick={() => handleExport("PDF")} id="export-summary-pdf">
+                            <Download size={14} className="mr-1.5" /> Summary PDF
+                        </Button>
                     </div>
                 </div>
 
@@ -146,42 +112,42 @@ export default function ReportsPage() {
 
                         {/* Additional Analytics Card */}
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                            <div className="lg:col-span-12 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                                <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+                            <div className="lg:col-span-12 rounded-3xl border border-gray-250 bg-white/70 p-6 dark:border-gray-800/80 dark:bg-gray-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.012)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_15px_40px_rgba(70,95,255,0.03)]">
+                                <h3 className="mb-4 text-base font-bold text-gray-800 dark:text-white/90">
                                     Quick Insights & Trends
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-150/40 dark:border-gray-800/40 dark:bg-white/[0.01]">
                                         <div>
-                                            <p className="text-xs font-medium text-gray-500 uppercase">Retention Rate</p>
-                                            <p className="text-sm font-bold text-gray-800 dark:text-white">{reportData?.retentionRate || 0}% Repeat Guests</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Retention Rate</p>
+                                            <p className="text-sm font-extrabold text-gray-800 dark:text-white mt-1">{reportData?.retentionRate || 0}% Repeat Guests</p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-medium text-green-500">Industry leading</p>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-xs font-bold text-green-600 dark:text-green-400">Excellent</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-150/40 dark:border-gray-800/40 dark:bg-white/[0.01]">
                                         <div>
-                                            <p className="text-xs font-medium text-gray-500 uppercase">Top Search Location</p>
-                                            <p className="text-sm font-bold text-gray-800 dark:text-white">{reportData?.locationAnalytics?.[0]?._id || "N/A"}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Top Search Location</p>
+                                            <p className="text-sm font-extrabold text-gray-800 dark:text-white mt-1 truncate max-w-[150px]">{reportData?.locationAnalytics?.[0]?._id || "N/A"}</p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-medium text-blue-500">{reportData?.locationAnalytics?.[0]?.totalBookings || 0} Bookings</p>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-xs font-bold text-blue-600 dark:text-blue-400">{reportData?.locationAnalytics?.[0]?.totalBookings || 0} Bookings</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-150/40 dark:border-gray-800/40 dark:bg-white/[0.01]">
                                         <div>
-                                            <p className="text-xs font-medium text-gray-500 uppercase">Growth Rate</p>
-                                            <p className="text-sm font-bold text-gray-800 dark:text-white">+{reportData?.stats?.revenueGrowthPercent || 0}% MoM</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Growth Rate</p>
+                                            <p className="text-sm font-extrabold text-gray-800 dark:text-white mt-1">+{reportData?.stats?.revenueGrowthPercent || 0}% MoM</p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-medium text-purple-500">Steady</p>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-xs font-bold text-purple-600 dark:text-purple-400">Steady</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 flex justify-between items-center text-xs text-gray-500">
+                                <div className="mt-6 flex justify-between items-center text-[10px] font-medium text-gray-400 dark:text-gray-500">
                                     <p className="italic">*Insights are based on data from the last 30 days.</p>
-                                    <p>Last updated: {new Date().toLocaleString()}</p>
+                                    <p>Last updated: {new Date().toLocaleTimeString()}</p>
                                 </div>
                             </div>
                         </div>

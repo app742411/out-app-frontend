@@ -58,6 +58,8 @@ import ServiceDetails from "./pages/ServiceManagement/ServiceDetails";
 import PackageListPage from "./pages/Packages/PackageListPage";
 import PackageDetailsPage from "./pages/Packages/PackageDetailsPage";
 import CancellationPoliciesPage from "./pages/Finance/CancellationPoliciesPage";
+import IdentityManage from "./pages/identity/identityManage";
+import IdentityDetails from "./pages/identity/identityDetails";
 import { useEffect } from "react";
 import { generateFCMToken, onMessageListener } from "./lib/fcm";
 import { toast } from "react-hot-toast";
@@ -136,20 +138,22 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
                <Route path="/settings" element={<AdminSettings />} />
               <Route path="/account" element={<AccountSettings />} />
+              <Route path="/identity-manage" element={<IdentityManage />} />
+              <Route path="/identity-details/:id" element={<IdentityDetails />} />
             </Route>
           </Route>
           {/* Public Routes */}
           <Route element={<PublicRoute />}>
-            {/* Public Root Route */}
-            <Route path="/" element={<LandingPage />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forget-password" element={<ForgetPassword />} />
             <Route path="/verify-OTP" element={<OTPVerification />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/contact-us" element={<ContactUsPage />} />
           </Route>
-
+ 
           {/* Open Routes (accessible whether logged in or out) */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/delete-account" element={<DeleteAccount />} />

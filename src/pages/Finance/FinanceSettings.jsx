@@ -9,6 +9,8 @@ import { getPlatformConfig, getCommissions } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const FinanceSettings = () => {
+    const [activeTab, setActiveTab] = useState("commission");
+
     // Platform Config States
     const [config, setConfig] = useState(null);
     const [configLoading, setConfigLoading] = useState(true);
@@ -91,51 +93,78 @@ const FinanceSettings = () => {
             <PageMeta title="Finance & Commission Settings - Out" />
             <PageBreadcrumb pageTitle="Finance & Commission" />
 
-            <div className="space-y-8">
-                {/* Platform Settings Section */}
-                <div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white/90 mb-4 px-1">
+            <div className="space-y-6">
+                {/* Modern Segmented Tab Switcher */}
+                <div className="flex bg-gray-100/80 dark:bg-gray-800/85 p-0.5 rounded-xl border border-gray-200/30 self-start w-fit">
+                    <button
+                        onClick={() => setActiveTab("commission")}
+                        className={`px-5 py-2 text-xs font-bold rounded-lg transition-all duration-150 cursor-pointer ${
+                            activeTab === "commission" 
+                                ? "bg-white dark:bg-gray-700 shadow-xs text-brand-600 dark:text-white" 
+                                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        }`}
+                    >
+                        Commission Management
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("platform")}
+                        className={`px-5 py-2 text-xs font-bold rounded-lg transition-all duration-150 cursor-pointer ${
+                            activeTab === "platform" 
+                                ? "bg-white dark:bg-gray-700 shadow-xs text-brand-600 dark:text-white" 
+                                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        }`}
+                    >
                         Platform Settings
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <PlatformFeeConfig
-                            initialData={config?.platformFee}
-                            onUpdate={fetchConfig}
-                        />
-                        <TaxConfig
-                            initialData={config?.tax}
-                            onUpdate={fetchConfig}
-                        />
-                    </div>
+                    </button>
                 </div>
 
-                <hr className="border-gray-200 dark:border-gray-800" />
+                {/* Tab content area */}
+                <div className="transition-all duration-200">
+                    {activeTab === "platform" && (
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-white/90 mb-4 px-1">
+                                Platform Settings
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <PlatformFeeConfig
+                                    initialData={config?.platformFee}
+                                    onUpdate={fetchConfig}
+                                />
+                                <TaxConfig
+                                    initialData={config?.tax}
+                                    onUpdate={fetchConfig}
+                                />
+                            </div>
+                        </div>
+                    )}
 
-                {/* Commission Management Section */}
-                <div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white/90 mb-4 px-1">
-                        Commission Management
-                    </h2>
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <div className="xl:col-span-1">
-                            <AddCommissionComp
-                                fetchCommissions={() => fetchCommissions(pagination.page)}
-                                editCommission={editCommission}
-                                setEditCommission={setEditCommission}
-                            />
+                    {activeTab === "commission" && (
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-white/90 mb-4 px-1">
+                                Commission Management
+                            </h2>
+                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                                <div className="xl:col-span-1">
+                                    <AddCommissionComp
+                                        fetchCommissions={() => fetchCommissions(pagination.page)}
+                                        editCommission={editCommission}
+                                        setEditCommission={setEditCommission}
+                                    />
+                                </div>
+                                <div className="xl:col-span-2">
+                                    <CommissionListComp
+                                        commissions={commissions}
+                                        loading={commissionsLoading}
+                                        pagination={pagination}
+                                        filters={filters}
+                                        setFilters={setFilters}
+                                        fetchCommissions={fetchCommissions}
+                                        setEditCommission={setEditCommission}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div className="xl:col-span-2">
-                            <CommissionListComp
-                                commissions={commissions}
-                                loading={commissionsLoading}
-                                pagination={pagination}
-                                filters={filters}
-                                setFilters={setFilters}
-                                fetchCommissions={fetchCommissions}
-                                setEditCommission={setEditCommission}
-                            />
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </>

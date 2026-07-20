@@ -88,13 +88,13 @@ export default function SignInForm() {
               className="dark:hidden"
               src="./images/logo/logo-dark.png"
               alt="Logo"
-              width={70}
+              width={42}
             />
             <img
               className="hidden dark:block"
               src="./images/logo/logo-light.png"
               alt="Logo"
-              width={70}
+              width={42}
             />
           </Link>
 

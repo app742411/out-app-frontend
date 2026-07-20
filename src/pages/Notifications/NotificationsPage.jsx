@@ -12,7 +12,7 @@ export default function NotificationsPage() {
             />
             <PageBreadcrumb pageTitle="Notifications" />
 
-            <div className="w-full mx-auto">
+            <div className="max-w-4xl mx-auto">
                 <NotificationList />
             </div>
         </>

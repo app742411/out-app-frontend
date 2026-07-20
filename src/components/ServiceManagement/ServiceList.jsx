@@ -130,7 +130,7 @@ const ServiceList = () => {
           <button
             onClick={() => setActiveTab("active")}
             className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "active"
-              ? "border-brand-500 text-brand-500"
+              ? "border-brand-500 text-brand-500 dark:border-brand-400 dark:text-brand-400"
               : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
           >
@@ -139,7 +139,7 @@ const ServiceList = () => {
           <button
             onClick={() => setActiveTab("pending")}
             className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${activeTab === "pending"
-              ? "border-brand-500 text-brand-500"
+              ? "border-brand-500 text-brand-500 dark:border-brand-400 dark:text-brand-400"
               : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
           >
@@ -266,11 +266,11 @@ const ServiceList = () => {
                     <div className="grid grid-cols-2 gap-2 pt-2">
                       <button
                         onClick={() => navigate(`/service-details/${service._id}`)}
-                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn w-full outline-none"
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-400/10 hover:border-brand-500/30 dark:hover:border-brand-400/30 transition-all group/btn w-full outline-none"
                         title="View Details"
                       >
-                        <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
-                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
+                        <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 dark:group-hover/btn:text-brand-400 transition-colors" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500 dark:group-hover/btn:text-brand-400">View</span>
                       </button>
                       <button
                         onClick={() => {
@@ -288,11 +288,11 @@ const ServiceList = () => {
                     <div className="grid grid-cols-4 gap-2 pt-2">
                       <button
                         onClick={() => navigate(`/service-details/${service._id}`)}
-                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:border-brand-500/30 transition-all group/btn outline-none"
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-400/10 hover:border-brand-500/30 dark:hover:border-brand-400/30 transition-all group/btn outline-none"
                         title="View Details"
                       >
-                        <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 transition-colors" />
-                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500">View</span>
+                        <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 dark:group-hover/btn:text-brand-400 transition-colors" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500 dark:group-hover/btn:text-brand-400">View</span>
                       </button>
                       <button
                         disabled={approveMutation.isPending && approveMutation.variables?.id === service._id}

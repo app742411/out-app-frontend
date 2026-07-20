@@ -10,7 +10,6 @@ import {
     Shield,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import ComponentCard from "../common/ComponentCard";
 import Badge from "../ui/badge/Badge";
 import {
     getAllNotificationsAdmin,
@@ -20,14 +19,11 @@ import {
 import { useSocket } from "../../context/SocketContext";
 import toast from "react-hot-toast";
 import NotificationDetailsModal from "./NotificationDetailsModal";
-import Select from "../ui/select/Select";
 
 export default function NotificationList() {
     const { notifications, setNotifications, setNotificationCount } = useSocket();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [filterType, setFilterType] = useState("all");
-    const [activeTab, setActiveTab] = useState("active");
 
     const [selectedId, setSelectedId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,8 +32,7 @@ export default function NotificationList() {
         try {
             setLoading(true);
             const params = {
-                isDeleted: activeTab === "deleted",
-                type: filterType === "all" ? undefined : filterType
+                isDeleted: false
             };
             const res = await getAllNotificationsAdmin(params);
             if (res?.data) {
@@ -53,28 +48,25 @@ export default function NotificationList() {
 
     useEffect(() => {
         fetchNotifications();
-    }, [filterType, activeTab]);
+    }, []);
 
     const handleNotificationClick = async (notification) => {
         const id = notification._id;
         const refId = notification.referenceId;
         const type = notification.type?.toUpperCase() || notification.referenceType?.toUpperCase();
 
-        // 1. Mark as read locally immediately to update the count in UI
         const wasUnread = !notification.isRead;
         setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
         if (wasUnread) {
             setNotificationCount(prev => Math.max(0, prev - 1));
         }
 
-        // 2. Call backend in background to mark as read in database
         try {
             getNotificationDetails(id);
         } catch (e) {
             // Asynchronous background call
         }
 
-        // 3. Direct redirection if path exists
         let path = null;
         switch (type) {
             case "BOOKING":
@@ -103,14 +95,13 @@ export default function NotificationList() {
         if (path) {
             navigate(path);
         } else {
-            // Fallback to opening details modal
             setSelectedId(id);
             setIsModalOpen(true);
         }
     };
 
     const handleDelete = async (e, id) => {
-        e.stopPropagation(); // Don't trigger redirection
+        e.stopPropagation();
         try {
             await adminDeleteNotifications([id]);
             setNotifications(notifications.filter(n => n._id !== id));
@@ -149,13 +140,13 @@ export default function NotificationList() {
 
     const getColor = (type) => {
         switch (type?.toUpperCase()) {
-            case "BOOKING": return "text-blue-500 bg-blue-50";
-            case "PAYMENT": return "text-green-500 bg-green-50";
-            case "REFUND": return "text-red-500 bg-red-50";
-            case "CHAT": return "text-purple-500 bg-purple-50";
-            case "PROPERTY": return "text-amber-500 bg-amber-50";
-            case "SERVICE": return "text-teal-500 bg-teal-50";
-            default: return "text-gray-500 bg-gray-50";
+            case "BOOKING": return "text-blue-600 bg-blue-500/10 border-blue-500/20 dark:text-blue-400";
+            case "PAYMENT": return "text-green-600 bg-green-500/10 border-green-500/20 dark:text-green-400";
+            case "REFUND": return "text-red-600 bg-red-500/10 border-red-500/20 dark:text-red-400";
+            case "CHAT": return "text-purple-600 bg-purple-500/10 border-purple-500/20 dark:text-purple-400";
+            case "PROPERTY": return "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400";
+            case "SERVICE": return "text-teal-600 bg-teal-500/10 border-teal-500/20 dark:text-teal-400";
+            default: return "text-gray-500 bg-gray-500/10 border-gray-500/20 dark:text-gray-400";
         }
     };
 
@@ -168,60 +159,33 @@ export default function NotificationList() {
     };
 
     return (
-
-        <ComponentCard
-            title="System Notifications"
-            desc="Stay updated with the latest activities across bookings, properties, and finance."
-        >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                        <button
-                            onClick={() => setActiveTab("active")}
-                            className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === "active" ? "bg-white dark:bg-gray-700 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700"}`}
-                        >
-                            Active
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("deleted")}
-                            className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === "deleted" ? "bg-white dark:bg-gray-700 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700"}`}
-                        >
-                            Trash
-                        </button>
-                    </div>
-
-                    <div className="relative group">
-                        <Select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                        // className="pl-4 pr-10 py-2 text-xs font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 border-none rounded-xl appearance-none cursor-pointer focus:ring-2 focus:ring-brand/20 transition-all text-gray-700 dark:text-gray-200"
-                        >
-                            <option value="all">All Types</option>
-                            <option value="BOOKING">Bookings</option>
-                            <option value="CHAT">Conversations</option>
-                            <option value="PAYMENT">Payments</option>
-                            <option value="REFUND">Refunds</option>
-                        </Select>
-                    </div>
+        <div className="rounded-3xl border border-gray-250 bg-white/70 p-6 dark:border-gray-800/80 dark:bg-gray-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.012)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_15px_40px_rgba(70,95,255,0.03)]">
+            
+            {/* Header / Actions Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h3 className="text-base font-bold text-gray-800 dark:text-white/90">
+                        System Notifications
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">Stay updated with the latest activities across bookings, properties, and finance.</p>
                 </div>
-
-                <div className="flex items-center gap-3">
+                <div className="flex items-center shrink-0">
                     <button
                         onClick={handleClearAll}
                         disabled={notifications.length === 0}
-                        className="flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-2xl transition-all disabled:opacity-50 border border-transparent hover:border-red-100"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl transition-all duration-150 shadow-xs active:scale-95 uppercase tracking-wider disabled:opacity-40 disabled:pointer-events-none"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                         Purge All
                     </button>
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 opacity-60">
-                        <div className="w-10 h-10 border-4 border-brand/20 border-t-brand rounded-full animate-spin mb-4"></div>
-                        <p className="text-xs font-black uppercase tracking-widest text-gray-400">Syncing Notifications</p>
+                        <div className="w-8 h-8 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin mb-4"></div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Syncing Notifications</p>
                     </div>
                 ) : notifications.length > 0 ? (
                     notifications.map((notification) => {
@@ -231,17 +195,17 @@ export default function NotificationList() {
                             <div
                                 key={notification._id}
                                 onClick={() => handleNotificationClick(notification)}
-                                className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-brand/5 hover:scale-[1.01] active:scale-100 ${!notification.isRead
-                                    ? 'bg-white dark:bg-white/[0.03] border-brand/20 shadow-lg shadow-brand/5'
-                                    : 'bg-gray-50/50 dark:bg-transparent border-gray-100 dark:border-gray-800 opacity-80'
+                                className={`group relative flex items-start gap-4 p-4.5 rounded-2xl border transition-all duration-200 cursor-pointer hover:shadow-[0_8px_30px_rgba(70,95,255,0.02)] hover:scale-[1.008] active:scale-100 ${!notification.isRead
+                                    ? 'bg-white/80 dark:bg-white/[0.02] border-brand-500/25 shadow-xs'
+                                    : 'bg-gray-50/30 dark:bg-transparent border-gray-100/60 dark:border-gray-800/40 opacity-75'
                                     }`}
                             >
-                                <div className={`shrink-0 flex items-center justify-center w-16 h-16 rounded-2xl ${colors} dark:bg-opacity-10 shadow-sm transition-transform group-hover:scale-110 duration-500`}>
-                                    <Icon size={32} />
+                                <div className={`shrink-0 flex items-center justify-center w-12 h-12 rounded-xl border transition-transform duration-300 group-hover:scale-105 ${colors}`}>
+                                    <Icon size={20} />
                                 </div>
 
-                                <div className="flex-1 min-w-0 pr-10">
-                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <div className="flex-1 min-w-0 pr-12">
+                                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
                                         <Badge size="xs" color={
                                             notification.type === 'BOOKING' ? 'info' :
                                                 notification.type === 'PAYMENT' ? 'success' :
@@ -252,47 +216,45 @@ export default function NotificationList() {
                                         }>
                                             {notification.type}
                                         </Badge>
-                                        <span className="flex items-center gap-1 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                            <Clock size={12} />
+                                        <span className="flex items-center gap-1 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                                            <Clock size={10} className="text-gray-300" />
                                             {formatTime(notification.createdAt)}
                                         </span>
                                     </div>
 
-                                    <h4 className={`text-base font-black mb-1 ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                                    <h4 className={`text-sm font-bold mb-1 ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
                                         {notification.title}
                                     </h4>
 
-                                    <p className={`text-sm leading-relaxed font-medium line-clamp-1 italic ${!notification.isRead ? 'text-gray-600 dark:text-gray-300' : 'text-gray-500 dark:text-gray-500'}`}>
+                                    <p className={`text-xs leading-relaxed font-medium line-clamp-1 italic ${!notification.isRead ? 'text-gray-500 dark:text-gray-400' : 'text-gray-450 dark:text-gray-500'}`}>
                                         {notification.body || notification.message}
                                     </p>
                                 </div>
 
-                                <div className="absolute top-5 right-5 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="absolute top-4.5 right-4.5 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                     <button
                                         onClick={(e) => handleDelete(e, notification._id)}
-                                        className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all shadow-sm bg-white dark:bg-gray-800"
+                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 border border-gray-100 dark:border-gray-800 rounded-xl transition-all shadow-xs bg-white dark:bg-gray-800"
                                         title="Delete"
                                     >
-                                        <Trash2 size={20} />
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
 
                                 {!notification.isRead && (
-                                    <div className="absolute top-5 right-5 w-3 h-3 bg-brand rounded-full shadow-lg shadow-brand/40 group-hover:opacity-0 transition-opacity"></div>
+                                    <div className="absolute top-5 right-5 w-2 h-2 bg-brand-500 rounded-full shadow-lg shadow-brand-500/40 group-hover:opacity-0 transition-opacity"></div>
                                 )}
                             </div>
                         );
                     })
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner border border-gray-50 dark:border-gray-800">
-                            <Bell className="text-gray-300" size={40} />
+                    <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in duration-300">
+                        <div className="w-16 h-16 bg-gray-150/40 dark:bg-gray-800/40 rounded-2xl flex items-center justify-center mb-5 shadow-xs border border-gray-100/40 dark:border-gray-800/40">
+                            <Bell className="text-gray-300 dark:text-gray-600" size={28} />
                         </div>
-                        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Clean Slate</h3>
-                        <p className="text-gray-500 dark:text-gray-400 max-w-[300px] text-sm font-medium leading-relaxed">
-                            {filterType === "all"
-                                ? "You're all caught up! No notifications in this category yet."
-                                : `No ${filterType.toLowerCase()} notifications found at the moment.`}
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1.5">No notifications found</h3>
+                        <p className="text-gray-400 dark:text-gray-500 max-w-[240px] text-xs font-medium leading-relaxed">
+                            You're all caught up! No notifications in this category.
                         </p>
                     </div>
                 )}
@@ -303,6 +265,6 @@ export default function NotificationList() {
                 onClose={() => setIsModalOpen(false)}
                 notificationId={selectedId}
             />
-        </ComponentCard>
+        </div>
     );
 }
