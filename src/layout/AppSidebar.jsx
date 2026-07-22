@@ -22,7 +22,8 @@ import {
   BarChart3,
   Bell,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  MoreHorizontal
 } from "lucide-react";
 
 import { useSidebar } from "../context/SidebarContext";
@@ -404,7 +405,7 @@ const AppSidebar = () => {
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
-                {showFullInfo ? "Menu" : <HorizontaLDots className="size-6" />}
+                {showFullInfo ? "Menu" : <MoreHorizontal className="size-6" />}
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
@@ -413,7 +414,7 @@ const AppSidebar = () => {
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
-                {showFullInfo ? "Others" : <HorizontaLDots />}
+                {showFullInfo ? "Others" : <MoreHorizontal />}
               </h2>
               {renderMenuItems(othersItems, "others")}
             </div>
