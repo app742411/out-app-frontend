@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
-import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { loginUser } from "../../api/authApi";
 import { generateFCMToken } from "../../lib/fcm";
@@ -12,7 +11,6 @@ import { useUser } from "../../context/UserContext";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -161,14 +159,8 @@ export default function SignInForm() {
                 )}
               </div>
 
-              {/* Keep me logged in + forgot password */}
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <Checkbox checked={isChecked} onChange={setIsChecked} />
-                  <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                    Keep me logged in
-                  </span>
-                </label>
+              {/* Forgot password */}
+              <div className="flex items-center justify-end">
                 <Link
                   to="/forget-password"
                   className="text-sm text-brand-700 hover:text-brand-600"
