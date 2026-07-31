@@ -5,17 +5,19 @@ import AddCouponComp from "../../components/Coupons/AddCouponComp";
 import CouponListComp from "../../components/Coupons/CouponListComp";
 import { getCoupons } from "../../api/authApi";
 import toast from "react-hot-toast";
+import useDebounce from "../../hooks/useDebounce";
 
 export default function CouponManage() {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editCoupon, setEditCoupon] = useState(null);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
 
-    const fetchCoupons = async () => {
+    const fetchCoupons = async (searchVal = debouncedSearch) => {
         try {
             setLoading(true);
-            const res = await getCoupons({ limit: 100, search });
+            const res = await getCoupons({ limit: 100, search: searchVal });
             // The API endpoint should return an array or object containing the coupons array
             if (res.data && Array.isArray(res.data)) {
                 setCoupons(res.data);
@@ -35,8 +37,8 @@ export default function CouponManage() {
     };
 
     useEffect(() => {
-        fetchCoupons();
-    }, [search]);
+        fetchCoupons(debouncedSearch);
+    }, [debouncedSearch]);
 
     return (
         <>

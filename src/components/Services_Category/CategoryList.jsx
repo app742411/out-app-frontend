@@ -29,6 +29,7 @@ import {
 import toast from "react-hot-toast";
 import EditCategoryModal from "./EditCategoryModal";
 import DeleteCategoryModal from "./DeleteCategoryModal";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -39,6 +40,7 @@ const CategoryList = forwardRef(({ onEdit }, ref) => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const [sortBy, setSortBy] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -46,14 +48,14 @@ const CategoryList = forwardRef(({ onEdit }, ref) => {
   const baseURL = import.meta.env.VITE_API_URL;
 
   // FETCH CATEGORIES
-  const fetchCategories = async (page = 1) => {
+  const fetchCategories = async (page = 1, searchVal = debouncedSearch) => {
     try {
       setLoading(true);
 
       const res = await getCategories({
         page,
         limit: 5,
-        search,
+        search: searchVal,
         sortBy,
       });
 
@@ -74,8 +76,8 @@ const CategoryList = forwardRef(({ onEdit }, ref) => {
   }));
 
   useEffect(() => {
-    fetchCategories(1);
-  }, [search, sortBy]);
+    fetchCategories(1, debouncedSearch);
+  }, [debouncedSearch, sortBy]);
 
   return (
     <>

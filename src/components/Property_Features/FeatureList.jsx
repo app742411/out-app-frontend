@@ -13,6 +13,7 @@ import { getFeatures, updateFeature, deleteFeature } from "../../api/authApi";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -20,17 +21,18 @@ const FeatureList = forwardRef(({ onEdit }, ref) => {
     const [features, setFeatures] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    const fetchFeaturesList = async (page = 1) => {
+    const fetchFeaturesList = async (page = 1, searchVal = debouncedSearch) => {
         try {
             setLoading(true);
 
-            const res = await getFeatures(page, ITEMS_PER_PAGE, search);
+            const res = await getFeatures(page, ITEMS_PER_PAGE, searchVal);
 
             setFeatures(res.data || []);
             setCurrentPage(res.page || page);
@@ -48,8 +50,8 @@ const FeatureList = forwardRef(({ onEdit }, ref) => {
     }));
 
     useEffect(() => {
-        fetchFeaturesList(1);
-    }, [search]);
+        fetchFeaturesList(1, debouncedSearch);
+    }, [debouncedSearch]);
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;

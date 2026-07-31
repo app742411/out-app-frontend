@@ -16,6 +16,7 @@ import { Select } from "../ui/select/Select";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import { EyeIcon, TrashBinIcon, CloseLineIcon, CheckLineIcon } from "../../icons";
 import { timeAgo } from "../../utils/date";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,6 +24,7 @@ export default function AllUserListComp() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -32,14 +34,14 @@ export default function AllUserListComp() {
 
     const baseURL = import.meta.env.VITE_API_URL;
 
-    const fetchUsers = async (page = 1, isBackgroundPoll = false) => {
+    const fetchUsers = async (page = 1, isBackgroundPoll = false, searchVal = debouncedSearch) => {
         try {
             if (!isBackgroundPoll) setLoading(true);
 
             const res = await getAllUsers({
                 page,
                 limit: ITEMS_PER_PAGE,
-                search,
+                search: searchVal,
                 status: statusFilter,
             });
 
@@ -54,14 +56,14 @@ export default function AllUserListComp() {
     };
 
     useEffect(() => {
-        fetchUsers(1);
-    }, [search, statusFilter]);
+        fetchUsers(1, false, debouncedSearch);
+    }, [debouncedSearch, statusFilter]);
 
     // Real-time data refresh on focus or tab visibility to avoid continuous background polling
     useEffect(() => {
         const handleRefresh = () => {
             if (document.visibilityState === "visible") {
-                fetchUsers(currentPage, true);
+                fetchUsers(currentPage, true, debouncedSearch);
             }
         };
 
@@ -72,7 +74,7 @@ export default function AllUserListComp() {
             window.removeEventListener("focus", handleRefresh);
             document.removeEventListener("visibilitychange", handleRefresh);
         };
-    }, [currentPage, search, statusFilter]);
+    }, [currentPage, debouncedSearch, statusFilter]);
 
     const handleBlockUnblock = async (userId, currentStatus) => {
         try {

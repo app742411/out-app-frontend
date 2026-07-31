@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { useUser } from "../context/UserContext";
-import { logout } from "../api/authApi";
+import { logout, getAdminPendingCounts, markPendingCountsSeen } from "../api/authApi";
 import LogoutModal from "../components/common/LogoutModal";
 
 // Modern Lucide Icons
@@ -139,6 +139,67 @@ const AppSidebar = () => {
   const [subMenuHeight, setSubMenuHeight] = useState({});
   const subMenuRefs = useRef({});
 
+  const [pendingCounts, setPendingCounts] = useState({
+    identityVerificationPending: 0,
+    propertyPending: 0,
+    servicePending: 0,
+    reportPending: 0,
+    newBookingCount: 0,
+    totalCount: 0
+  });
+
+  const fetchPendingCounts = async () => {
+    try {
+      const res = await getAdminPendingCounts();
+      if (res?.data) {
+        setPendingCounts(res.data);
+      }
+    } catch (error) {
+      console.error("Failed to load pending counts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingCounts();
+    const interval = setInterval(fetchPendingCounts, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleItemClick = async (itemName) => {
+    let type = null;
+    if (itemName === "Property Management") type = "property";
+    else if (itemName === "Service Management") type = "service";
+    else if (itemName === "Reports") type = "report";
+    else if (itemName === "Booking Management") type = "booking";
+    else if (itemName === "Identity Management") type = "identity";
+
+    if (type) {
+      try {
+        await markPendingCountsSeen(type);
+        fetchPendingCounts();
+      } catch (error) {
+        console.error(`Failed to mark pending counts seen for ${type}:`, error);
+      }
+    }
+  };
+
+  const getPendingCountForItem = (itemName) => {
+    switch (itemName) {
+      case "Identity Management":
+        return pendingCounts.identityVerificationPending || 0;
+      case "Property Management":
+        return pendingCounts.propertyPending || 0;
+      case "Service Management":
+        return pendingCounts.servicePending || 0;
+      case "Booking Management":
+        return pendingCounts.newBookingCount || 0;
+      case "Reports":
+        return pendingCounts.reportPending || 0;
+      default:
+        return 0;
+    }
+  };
+
   const isActive = useCallback(
     (path) => path && location.pathname === path,
     [location.pathname]
@@ -215,130 +276,153 @@ const AppSidebar = () => {
     return first + last || "A";
   };
 
+  const showFullInfo = isExpanded || isHovered || isMobileOpen;
+
   const renderMenuItems = (items, menuType) => (
     <ul className="flex flex-col gap-2">
-      {items.map((nav, index) => (
-        <li key={`${menuType}-${index}`} className="relative">
-          {nav.subItems ? (
-            <>
-              <button
-                type="button"
-                onClick={() => handleSubmenuToggle(index, menuType)}
-                className={`menu-item group ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active text-brand-600 dark:text-white"
-                  : "menu-item-inactive text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                  } cursor-pointer ${!isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"
-                  }`}
-              >
-                {/* Active Submenu Left Indicator Bar */}
-                {openSubmenu?.type === menuType && openSubmenu?.index === index && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-r bg-brand-500 dark:bg-brand-400" />
-                )}
-                <span
-                  className={`menu-item-icon-size transition-colors duration-200 ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "text-brand-500 dark:text-brand-400"
-                    : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+      {items.map((nav, index) => {
+        const count = getPendingCountForItem(nav.name);
+        return (
+          <li key={`${menuType}-${index}`} className="relative">
+            {nav.subItems ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSubmenuToggle(index, menuType);
+                    handleItemClick(nav.name);
+                  }}
+                  className={`menu-item group ${openSubmenu?.type === menuType && openSubmenu?.index === index
+                    ? "menu-item-active text-brand-600 dark:text-white"
+                    : "menu-item-inactive text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                    } cursor-pointer ${!isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"
                     }`}
                 >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <ChevronDown
-                    className={`ml-auto w-4 h-4 transition-transform duration-200 ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500 dark:text-brand-400"
-                      : "text-gray-400"
+                  {/* Active Submenu Left Indicator Bar */}
+                  {openSubmenu?.type === menuType && openSubmenu?.index === index && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-r bg-brand-500 dark:bg-brand-400" />
+                  )}
+                  <span
+                    className={`menu-item-icon-size transition-colors duration-200 relative ${openSubmenu?.type === menuType && openSubmenu?.index === index
+                      ? "text-brand-500 dark:text-brand-400"
+                      : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
                       }`}
-                  />
-                )}
-              </button>
+                  >
+                    {nav.icon}
+                    {!showFullInfo && count > 0 && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                    )}
+                  </span>
+                  {showFullInfo && (
+                    <span className="menu-item-text whitespace-nowrap">{nav.name}</span>
+                  )}
+                  {showFullInfo && count > 0 && (
+                    <span className="ml-auto px-2 py-0.5 text-[9px] font-extrabold text-white bg-red-500 rounded-full min-w-5 h-5 flex items-center justify-center">
+                      {count}
+                    </span>
+                  )}
+                  {showFullInfo && (
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${count > 0 ? "ml-2" : "ml-auto"} ${openSubmenu?.type === menuType && openSubmenu?.index === index
+                        ? "rotate-180 text-brand-500 dark:text-brand-400"
+                        : "text-gray-400"
+                        }`}
+                    />
+                  )}
+                </button>
 
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <div
-                  ref={(el) => {
-                    subMenuRefs.current[`${menuType}-${index}`] = el;
-                  }}
-                  className="overflow-hidden transition-all duration-300"
-                  style={{
-                    height:
-                      openSubmenu?.type === menuType && openSubmenu?.index === index
-                        ? `${subMenuHeight[`${menuType}-${index}`] || 0}px`
-                        : "0px",
-                  }}
-                >
-                  <ul className="mt-2 space-y-1 ml-9 border-l border-gray-200 dark:border-gray-850 pl-3">
-                    {nav.subItems.map((subItem) => (
-                      <li key={subItem.name}>
-                        <Link
-                          to={subItem.path}
-                          className={`menu-dropdown-item ${isActive(subItem.path)
-                            ? "menu-dropdown-item-active"
-                            : "menu-dropdown-item-inactive"
-                            }`}
-                        >
-                          {subItem.name}
-                          <span className="flex items-center gap-1 ml-auto">
-                            {subItem.new && (
-                              <span
-                                className={`ml-auto ${isActive(subItem.path)
-                                  ? "menu-dropdown-badge-active"
-                                  : "menu-dropdown-badge-inactive"
-                                  } menu-dropdown-badge`}
-                              >
-                                new
-                              </span>
-                            )}
-                            {subItem.pro && (
-                              <span
-                                className={`ml-auto ${isActive(subItem.path)
-                                  ? "menu-dropdown-badge-active"
-                                  : "menu-dropdown-badge-inactive"
-                                  } menu-dropdown-badge`}
-                              >
-                                pro
-                              </span>
-                            )}
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </>
-          ) : (
-            nav.path && (
-              <Link
-                to={nav.path}
-                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                  }`}
-              >
-                {/* Active Link Left Indicator Bar */}
-                {isActive(nav.path) && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-r bg-brand-500 dark:bg-brand-400" />
+                {showFullInfo && (
+                  <div
+                    ref={(el) => {
+                      subMenuRefs.current[`${menuType}-${index}`] = el;
+                    }}
+                    className="overflow-hidden transition-all duration-300"
+                    style={{
+                      height:
+                        openSubmenu?.type === menuType && openSubmenu?.index === index
+                          ? `${subMenuHeight[`${menuType}-${index}`] || 0}px`
+                          : "0px",
+                    }}
+                  >
+                    <ul className="mt-2 space-y-1 ml-9 border-l border-gray-200 dark:border-gray-850 pl-3">
+                      {nav.subItems.map((subItem) => (
+                        <li key={subItem.name}>
+                          <Link
+                            to={subItem.path}
+                            className={`menu-dropdown-item ${isActive(subItem.path)
+                              ? "menu-dropdown-item-active"
+                              : "menu-dropdown-item-inactive"
+                              }`}
+                          >
+                            {subItem.name}
+                            <span className="flex items-center gap-1 ml-auto">
+                              {subItem.new && (
+                                <span
+                                  className={`ml-auto ${isActive(subItem.path)
+                                    ? "menu-dropdown-badge-active"
+                                    : "menu-dropdown-badge-inactive"
+                                    } menu-dropdown-badge`}
+                                >
+                                  new
+                                </span>
+                              )}
+                              {subItem.pro && (
+                                <span
+                                  className={`ml-auto ${isActive(subItem.path)
+                                    ? "menu-dropdown-badge-active"
+                                    : "menu-dropdown-badge-inactive"
+                                    } menu-dropdown-badge`}
+                                >
+                                  pro
+                                </span>
+                              )}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-                <span
-                  className={`menu-item-icon-size transition-colors duration-200 ${isActive(nav.path)
-                    ? "text-brand-500 dark:text-brand-400"
-                    : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+              </>
+            ) : (
+              nav.path && (
+                <Link
+                  to={nav.path}
+                  onClick={() => handleItemClick(nav.name)}
+                  className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
                     }`}
                 >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-              </Link>
-            )
-          )}
-        </li>
-      ))}
+                  {/* Active Link Left Indicator Bar */}
+                  {isActive(nav.path) && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-r bg-brand-500 dark:bg-brand-400" />
+                  )}
+                  <span
+                    className={`menu-item-icon-size transition-colors duration-200 relative ${isActive(nav.path)
+                      ? "text-brand-500 dark:text-brand-400"
+                      : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                      }`}
+                  >
+                    {nav.icon}
+                    {!showFullInfo && count > 0 && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                    )}
+                  </span>
+                  {showFullInfo && (
+                    <span className="menu-item-text whitespace-nowrap">{nav.name}</span>
+                  )}
+                  {showFullInfo && count > 0 && (
+                    <span className="ml-auto px-2 py-0.5 text-[9px] font-extrabold text-white bg-red-500 rounded-full min-w-5 h-5 flex items-center justify-center">
+                      {count}
+                    </span>
+                  )}
+                </Link>
+              )
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
-
-  const showFullInfo = isExpanded || isHovered || isMobileOpen;
 
   return (
     <aside
@@ -447,7 +531,7 @@ const AppSidebar = () => {
               </div>
               <button
                 onClick={() => setIsLogoutModalOpen(true)}
-                className="ml-auto p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 dark:hover:bg-red-500/15 rounded-xl transition-all active:scale-95 cursor-pointer border border-transparent hover:border-red-500/10 animate-pulse"
+                className="ml-auto p-1.5 text-red-500 hover:bg-red-500/10 dark:hover:bg-red-500/15 rounded-xl transition-all active:scale-95 cursor-pointer border border-transparent hover:border-red-500/10 animate-pulse"
                 title="Log Out"
               >
                 <LogOut size={15} />

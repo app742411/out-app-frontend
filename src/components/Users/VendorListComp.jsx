@@ -16,6 +16,8 @@ import { Select } from "../ui/select/Select";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import { EyeIcon, TrashBinIcon, CloseLineIcon, CheckLineIcon } from "../../icons";
 import { timeAgo } from "../../utils/date";
+import useDebounce from "../../hooks/useDebounce";
+import { UserCheck } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -24,6 +26,7 @@ export default function VendorListComp() {
     const [vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
     const [statusFilter, setStatusFilter] = useState("");
     const [approvalFilter, setApprovalFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,14 +38,14 @@ export default function VendorListComp() {
     const baseURL = import.meta.env.VITE_API_URL;
 
 
-    const fetchVendors = async (page = 1, isBackgroundPoll = false) => {
+    const fetchVendors = async (page = 1, isBackgroundPoll = false, searchVal = debouncedSearch) => {
         try {
             if (!isBackgroundPoll) setLoading(true);
 
             const res = await getAllServiceUsers({
                 page,
                 limit: ITEMS_PER_PAGE,
-                search,
+                search: searchVal,
                 status: statusFilter,
                 isApproved: approvalFilter,
             });
@@ -58,13 +61,13 @@ export default function VendorListComp() {
     };
 
     useEffect(() => {
-        fetchVendors(1);
-    }, [search, statusFilter, approvalFilter]);
+        fetchVendors(1, false, debouncedSearch);
+    }, [debouncedSearch, statusFilter, approvalFilter]);
 
     useEffect(() => {
         const handleRefresh = () => {
             if (document.visibilityState === "visible") {
-                fetchVendors(currentPage, true);
+                fetchVendors(currentPage, true, debouncedSearch);
             }
         };
 
@@ -75,7 +78,7 @@ export default function VendorListComp() {
             window.removeEventListener("focus", handleRefresh);
             document.removeEventListener("visibilitychange", handleRefresh);
         };
-    }, [currentPage, search, statusFilter, approvalFilter]);
+    }, [currentPage, debouncedSearch, statusFilter, approvalFilter]);
 
     const handleBlockUnblock = async (vendorId, currentStatus) => {
         try {
@@ -265,6 +268,17 @@ export default function VendorListComp() {
                                             </TableCell>
                                             <TableCell className="px-5 py-3 text-right">
                                                 <div className="flex items-center justify-end gap-2">
+                                                    {/* View User Profile */}
+                                                    {vendor.userModelId && (
+                                                        <button
+                                                            onClick={() => navigate(`/user-details/${vendor.userModelId}`)}
+                                                            className="inline-flex items-center justify-center p-2 rounded-lg transition-all duration-155 text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:hover:bg-purple-500/20 cursor-pointer"
+                                                            title="View User Verification"
+                                                        >
+                                                            <UserCheck className="size-5" />
+                                                        </button>
+                                                    )}
+
                                                     {/* View Button */}
                                                     <button
                                                         onClick={() => navigate(`/vendor-details/${vendor._id}`)}

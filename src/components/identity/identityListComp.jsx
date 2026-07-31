@@ -54,7 +54,7 @@ export default function IdentityListComp() {
             setApproveModal({ open: false, userId: null });
             fetchIdentities(currentPage);
         } catch (error) {
-            toast.error(error.message || "Failed to approve identity");
+            toast.error(error.message || error.response?.data?.message || "Failed to approve identity");
         } finally {
             setLoading(false);
         }
@@ -73,7 +73,7 @@ export default function IdentityListComp() {
             setRejectModal({ open: false, userId: null, reason: "" });
             fetchIdentities(currentPage);
         } catch (error) {
-            toast.error(error.message || "Failed to reject identity");
+            toast.error(error.message || error.response?.data?.message || "Failed to reject identity");
         } finally {
             setLoading(false);
         }

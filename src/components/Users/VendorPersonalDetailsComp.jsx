@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router"; // note: using react-router as requested in the app
+import { useParams, useNavigate } from "react-router"; // note: using react-router as requested in the app
 import { getServiceUserDetails, approveRejectServiceUser } from "../../api/authApi";
 import ComponentCard from "../common/ComponentCard";
 import toast from "react-hot-toast";
@@ -7,6 +7,7 @@ import VendorDocumentViewer from "./VendorDocumentViewer";
 import Button from "../ui/button/Button";
 export default function VendorPersonalDetailsComp() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [vendor, setVendor] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -133,6 +134,15 @@ export default function VendorPersonalDetailsComp() {
 
                     {/* Actions */}
                     <div className="pt-2 border-t border-gray-50 dark:border-gray-800 flex flex-col gap-2">
+                        {vendor.userModelId && (
+                            <Button 
+                                size="sm" 
+                                className="w-full bg-brand-500 hover:bg-brand-600 text-white rounded-xl flex items-center justify-center gap-2 mb-1"
+                                onClick={() => navigate(`/user-details/${vendor.userModelId}`)}
+                            >
+                                View User Verification Info
+                            </Button>
+                        )}
                         {vendor.isApproved === "pending" && (
                             <div className="grid grid-cols-2 gap-2">
                                 <Button size="sm" className="bg-green-500 text-white hover:bg-green-600 rounded-xl" onClick={handleApprove}>

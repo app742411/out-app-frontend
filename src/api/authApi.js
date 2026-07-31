@@ -976,14 +976,14 @@ export const exportEarningsPDF = async () => {
 };
 
 // NOTIFICATIONS API
-export const getAllNotificationsAdmin = async (params = {}) => {
-  try {
-    const res = await apiClient.get("/api/admin/getAllNotificationsAdmin", { params });
-    return res.data;
-  } catch (error) {
-    throw error.response?.data || error;
-  }
-};
+// export const getAllNotificationsAdmin = async (params = {}) => {
+//   try {
+//     const res = await apiClient.get("/api/admin/getAllNotificationsAdmin", { params });
+//     return res.data;
+//   } catch (error) {
+//     throw error.response?.data || error;
+//   }
+// };
 
 export const getAdminNotifications = async () => {
   try {
@@ -1081,6 +1081,24 @@ export const sendChatMessage = async (formData) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getAdminPendingCounts = async () => {
+  try {
+    const res = await apiClient.get("/api/admin/getAdminPendingCounts");
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const markPendingCountsSeen = async (type) => {
+  try {
+    const res = await apiClient.post("/api/admin/markPendingCountsSeen", { type });
     return res.data;
   } catch (error) {
     throw error.response?.data || error;

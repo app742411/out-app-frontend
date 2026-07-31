@@ -103,8 +103,18 @@ export default function PersonalUserDetailsComp() {
             <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                     <div className="w-24 h-24 rounded-full border-4 border-gray-100 dark:border-gray-800 overflow-hidden flex-shrink-0 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl font-bold uppercase shadow-inner">
-                        {user.firstName?.charAt(0)}
-                        {user.lastName?.charAt(0)}
+                        {user.profile ? (
+                            <img
+                                src={`${baseURL.replace(/\/$/, "")}/uploads/users/${user.profile}`}
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <>
+                                {user.firstName?.charAt(0)}
+                                {user.lastName?.charAt(0)}
+                            </>
+                        )}
                     </div>
                     <div className="flex-1 text-center sm:text-left">
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
@@ -301,15 +311,15 @@ export default function PersonalUserDetailsComp() {
                                                 <FileText className="w-5 h-5" />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-xs text-gray-400">Document #{idx + 1}</p>
+                                                <p className="text-xs text-gray-400">Document #{idx + 1} - {doc.documentType || "Document"}</p>
                                                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                    {doc.name || `identity_document_${idx + 1}`}
+                                                    {doc.originalFileName || doc.name || `identity_document_${idx + 1}`}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="mt-4 flex items-center justify-end">
                                             <a 
-                                                href={doc.url} 
+                                                href={`${baseURL.replace(/\/$/, "")}/uploads/identityDocuments/${doc.documentUrl}`} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
                                                 className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"

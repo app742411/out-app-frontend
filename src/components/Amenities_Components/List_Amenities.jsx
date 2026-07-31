@@ -25,11 +25,13 @@ import {
   deleteAmenity,
   updateAmenities,
 } from "../../api/authApi";
+import useDebounce from "../../hooks/useDebounce";
 
 const List_Amenities = forwardRef(({ onEdit }, ref) => {
   const [amenities, setAmenities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
 
   // Delete confirmation state
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -57,11 +59,11 @@ const List_Amenities = forwardRef(({ onEdit }, ref) => {
   }, []);
 
   // Load amenities
-  const loadAmenities = async (pageNumber = 1) => {
+  const loadAmenities = async (pageNumber = 1, searchVal = debouncedSearch) => {
     try {
       setLoading(true);
 
-      const res = await listAmenities(pageNumber, 5, search);
+      const res = await listAmenities(pageNumber, 5, searchVal);
 
       setAmenities(res.data || []);
       setTotalPages(res.totalPages || 1);
@@ -79,8 +81,8 @@ const List_Amenities = forwardRef(({ onEdit }, ref) => {
   };
 
   useEffect(() => {
-    loadAmenities(1);
-  }, [search]);
+    loadAmenities(1, debouncedSearch);
+  }, [debouncedSearch]);
 
   // Allow parent to refresh
   useImperativeHandle(ref, () => ({

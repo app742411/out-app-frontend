@@ -14,6 +14,7 @@ import { Pencil, Trash2, Search } from "lucide-react";
 
 import Pagination from "../common/Pagination";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -21,6 +22,7 @@ const RestroomAmenitiesListComp = forwardRef(({ onEdit }, ref) => {
     const [amenities, setAmenities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -28,12 +30,12 @@ const RestroomAmenitiesListComp = forwardRef(({ onEdit }, ref) => {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [amenityToDelete, setAmenityToDelete] = useState(null);
 
-    const fetchAmenitiesList = async (page = 1) => {
+    const fetchAmenitiesList = async (page = 1, searchVal = debouncedSearch) => {
         try {
             setLoading(true);
 
             // Using the exact structure you requested (page, limit, search)
-            const res = await getRestrooms(page, ITEMS_PER_PAGE, search);
+            const res = await getRestrooms(page, ITEMS_PER_PAGE, searchVal);
 
             setAmenities(res.data || []);
             setCurrentPage(res.page || page);
@@ -51,8 +53,8 @@ const RestroomAmenitiesListComp = forwardRef(({ onEdit }, ref) => {
     }));
 
     useEffect(() => {
-        fetchAmenitiesList(1);
-    }, [search]);
+        fetchAmenitiesList(1, debouncedSearch);
+    }, [debouncedSearch]);
 
     return (
         <>

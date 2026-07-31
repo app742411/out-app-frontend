@@ -321,6 +321,14 @@ export default function ServicePropertyDetailsComp() {
                                         <span className="text-[10px] text-gray-400 font-bold uppercase">Total Capacity</span>
                                         <span className="text-xl font-bold text-indigo-600 underline decoration-indigo-200 underline-offset-4">{property.maxGuests || 0} Guests</span>
                                     </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase">Property Area</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-white">{property.area ? `${property.area} sq.ft.` : "N/A"}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase">Instant Booking</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-white">{property.instantBooking ? "Enabled" : "Disabled"}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="bg-gray-50 dark:bg-gray-800/40 p-5 rounded-3xl border border-gray-100 dark:border-gray-800/50">
@@ -525,11 +533,37 @@ export default function ServicePropertyDetailsComp() {
                     </ComponentCard>
 
                     <ComponentCard title="Location">
-                        <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div className="space-y-4">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-500 font-medium">City:</span>
                                 <span className="font-bold text-gray-900 dark:text-white capitalize">{property.address?.city || "N/A"}</span>
                             </div>
+                            {property.address?.location?.coordinates && property.address.location.coordinates.length === 2 && (
+                                <>
+                                    <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-100 dark:border-gray-800/60">
+                                        <span className="text-gray-500 font-medium">Latitude:</span>
+                                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                                            {property.address.location.coordinates[1]}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-500 font-medium">Longitude:</span>
+                                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                                            {property.address.location.coordinates[0]}
+                                        </span>
+                                    </div>
+                                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${property.address.location.coordinates[1]},${property.address.location.coordinates[0]}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full inline-flex items-center justify-center px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center cursor-pointer border-0"
+                                        >
+                                            Open in Google Maps
+                                        </a>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </ComponentCard>
                 </div>

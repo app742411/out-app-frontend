@@ -71,16 +71,6 @@ const MetricCard = ({ title, value, icon: Icon, subText, trend, trendValue, colo
         <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-350 group-hover:scale-108 ${preset.bg} ${preset.border}`}>
           <Icon className={`${preset.iconText} transition-transform duration-350 group-hover:rotate-6`} size={22} />
         </div>
-        {trend && (
-          <div className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full border ${
-            trend === 'up' 
-              ? "bg-green-500/10 text-green-600 border-green-500/20 dark:bg-green-500/15 dark:text-green-400" 
-              : "bg-red-500/10 text-red-600 border-red-500/20 dark:bg-red-500/15 dark:text-red-400"
-          }`}>
-            {trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            <span>{trendValue}%</span>
-          </div>
-        )}
       </div>
       
       <div className="mt-5 z-10 relative">

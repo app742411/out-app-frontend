@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router";
 import Badge from "../ui/badge/Badge";
 import {
-    getAllNotificationsAdmin,
+    getAdminNotifications,
     adminDeleteNotifications,
     getNotificationDetails
 } from "../../api/authApi";
@@ -31,10 +31,7 @@ export default function NotificationList() {
     const fetchNotifications = async () => {
         try {
             setLoading(true);
-            const params = {
-                isDeleted: false
-            };
-            const res = await getAllNotificationsAdmin(params);
+            const res = await getAdminNotifications();
             if (res?.data) {
                 setNotifications(res.data);
             }

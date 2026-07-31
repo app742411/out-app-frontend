@@ -14,6 +14,7 @@ import Pagination from "../common/Pagination";
 import Badge from "../ui/badge/Badge";
 import { useNavigate } from "react-router";
 import { Select } from "../ui/select/Select";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -21,6 +22,7 @@ export default function BookingListComp({ defaultStatus = "all" }) {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
     const [bookingStatus, setBookingStatus] = useState(defaultStatus);
     const [bookingType, setBookingType] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
@@ -51,13 +53,13 @@ export default function BookingListComp({ defaultStatus = "all" }) {
         }
     };
 
-    const fetchBookings = async (page = 1) => {
+    const fetchBookings = async (page = 1, searchVal = debouncedSearch) => {
         try {
             setLoading(true);
             const apiParams = {
                 page,
                 limit: ITEMS_PER_PAGE,
-                search,
+                search: searchVal,
                 type: bookingType,
                 paymentStatus,
             };
@@ -82,8 +84,12 @@ export default function BookingListComp({ defaultStatus = "all" }) {
     }, [defaultStatus]);
 
     useEffect(() => {
-        fetchBookings(currentPage || 1);
-    }, [search, bookingStatus, paymentStatus, bookingType, currentPage]);
+        setCurrentPage(1);
+    }, [debouncedSearch, bookingStatus, paymentStatus, bookingType]);
+
+    useEffect(() => {
+        fetchBookings(currentPage || 1, debouncedSearch);
+    }, [debouncedSearch, bookingStatus, paymentStatus, bookingType, currentPage]);
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {

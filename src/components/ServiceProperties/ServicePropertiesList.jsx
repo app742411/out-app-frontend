@@ -23,6 +23,7 @@ import {
     Trash2,
     Star
 } from "lucide-react";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -43,6 +44,7 @@ export default function ServicePropertiesList() {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
     const navigate = useNavigate();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -56,7 +58,7 @@ export default function ServicePropertiesList() {
 
     const baseURL = import.meta.env.VITE_API_URL || "";
 
-    const fetchProperties = async (isBackgroundPoll = false) => {
+    const fetchProperties = async (isBackgroundPoll = false, searchVal = debouncedSearch) => {
         try {
             if (!isBackgroundPoll) setLoading(true);
             let finalProperties = [];
@@ -76,7 +78,7 @@ export default function ServicePropertiesList() {
                 const res = await getAllProperties({
                     page: 1,
                     limit: 10,
-                    search,
+                    search: searchVal,
                     status: "",
                 });
 
@@ -111,15 +113,15 @@ export default function ServicePropertiesList() {
     };
 
     useEffect(() => {
-        fetchProperties();
+        fetchProperties(false, debouncedSearch);
         setCurrentPage(1);
-    }, [search, activeTab]);
+    }, [debouncedSearch, activeTab]);
 
     // Real-time data refresh on focus or tab visibility to avoid continuous background polling
     useEffect(() => {
         const handleRefresh = () => {
             if (document.visibilityState === "visible") {
-                fetchProperties(true);
+                fetchProperties(true, debouncedSearch);
             }
         };
 
@@ -130,7 +132,7 @@ export default function ServicePropertiesList() {
             window.removeEventListener("focus", handleRefresh);
             document.removeEventListener("visibilitychange", handleRefresh);
         };
-    }, [search, activeTab]);
+    }, [debouncedSearch, activeTab]);
 
     const handleApproval = async (id, action, reason = "") => {
         try {

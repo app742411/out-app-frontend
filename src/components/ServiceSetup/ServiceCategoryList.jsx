@@ -20,6 +20,7 @@ import {
 } from "../../api/authApi";
 import toast from "react-hot-toast";
 import { Select } from "../ui/select/Select";
+import useDebounce from "../../hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -27,19 +28,20 @@ const ServiceCategoryList = forwardRef(({ onEdit }, ref) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const [sortBy, setSortBy] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const baseURL = import.meta.env.VITE_API_URL;
 
-  const fetchCategories = async (page = 1) => {
+  const fetchCategories = async (page = 1, searchVal = debouncedSearch) => {
     try {
       setLoading(true);
       const res = await getAllServiceCategories({
         page,
         limit: ITEMS_PER_PAGE,
-        search,
+        search: searchVal,
         sortBy, // Pass sortBy to the API
       });
 
@@ -47,9 +49,9 @@ const ServiceCategoryList = forwardRef(({ onEdit }, ref) => {
       // If API doesn't filter/sort, we continue doing it locally just in case
       // The condition `!res.total` is a placeholder for checking if the API handled filtering.
       // A more robust check might be needed based on actual API response structure.
-      if (search && filtered.length > 0 && !res.total) {
+      if (searchVal && filtered.length > 0 && !res.total) {
         filtered = filtered.filter(cat =>
-          cat.name.toLowerCase().includes(search.toLowerCase())
+          cat.name.toLowerCase().includes(searchVal.toLowerCase())
         );
       }
 
@@ -76,11 +78,11 @@ const ServiceCategoryList = forwardRef(({ onEdit }, ref) => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, sortBy]);
+  }, [debouncedSearch, sortBy]);
 
   useEffect(() => {
-    fetchCategories(currentPage);
-  }, [search, sortBy, currentPage]);
+    fetchCategories(currentPage, debouncedSearch);
+  }, [debouncedSearch, sortBy, currentPage]);
 
   // Use server-side paging if 'total' is present, otherwise fallback to local paging
   const pagedCategories = (categories.length > ITEMS_PER_PAGE || totalPages > 1) && categories.length <= ITEMS_PER_PAGE

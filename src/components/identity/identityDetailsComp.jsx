@@ -38,7 +38,7 @@ export default function IdentityDetailsComp() {
             setApproveModalOpen(false);
             navigate("/identity-manage");
         } catch (error) {
-            toast.error(error.message || "Failed to approve identity");
+            toast.error(error.message || error.response?.data?.message || "Failed to approve identity");
         } finally {
             setLoading(false);
         }
@@ -56,7 +56,7 @@ export default function IdentityDetailsComp() {
             setRejectModal({ open: false, reason: "" });
             navigate("/identity-manage");
         } catch (error) {
-            toast.error(error.message || "Failed to reject identity");
+            toast.error(error.message || error.response?.data?.message || "Failed to reject identity");
         } finally {
             setLoading(false);
         }
