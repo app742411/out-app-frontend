@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
@@ -94,7 +94,16 @@ const ServiceDetails = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="xl:col-span-2 space-y-6">
-          <ComponentCard title="Service Details">
+          <ComponentCard
+            title="Service Details"
+            action={
+              <Link to={`/service-calendar/${id}`}>
+                <Button className="bg-brand-500 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border-0">
+                  View Availability Calendar
+                </Button>
+              </Link>
+            }
+          >
             <div className="space-y-6">
               {/* Media Gallery */}
               {service.media?.images?.length > 0 && (

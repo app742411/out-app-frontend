@@ -12,7 +12,8 @@ import {
   Clock,
   Tag,
   Trash2,
-  Star
+  Star,
+  Calendar
 } from "lucide-react";
 import { getAllServicesAdmin, getPendingServices, updateServiceApproval, deleteService } from "../../api/authApi";
 import toast from "react-hot-toast";
@@ -263,7 +264,7 @@ const ServiceList = () => {
 
                   {/* Action Buttons */}
                   {activeTab === "active" ? (
-                    <div className="grid grid-cols-2 gap-2 pt-2">
+                    <div className="grid grid-cols-3 gap-2 pt-2">
                       <button
                         onClick={() => navigate(`/service-details/${service._id}`)}
                         className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-brand-50 dark:hover:bg-brand-400/10 hover:border-brand-500/30 dark:hover:border-brand-400/30 transition-all group/btn w-full outline-none"
@@ -271,6 +272,14 @@ const ServiceList = () => {
                       >
                         <Eye className="w-4 h-4 text-gray-400 group-hover/btn:text-brand-500 dark:group-hover/btn:text-brand-400 transition-colors" />
                         <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-brand-500 dark:group-hover/btn:text-brand-400">View</span>
+                      </button>
+                      <button
+                        onClick={() => navigate(`/service-calendar/${service._id}`)}
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-500/30 transition-all group/btn outline-none"
+                        title="Calendar"
+                      >
+                        <Calendar className="w-4 h-4 text-gray-400 group-hover/btn:text-blue-500 transition-colors" />
+                        <span className="text-[9px] mt-1 font-bold uppercase text-gray-400 group-hover/btn:text-blue-500">Dates</span>
                       </button>
                       <button
                         onClick={() => {

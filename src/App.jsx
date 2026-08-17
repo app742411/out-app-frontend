@@ -36,6 +36,7 @@ import ChangeOldPasswordPage from "./pages/AuthPages/ChangeOldPasswordPage";
 import ServiceProperties from "./pages/ServiceProperties/ServiceProperties";
 import ServicePropertyDetails from "./pages/ServiceProperties/ServicePropertyDetails";
 import ServicePropertyCalendarPage from "./pages/ServiceProperties/ServicePropertyCalendarPage";
+import ServiceCalendarPage from "./pages/ServiceManagement/ServiceCalendarPage";
 import CouponManage from "./pages/Coupons/CouponManage";
 import AppManage from "./pages/AppManage/AppManage";
 import ComingSoon from "./pages/ComingSoon/ComingSoon";
@@ -106,6 +107,7 @@ export default function App() {
               <Route path="/properties" element={<ServiceProperties />} />
               <Route path="/property-details/:id" element={<ServicePropertyDetails />} />
               <Route path="/property-calendar/:id" element={<ServicePropertyCalendarPage />} />
+              <Route path="/service-calendar/:id" element={<ServiceCalendarPage />} />
               <Route path="/coupanmange" element={<CouponManage />} />
               <Route path="/packages" element={<PackageListPage />} />
               <Route path="/package-details/:id" element={<PackageDetailsPage />} />

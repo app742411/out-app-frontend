@@ -7,13 +7,13 @@ import ComponentCard from "../common/ComponentCard";
 import Badge from "../ui/badge/Badge";
 import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
-import { getAdminBookingCalendar } from "../../api/authApi";
+import { getAdminServiceBookingCalendar } from "../../api/authApi";
 import { useModal } from "../../hooks/useModal";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { CalendarCheck, CalendarRange, Moon, CalendarX } from "lucide-react";
 
-export default function ServicePropertyCalendarComp({ propertyId }) {
+export default function ServiceCalendarComp({ serviceId }) {
     const navigate = useNavigate();
     const { isOpen, openModal, closeModal } = useModal();
     const [selectedSlot, setSelectedSlot] = useState(null);
@@ -38,7 +38,7 @@ export default function ServicePropertyCalendarComp({ propertyId }) {
         const fetchCalendarData = async () => {
             try {
                 setLoading(true);
-                const res = await getAdminBookingCalendar(propertyId);
+                const res = await getAdminServiceBookingCalendar(serviceId);
                 const calendarData = res.calendar || [];
 
                 const statusMap = new Map();
@@ -187,10 +187,10 @@ export default function ServicePropertyCalendarComp({ propertyId }) {
             }
         };
 
-        if (propertyId) {
+        if (serviceId) {
             fetchCalendarData();
         }
-    }, [propertyId]);
+    }, [serviceId]);
 
     const handleDateSelect = (selectInfo) => {
         setSelectedSlot({
@@ -520,7 +520,7 @@ export default function ServicePropertyCalendarComp({ propertyId }) {
                 <div className="text-center">
                     <h3 className="text-lg font-bold mb-2">Create Static Booking</h3>
                     <p className="text-sm text-gray-500 mb-6">
-                        Are you sure you want to book this property from <b>{selectedSlot?.start}</b> to <b>{selectedSlot?.end}</b>?
+                        Are you sure you want to book this service from <b>{selectedSlot?.start}</b> to <b>{selectedSlot?.end}</b>?
                     </p>
                     <div className="flex gap-4">
                         <Button variant="outline" className="flex-1" onClick={closeModal}>Cancel</Button>

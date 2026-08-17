@@ -877,6 +877,17 @@ export const getAdminBookingCalendar = async (propertyId) => {
   }
 };
 
+export const getAdminServiceBookingCalendar = async (serviceId) => {
+  try {
+    const res = await apiClient.get("/api/admin/getAdminServiceBookingCalendar", {
+      params: { serviceId },
+    });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
 // WITHDRAW REQUESTS API
 export const getWithdrawRequests = async (params = {}) => {
   try {
