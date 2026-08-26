@@ -12,6 +12,7 @@ import Button from "../ui/button/Button";
 import { getUserProperties } from "../../api/authApi";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../../utils/currency";
+import { Home } from "lucide-react";
 
 export default function UserPropertiesList({ userId }) {
     const [properties, setProperties] = useState([]);
