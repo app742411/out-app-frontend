@@ -30,7 +30,7 @@ import {
   Wrench,
   Globe
 } from "lucide-react";
-import { getSingleServiceAdmin, updateServiceApproval } from "../../api/authApi";
+import { getSingleServiceAdmin, updateServiceApproval, toggleRecommendedService } from "../../api/authApi";
 import toast from "react-hot-toast";
 import ReviewListComp from "../../components/Reviews/ReviewListComp";
 import ServiceBookingListComp from "../../components/Bookings/ServiceBookingListComp";
@@ -45,6 +45,7 @@ const ServiceDetails = () => {
   const baseImgUrl = baseURL.replace(/\/$/, "");
 
   const [approvalLoading, setApprovalLoading] = useState(false);
+  const [recommendLoading, setRecommendLoading] = useState(false);
   const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedDay, setSelectedDay] = useState(null);
@@ -118,6 +119,23 @@ const ServiceDetails = () => {
       toast.error(err?.message || "Failed to update service status");
     } finally {
       setApprovalLoading(false);
+    }
+  };
+
+  const handleToggleRecommended = async () => {
+    try {
+      setRecommendLoading(true);
+      const res = await toggleRecommendedService(id);
+      if (res.success) {
+        toast.success(res.message || "Recommendation status updated");
+        refetch();
+      } else {
+        toast.error(res.message || "Failed to update recommendation");
+      }
+    } catch (error) {
+      toast.error(error?.message || "Something went wrong");
+    } finally {
+      setRecommendLoading(false);
     }
   };
 
@@ -228,6 +246,23 @@ const ServiceDetails = () => {
               }`}>
                 {service.approvalStatus || "Pending Approval"}
               </span>
+
+              <button
+                onClick={handleToggleRecommended}
+                disabled={recommendLoading}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
+                  service.isRecommended
+                    ? "bg-amber-400 text-white shadow-amber-400/20"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-amber-500 border border-gray-200/60 dark:border-gray-700"
+                }`}
+              >
+                {recommendLoading ? (
+                  <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Star className="w-3.5 h-3.5" fill={service.isRecommended ? "currentColor" : "none"} />
+                )}
+                {service.isRecommended ? "Featured" : "Feature"}
+              </button>
 
               <Link to={`/service-calendar/${id}`}>
                 <Button className="bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm">

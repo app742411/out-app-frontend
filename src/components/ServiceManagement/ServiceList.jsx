@@ -15,7 +15,7 @@ import {
   Star,
   Calendar
 } from "lucide-react";
-import { getAllServicesAdmin, getPendingServices, updateServiceApproval, deleteService } from "../../api/authApi";
+import { getAllServicesAdmin, getPendingServices, updateServiceApproval, deleteService, toggleRecommendedService } from "../../api/authApi";
 import toast from "react-hot-toast";
 import { formatCurrency, formatDuration } from "../../utils/currency";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
@@ -44,6 +44,7 @@ const ServiceList = () => {
   const [rejectionModal, setRejectionModal] = useState({ show: false, serviceId: null, reason: "" });
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
+  const [recommendLoading, setRecommendLoading] = useState(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -112,6 +113,23 @@ const ServiceList = () => {
   const handleDeleteService = () => {
     if (!serviceToDelete) return;
     deleteMutation.mutate(serviceToDelete);
+  };
+
+  const handleToggleRecommended = async (id) => {
+    try {
+      setRecommendLoading(id);
+      const res = await toggleRecommendedService(id);
+      if (res.success) {
+        toast.success(res.message || "Recommendation status updated");
+        queryClient.invalidateQueries(["services"]);
+      } else {
+        toast.error(res.message || "Failed to update recommendation");
+      }
+    } catch (error) {
+      toast.error(error?.message || "Something went wrong");
+    } finally {
+      setRecommendLoading(null);
+    }
   };
 
   const getImageUrl = (service) => {
@@ -189,7 +207,27 @@ const ServiceList = () => {
                       {service.approvalStatus || "pending"}
                     </span>
                   </div>
-                  <div className="absolute top-4 right-4 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  <div className="absolute top-4 right-4 flex gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    {activeTab === "active" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleRecommended(service._id);
+                        }}
+                        disabled={recommendLoading === service._id}
+                        className={`p-2 rounded-full shadow-lg transition-all ${service.isRecommended
+                          ? 'bg-yellow-400 text-white'
+                          : 'bg-white/80 dark:bg-black/60 text-gray-400 hover:text-yellow-500'
+                          }`}
+                        title={service.isRecommended ? "Remove from Recommended" : "Set as Recommended"}
+                      >
+                        {recommendLoading === service._id ? (
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Star size={16} fill={service.isRecommended ? "currentColor" : "none"} />
+                        )}
+                      </button>
+                    )}
                     <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg ${service.isActive
                       ? 'bg-green-500 text-white'
                       : 'bg-red-500 text-white'
@@ -208,9 +246,14 @@ const ServiceList = () => {
                 {/* Content Section */}
                 <div className="p-5 space-y-4">
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white truncate text-lg group-hover:text-brand-500 transition-colors">
-                      {service.name || "Unnamed Service"}
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-gray-900 dark:text-white truncate text-lg group-hover:text-brand-500 transition-colors">
+                        {service.name || "Unnamed Service"}
+                      </h3>
+                      {service.isRecommended && (
+                        <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 px-2 py-0.5 rounded-full">Recommended</span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                       <MapPin className="w-3 h-3" /> {service.location?.city || "Unknown City"}, {service.location?.state || ""}, {service.location?.country || ""}
                     </p>

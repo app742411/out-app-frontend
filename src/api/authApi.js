@@ -498,6 +498,15 @@ export const getServicesByUserAdmin = async (userId) => {
   }
 };
 
+export const toggleRecommendedService = async (serviceId) => {
+  try {
+    const res = await apiClient.patch(`/api/admin/toggleRecommendedService/${serviceId}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 // export const getVendorStatsAdmin = async (userId) => {
 //   try {
 //     const res = await apiClient.get(`/api/admin/getVendorStatsAdmin/${userId}`);
