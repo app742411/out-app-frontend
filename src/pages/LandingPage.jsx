@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LandingHeader from '../components/LandingPage/LandingHeader';
 import LandingHero from '../components/LandingPage/LandingHero';
 import LandingAbout from '../components/LandingPage/LandingAbout';
+import LandingServiceSlider from '../components/LandingPage/LandingServiceSlider';
 import LandingStats from '../components/LandingPage/LandingStats';
 import LandingServices from '../components/LandingPage/LandingServices';
 import LandingHowItWorks from '../components/LandingPage/LandingHowItWorks';
@@ -14,6 +15,7 @@ import LandingFooter from '../components/LandingPage/LandingFooter';
 import { ArrowUp } from 'lucide-react';
 
 import { useTheme } from '../context/ThemeContext';
+import { Helmet } from 'react-helmet-async';
 
 const LandingPage = () => {
     const { theme } = useTheme();
@@ -47,11 +49,19 @@ const LandingPage = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-900 relative overflow-hidden w-full transition-colors duration-300">
+            <Helmet>
+                <title>Out App | Luxury Villa Booking & Premium Services in Saudi Arabia</title>
+                <meta name="description" content="Book exquisite villas, premium apartments, and bespoke services like spa, photography, catering, and massage with Out App in Saudi Arabia. Elevate your stay." />
+                <meta name="keywords" content="Out App, Saudi Arabia, villa booking, luxury rentals, premium services, spa, photography, catering, massage, beauty, hair cut" />
+                <meta name="robots" content="index, follow" />
+                <meta name="google-site-verification" content="T8JFlQjKHSs5mXZhYOwnm-FMk3Icsc6xzfl2xWL_ynU" />
+            </Helmet>
             <LandingHeader isDarkMode={isDarkMode} />
             <LandingHero setIsHovering={setIsHovering} />
             <LandingAbout />
             <LandingStats />
             <LandingServices />
+            <LandingServiceSlider />
             <LandingHowItWorks />
             <LandingFeatures />
             <LandingComparison />
