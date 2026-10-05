@@ -5,31 +5,15 @@ export default function LandingAbout() {
         <section id="about" className="py-12 lg:py-16 bg-white dark:bg-gray-950 dark:text-gray-300 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    
+
                     {/* Left Column: Asymmetric Editorial Grid Layout */}
                     <div className="order-2 lg:order-1 relative">
                         {/* Soft Glow Background */}
-                        <div className="absolute -inset-4 bg-brand-500/5 blur-3xl rounded-full pointer-events-none z-0" />
-                        
-                        <div className="relative grid grid-cols-12 gap-6 items-start">
-                            {/* Main large image (top left - 8 columns) */}
-                            <div className="col-span-8 overflow-hidden rounded-[32px] border border-gray-250/20 dark:border-gray-800/40 shadow-2xl hover:scale-[1.01] transition-transform duration-500 group">
-                                <img 
-                                    src="/images/home/properties8.webp" 
-                                    alt="Resort Exterior" 
-                                    className="w-full h-80 sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105" 
-                                />
-                            </div>
-                            
-                            {/* Secondary side image (shifted down - 4 columns) */}
-                            <div className="col-span-4 mt-12 overflow-hidden rounded-[24px] border border-gray-250/20 dark:border-gray-800/40 shadow-xl hover:scale-105 transition-transform duration-500 group">
-                                <img 
-                                    src="/images/home/properties6.webp" 
-                                    alt="Villa Pool" 
-                                    className="w-full h-64 sm:h-[300px] object-cover transition-transform duration-700 group-hover:scale-105" 
-                                />
-                            </div>
-                        </div>
+
+                        <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                            <source src="/images/image/aboutvideo.mp4" type="video/mp4" />
+                        </video>
+
                     </div>
 
                     {/* Right Column: Premium Typography & Double Details */}
@@ -42,7 +26,7 @@ export default function LandingAbout() {
                         <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-6 dark:text-white leading-tight tracking-tight">
                             We perfectly blend comfort and nature for your stay.
                         </h3>
-                        
+
                         <p className="text-sm md:text-base text-gray-500 mb-8 leading-relaxed dark:text-gray-400 font-medium">
                             Whether you're looking for an oceanfront villa, an urban luxury apartment, or a secluded cabin, we have meticulously curated the finest collection of properties worldwide.
                         </p>
@@ -75,9 +59,9 @@ export default function LandingAbout() {
 
                         {/* Verified Curation Profile row */}
                         <div className="flex items-center gap-4 pt-6 border-t border-gray-150/60 dark:border-gray-850/60">
-                            <img 
-                                src="/images/user/user-03.jpg" 
-                                alt="Head Curator" 
+                            <img
+                                src="/images/user/user-03.jpg"
+                                alt="Head Curator"
                                 className="w-10 h-10 rounded-full object-cover border border-gray-250/20 dark:border-gray-800 shadow-sm"
                             />
                             <div>

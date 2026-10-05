@@ -31,7 +31,7 @@ export default function AuthLayout({ children }) {
 
   return (
     <div className="relative flex flex-col lg:flex-row w-full h-screen overflow-hidden dark:bg-gray-950 transition-colors duration-300">
-      
+
       {/* Dynamic Keyframes for Laser Borders & Transitions */}
       <style>{`
         @keyframes scan-horizontal-forward {
@@ -69,17 +69,17 @@ export default function AuthLayout({ children }) {
 
       {/* Back to Homepage Link - Top Left */}
       <div className="absolute top-6 left-6 z-50">
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-brand-600 dark:text-gray-300 dark:hover:text-brand-400 transition-colors duration-150"
         >
-          <svg 
-            className="w-3.5 h-3.5 stroke-current" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor" 
-            strokeWidth="2.5" 
-            strokeLinecap="round" 
+          <svg
+            className="w-3.5 h-3.5 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
             strokeLinejoin="round"
           >
             <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -90,13 +90,13 @@ export default function AuthLayout({ children }) {
       </div>
 
       {/* Left Column: Sign In Form with Resort BG and White Wash Overlay */}
-      <div 
+      <div
         className="relative flex items-center justify-center w-full h-full lg:w-1/2 bg-cover bg-center px-4 sm:px-8 z-10"
         style={{ backgroundImage: `url(${bgImage})` }}
       >
         {/* White wash overlay for contrast */}
         <div className="absolute inset-0 bg-white/97 dark:bg-gray-950/97 z-0 transition-colors duration-300" />
-        
+
         {/* Form Container */}
         <div className="relative z-10 w-full max-w-md">
           {children}
@@ -133,8 +133,8 @@ export default function AuthLayout({ children }) {
         </div>
 
         {/* Pulsing Grid shape background */}
-        <div 
-          className="absolute inset-0 flex items-center justify-center z-1" 
+        <div
+          className="absolute inset-0 flex items-center justify-center z-1"
           style={{ animation: 'grid-pulse-effect 6s ease-in-out infinite' }}
         >
           <GridShape />
@@ -167,9 +167,8 @@ export default function AuthLayout({ children }) {
               <button
                 key={idx}
                 onClick={() => setCurrentSlide(idx)}
-                className={`h-2 rounded-full transition-all duration-300 focus:outline-hidden ${
-                  currentSlide === idx ? "w-7 bg-brand-600 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : "w-2 bg-white/35 hover:bg-white/60"
-                }`}
+                className={`h-2 rounded-full transition-all duration-300 focus:outline-hidden ${currentSlide === idx ? "w-7 bg-brand-600 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : "w-2 bg-white/35 hover:bg-white/60"
+                  }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
             ))}
