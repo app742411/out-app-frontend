@@ -19,7 +19,7 @@ export default function LandingFeatures() {
             icon: <CheckCircleIcon className="w-6 h-6 text-brand-600 dark:text-brand-400" />,
             title: "Verified Amenities",
             description: "Every property lists thoroughly verified amenities, ensuring you get exactly what you paid for. From high-speed Wi-Fi to private pools, we check it all.",
-            image: "/images/image/sideimage1.png"
+            image: "/images/image/sideimage3.png"
         }
     ];
 
@@ -62,19 +62,19 @@ export default function LandingFeatures() {
                                 </div>
                                 {/* Image Content */}
                                 <div className={`order-1 ${isEven ? 'md:order-2' : 'md:order-1'} relative flex justify-center items-center py-10`}>
-                                    
+
                                     {/* Decorative Solid Circle Background */}
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-full z-0 pointer-events-none bg-[#7a0404]/5 dark:bg-[#7a0404]/20" />
-                                    
+
                                     {/* Subtle pattern or border ring */}
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] lg:w-[480px] lg:h-[480px] rounded-full border border-gray-200 dark:border-gray-800 z-0 pointer-events-none" />
 
                                     {/* Decorative glow */}
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-brand-500/10 blur-[80px] rounded-full pointer-events-none z-0" />
-                                    
-                                    <img 
-                                        src={feature.image} 
-                                        alt={feature.title} 
+
+                                    <img
+                                        src={feature.image}
+                                        alt={feature.title}
                                         className="relative z-10 w-full max-w-md lg:max-w-lg h-auto object-contain transition-transform duration-700 hover:-translate-y-2 hover:scale-[1.03] drop-shadow-2xl"
                                     />
                                 </div>
