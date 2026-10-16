@@ -1124,3 +1124,7 @@ export const markPendingCountsSeen = async (type) => {
     throw error.response?.data || error;
   }
 };
+
+// GIFT CARD APIS
+export * from "./giftCardApi";
+

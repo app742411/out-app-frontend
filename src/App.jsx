@@ -38,6 +38,7 @@ import ServicePropertyDetails from "./pages/ServiceProperties/ServicePropertyDet
 import ServicePropertyCalendarPage from "./pages/ServiceProperties/ServicePropertyCalendarPage";
 import ServiceCalendarPage from "./pages/ServiceManagement/ServiceCalendarPage";
 import CouponManage from "./pages/Coupons/CouponManage";
+import GiftCardManage from "./pages/GiftCards/GiftCardManage";
 import AppManage from "./pages/AppManage/AppManage";
 import ComingSoon from "./pages/ComingSoon/ComingSoon";
 import SupportListPage from "./pages/Support/SupportListPage";
@@ -109,6 +110,7 @@ export default function App() {
               <Route path="/property-calendar/:id" element={<ServicePropertyCalendarPage />} />
               <Route path="/service-calendar/:id" element={<ServiceCalendarPage />} />
               <Route path="/coupanmange" element={<CouponManage />} />
+              <Route path="/gift-cards" element={<GiftCardManage />} />
               <Route path="/packages" element={<PackageListPage />} />
               <Route path="/package-details/:id" element={<PackageDetailsPage />} />
               <Route path="/app-manage" element={<AppManage />} />

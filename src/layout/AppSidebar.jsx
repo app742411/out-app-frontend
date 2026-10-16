@@ -14,6 +14,7 @@ import {
   Wrench,
   CalendarDays,
   Ticket,
+  Gift,
   Coins,
   SlidersHorizontal,
   User,
@@ -76,6 +77,11 @@ const navItems = [
     icon: <Ticket size={18} />,
     name: "Coupon Management",
     path: "/coupanmange",
+  },
+  {
+    icon: <Gift size={18} />,
+    name: "Gift Cards",
+    path: "/gift-cards",
   },
   {
     icon: <Coins size={18} />,

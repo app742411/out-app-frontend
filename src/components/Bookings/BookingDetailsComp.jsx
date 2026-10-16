@@ -37,7 +37,8 @@ import {
     ChevronUp,
     Wrench,
     Package as PackageIcon,
-    Timer
+    Timer,
+    Wallet,
 } from "lucide-react";
 
 export default function BookingDetailsComp() {
@@ -301,8 +302,20 @@ export default function BookingDetailsComp() {
                     <p className="text-2xl font-black text-gray-900 dark:text-white">
                         {formatCurrency(booking.totalAmount || booking.amount || 0)}
                     </p>
-                    <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
-                        <span>Paid via Tap Gateway</span>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs">
+                        {booking.paymentMethod?.toUpperCase() === "WALLET" ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                                <Wallet className="w-3.5 h-3.5" /> Paid via Wallet
+                            </span>
+                        ) : (booking.walletAmountApplied > 0 && booking.onlinePayableAmount > 0) ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
+                                <Wallet className="w-3.5 h-3.5" /> Split (Wallet + Online)
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 text-gray-500">
+                                <CreditCard className="w-3.5 h-3.5" /> Paid via {booking.paymentMethod || "Online Gateway"}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -840,74 +853,133 @@ export default function BookingDetailsComp() {
 
                     {/* Financial Summary */}
                     <ComponentCard title="Financial Breakdown">
-                        <div className="space-y-3 text-xs">
-                            {(priceBreakdown.propertyPrice > 0 || (activeProperty?.price && !isServiceBooking)) && (
-                                <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                    <span>Property Price</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">
-                                        {formatCurrency(priceBreakdown.propertyPrice || activeProperty?.price || 0)}
-                                    </span>
-                                </div>
-                            )}
-
-                            {(priceBreakdown.packagePrice > 0 || pkg) && (
-                                <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                    <span>Package Price</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">
-                                        {formatCurrency(priceBreakdown.packagePrice || pkg?.price || 0)}
-                                    </span>
-                                </div>
-                            )}
-
-                            {(priceBreakdown.servicePrice > 0 || isServiceBooking) && (
-                                <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                    <span>Service Price</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">
-                                        {formatCurrency(priceBreakdown.servicePrice || firstService?.price || 0)}
-                                    </span>
-                                </div>
-                            )}
-
-                            <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                <span>Platform Fee</span>
-                                <span className="font-semibold text-gray-900 dark:text-white">
-                                    + {formatCurrency(booking.platformFee || 0)}
+                        <div className="space-y-3.5 text-xs">
+                            {/* Base Charges */}
+                            <div>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">
+                                    Base Charges
                                 </span>
+                                <div className="space-y-2">
+                                    {(priceBreakdown.propertyPrice !== undefined ? priceBreakdown.propertyPrice > 0 : (activeProperty?.price && !isServiceBooking)) && (
+                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                                            <span>Property Base Price</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">
+                                                {formatCurrency(priceBreakdown.propertyPrice ?? activeProperty?.price ?? 0)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {(priceBreakdown.packagePrice > 0 || pkg) && (
+                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                                            <span>Package Base Price</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">
+                                                {formatCurrency(priceBreakdown.packagePrice || pkg?.price || 0)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {(priceBreakdown.servicePrice > 0 || isServiceBooking) && (
+                                        <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                                            <span>Service Base Price</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">
+                                                {formatCurrency(priceBreakdown.servicePrice || firstService?.price || 0)}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
-                                <span>Tax (VAT)</span>
-                                <span className="font-semibold text-gray-900 dark:text-white">
-                                    + {formatCurrency(booking.tax || 0)}
+                            {/* Taxes & Fees */}
+                            <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">
+                                    Fees & Taxes
                                 </span>
-                            </div>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                                        <span>Platform Fee</span>
+                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                            + {formatCurrency(booking.platformFee || 0)}
+                                        </span>
+                                    </div>
 
-                            {booking.couponId && (
-                                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
-                                    <span>Coupon Discount</span>
-                                    <span className="font-semibold">- {formatCurrency(booking.discountAmount || 0)}</span>
+                                    <div className="flex justify-between items-center text-gray-600 dark:text-gray-400">
+                                        <span>Tax (VAT)</span>
+                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                            + {formatCurrency(booking.tax || 0)}
+                                        </span>
+                                    </div>
+
+                                    {booking.couponId && (
+                                        <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                                            <span>Coupon Discount</span>
+                                            <span className="font-semibold">- {formatCurrency(booking.discountAmount || 0)}</span>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-
-                            <div className="flex justify-between items-center text-gray-500 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
-                                <span className="italic">Provider Amount (Net)</span>
-                                <span className="font-bold text-gray-800 dark:text-gray-200">
-                                    {formatCurrency(booking.providerAmount || 0)}
-                                </span>
                             </div>
 
-                            <div className="flex justify-between items-center text-gray-500">
-                                <span className="italic">Admin Commission</span>
-                                <span className="font-semibold text-emerald-600">
-                                    {formatCurrency(booking.commissionAmount || 0)}
-                                </span>
-                            </div>
-
-                            <div className="flex justify-between items-center font-black text-lg pt-3 border-t border-gray-200 dark:border-gray-700 mt-3 text-gray-900 dark:text-white">
-                                <span>Total Paid</span>
-                                <span className="text-brand-500 dark:text-white">
+                            {/* Gross Total */}
+                            <div className="flex justify-between items-center font-black text-base pt-3 border-t border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
+                                <span>Total Booking Amount</span>
+                                <span className="text-brand-600 dark:text-brand-400 text-lg">
                                     {formatCurrency(booking.totalAmount || booking.amount || 0)}
                                 </span>
+                            </div>
+
+                            {/* Payment Settlement & Wallet Breakdown */}
+                            <div className="pt-3 border-t border-dashed border-gray-200 dark:border-gray-700 space-y-2.5 bg-gray-50/80 dark:bg-gray-800/40 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                        Payment Method
+                                    </span>
+                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 border border-brand-200/50">
+                                        {booking.paymentMethod || "WALLET"}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1 font-medium">
+                                        <Wallet className="w-3.5 h-3.5 text-emerald-500" /> Wallet Applied
+                                    </span>
+                                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                        {formatCurrency(booking.walletAmountApplied !== undefined ? booking.walletAmountApplied : (booking.paymentMethod === "WALLET" ? booking.totalAmount : 0))}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1 font-medium">
+                                        <CreditCard className="w-3.5 h-3.5 text-blue-500" /> Online Paid (Gateway)
+                                    </span>
+                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                        {formatCurrency(booking.onlinePayableAmount !== undefined ? booking.onlinePayableAmount : 0)}
+                                    </span>
+                                </div>
+
+                                {booking.walletRefunded !== undefined && (
+                                    <div className="flex justify-between items-center pt-1.5 border-t border-gray-200/60 dark:border-gray-700/60 text-[11px]">
+                                        <span className="text-gray-500">Wallet Refund Status</span>
+                                        <span className={`font-semibold ${booking.walletRefunded ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
+                                            {booking.walletRefunded ? "Refunded to Wallet" : "Not Refunded"}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Payout & Commission Split */}
+                            <div className="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-1.5">
+                                <div className="flex justify-between items-center text-gray-500">
+                                    <span className="italic">Provider Payout (Net)</span>
+                                    <span className="font-bold text-gray-800 dark:text-gray-200">
+                                        {formatCurrency(booking.providerAmount || 0)}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between items-center text-gray-500">
+                                    <span className="italic">Admin Commission</span>
+                                    <span className="font-semibold text-emerald-600">
+                                        {formatCurrency(booking.commissionAmount || 0)}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </ComponentCard>
@@ -945,74 +1017,115 @@ export default function BookingDetailsComp() {
                         </ComponentCard>
                     )}
 
-                    {/* Payment Gateway Transaction (Tap) */}
-                    {paymentTransaction && (
-                        <ComponentCard title="Payment & Gateway Details">
-                            <div className="space-y-3 text-xs">
-                                <div>
-                                    <span className="text-gray-400 uppercase font-semibold text-[10px] tracking-wider block">
-                                        Tap Charge ID
-                                    </span>
-                                    <div className="flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/20 p-2 rounded-lg border border-blue-100 dark:border-blue-900/30 mt-1">
-                                        <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold truncate mr-2">
-                                            {booking.tapChargeId || paymentTransaction.tapChargeId}
+                    {/* Payment & Settlement Details */}
+                    {(paymentTransaction || booking.paymentMethod) && (
+                        <ComponentCard title="Payment & Settlement Details">
+                            <div className="space-y-3.5 text-xs">
+                                <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    <div>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Method</span>
+                                        <span className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5 mt-0.5">
+                                            {booking.paymentMethod?.toUpperCase() === "WALLET" ? (
+                                                <>
+                                                    <Wallet className="w-3.5 h-3.5 text-emerald-500" /> In-App Wallet
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CreditCard className="w-3.5 h-3.5 text-blue-500" /> {booking.paymentMethod || "Tap Gateway"}
+                                                </>
+                                            )}
                                         </span>
-                                        <button
-                                            onClick={() => handleCopy(booking.tapChargeId || paymentTransaction.tapChargeId, "chargeId")}
-                                            className="text-gray-400 hover:text-blue-500"
-                                            title="Copy Charge ID"
-                                        >
-                                            {copiedKey === "chargeId" ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                                        </button>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Payment Status</span>
+                                        <div className="mt-0.5">{getStatusBadge(booking.paymentStatus)}</div>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-500">Transaction Status</span>
-                                    {getStatusBadge(paymentTransaction.status)}
-                                </div>
-
-                                {paymentTransaction.rawResponse?.status && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Gateway Status</span>
-                                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase text-[11px]">
-                                            {paymentTransaction.rawResponse.status}
-                                        </span>
+                                {booking.paymentMethod?.toUpperCase() === "WALLET" && !paymentTransaction && (
+                                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-xl space-y-2">
+                                        <div className="flex justify-between items-center text-emerald-800 dark:text-emerald-300">
+                                            <span className="font-semibold flex items-center gap-1.5">
+                                                <Wallet className="w-4 h-4 text-emerald-600" /> Total Wallet Deducted
+                                            </span>
+                                            <span className="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">
+                                                {formatCurrency(booking.walletAmountApplied ?? booking.totalAmount ?? 0)}
+                                            </span>
+                                        </div>
+                                        <p className="text-[11px] text-emerald-600 dark:text-emerald-400/80">
+                                            This booking was settled using the customer's available in-app wallet balance. No external credit card gateway charge was required.
+                                        </p>
                                     </div>
                                 )}
 
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-500">Currency</span>
-                                    <span className="font-bold text-gray-900 dark:text-white">
-                                        {paymentTransaction.currency || "SAR"}
-                                    </span>
-                                </div>
+                                {paymentTransaction && (
+                                    <>
+                                        <div>
+                                            <span className="text-gray-400 uppercase font-semibold text-[10px] tracking-wider block">
+                                                Tap Charge ID
+                                            </span>
+                                            <div className="flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/20 p-2 rounded-lg border border-blue-100 dark:border-blue-900/30 mt-1">
+                                                <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold truncate mr-2">
+                                                    {booking.tapChargeId || paymentTransaction.tapChargeId}
+                                                </span>
+                                                <button
+                                                    onClick={() => handleCopy(booking.tapChargeId || paymentTransaction.tapChargeId, "chargeId")}
+                                                    className="text-gray-400 hover:text-blue-500"
+                                                    title="Copy Charge ID"
+                                                >
+                                                    {copiedKey === "chargeId" ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                                    <span className="text-gray-400 uppercase font-semibold text-[10px] tracking-wider block mb-1">
-                                        Transaction ID
-                                    </span>
-                                    <p className="font-mono text-[11px] text-gray-500 break-all">
-                                        {paymentTransaction._id}
-                                    </p>
-                                </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-500">Transaction Status</span>
+                                            {getStatusBadge(paymentTransaction.status)}
+                                        </div>
 
-                                {/* Collapsible JSON */}
-                                {paymentTransaction.rawResponse && (
-                                    <div className="pt-2">
-                                        <button
-                                            onClick={() => setShowRawJson(!showRawJson)}
-                                            className="w-full flex items-center justify-between py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                                        >
-                                            <span>Raw Gateway Response</span>
-                                            {showRawJson ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                        </button>
-                                        {showRawJson && (
-                                            <pre className="mt-2 p-3 bg-gray-900 text-gray-300 rounded-xl text-[10px] overflow-auto max-h-56 scrollbar-hide">
-                                                {JSON.stringify(paymentTransaction.rawResponse, null, 2)}
-                                            </pre>
+                                        {paymentTransaction.rawResponse?.status && (
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-gray-500">Gateway Status</span>
+                                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase text-[11px]">
+                                                    {paymentTransaction.rawResponse.status}
+                                                </span>
+                                            </div>
                                         )}
-                                    </div>
+
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-500">Currency</span>
+                                            <span className="font-bold text-gray-900 dark:text-white">
+                                                {paymentTransaction.currency || "SAR"}
+                                            </span>
+                                        </div>
+
+                                        <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                            <span className="text-gray-400 uppercase font-semibold text-[10px] tracking-wider block mb-1">
+                                                Transaction ID
+                                            </span>
+                                            <p className="font-mono text-[11px] text-gray-500 break-all">
+                                                {paymentTransaction._id}
+                                            </p>
+                                        </div>
+
+                                        {/* Collapsible JSON */}
+                                        {paymentTransaction.rawResponse && (
+                                            <div className="pt-2">
+                                                <button
+                                                    onClick={() => setShowRawJson(!showRawJson)}
+                                                    className="w-full flex items-center justify-between py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                                >
+                                                    <span>Raw Gateway Response</span>
+                                                    {showRawJson ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                                </button>
+                                                {showRawJson && (
+                                                    <pre className="mt-2 p-3 bg-gray-900 text-gray-300 rounded-xl text-[10px] overflow-auto max-h-56 scrollbar-hide">
+                                                        {JSON.stringify(paymentTransaction.rawResponse, null, 2)}
+                                                    </pre>
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </ComponentCard>

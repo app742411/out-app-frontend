@@ -6,13 +6,18 @@ import toast from "react-hot-toast";
 import { 
   User, Mail, Phone, Calendar, Shield, ShieldCheck, ShieldAlert, 
   Award, FileText, Globe, CheckCircle, XCircle, AlertCircle, 
-  Fingerprint, Info, Check, X, ShieldQuestion, UserCheck, AlertTriangle
+  Fingerprint, Info, Check, X, ShieldQuestion, UserCheck, AlertTriangle,
+  Wallet, History
 } from "lucide-react";
+import Button from "../ui/button/Button";
+import { formatCurrency } from "../../utils/currency";
+import UserWalletModal from "../GiftCards/UserWalletModal";
 
 export default function PersonalUserDetailsComp() {
     const { id } = useParams();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     const baseURL = import.meta.env.VITE_API_URL;
 
@@ -101,79 +106,111 @@ export default function PersonalUserDetailsComp() {
         <div className="space-y-6">
             {/* Profile Header Hero Section */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <div className="w-24 h-24 rounded-full border-4 border-gray-100 dark:border-gray-800 overflow-hidden flex-shrink-0 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl font-bold uppercase shadow-inner">
-                        {user.profile ? (
-                            <img
-                                src={`${baseURL.replace(/\/$/, "")}/uploads/users/${user.profile}`}
-                                alt={`${user.firstName} ${user.lastName}`}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <>
-                                {user.firstName?.charAt(0)}
-                                {user.lastName?.charAt(0)}
-                            </>
-                        )}
-                    </div>
-                    <div className="flex-1 text-center sm:text-left">
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                {user.salutation ? `${user.salutation} ` : ""}
-                                {user.firstName} {user.lastName}
-                            </h2>
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                                user.role === 'admin' 
-                                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                            }`}>
-                                {user.role || "user"}
-                            </span>
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                        <div className="w-24 h-24 rounded-full border-4 border-gray-100 dark:border-gray-800 overflow-hidden flex-shrink-0 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl font-bold uppercase shadow-inner">
+                            {user.profile ? (
+                                <img
+                                    src={`${baseURL.replace(/\/$/, "")}/uploads/users/${user.profile}`}
+                                    alt={`${user.firstName} ${user.lastName}`}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <>
+                                    {user.firstName?.charAt(0)}
+                                    {user.lastName?.charAt(0)}
+                                </>
+                            )}
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            <span className="font-semibold text-gray-400">User ID:</span> {user.userId || "-"}
-                        </p>
-                        
-                        {/* Status Badges Row */}
-                        <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
-                            {/* Identity Verification Status Badge */}
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                                user.identityVerificationStatus === "VERIFIED" || user.isVerified
-                                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-                            }`}>
-                                {user.identityVerificationStatus === "VERIFIED" || user.isVerified ? (
-                                    <>
-                                        <ShieldCheck className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                                        Verified
-                                    </>
-                                ) : (
-                                    <>
-                                        <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                                        {user.identityVerificationStatus || "Unverified"}
-                                    </>
-                                )}
-                            </span>
+                        <div className="flex-1">
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {user.salutation ? `${user.salutation} ` : ""}
+                                    {user.firstName} {user.lastName}
+                                </h2>
+                                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
+                                    user.role === 'admin' 
+                                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                }`}>
+                                    {user.role || "user"}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <span className="font-semibold text-gray-400">User ID:</span> {user.userId || "-"}
+                            </p>
+                            
+                            {/* Status Badges Row */}
+                            <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
+                                {/* Identity Verification Status Badge */}
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                                    user.identityVerificationStatus === "VERIFIED" || user.isVerified
+                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                                }`}>
+                                    {user.identityVerificationStatus === "VERIFIED" || user.isVerified ? (
+                                        <>
+                                            <ShieldCheck className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                                            Verified
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                            {user.identityVerificationStatus || "Unverified"}
+                                        </>
+                                    )}
+                                </span>
 
-                            {/* Account Status Badge */}
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                                !user.isDeleted
-                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                {/* Account Status Badge */}
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                                    !user.isDeleted
+                                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                }`}>
+                                    {!user.isDeleted ? (
+                                        <>
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Active Account
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                            Deleted / Suspended
+                                        </>
+                                    )}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Wallet Widget in Hero */}
+                    <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white shadow-md flex flex-col justify-between min-w-[240px] w-full lg:w-auto">
+                        <div className="flex items-center justify-between gap-3 text-emerald-100 text-xs font-semibold">
+                            <span className="flex items-center gap-1.5 uppercase tracking-wider">
+                                <Wallet className="w-4 h-4" /> User Wallet
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                (user.wallet?.isActive !== false) ? "bg-white/20 text-white" : "bg-red-400/20 text-red-100"
                             }`}>
-                                {!user.isDeleted ? (
-                                    <>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Active Account
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                        Deleted / Suspended
-                                    </>
-                                )}
+                                {(user.wallet?.isActive !== false) ? "Active" : "Inactive"}
                             </span>
                         </div>
+                        <div className="mt-2.5 flex items-baseline gap-1.5">
+                            <span className="text-3xl font-black">
+                                {(user.wallet?.balance ?? user.walletBalance ?? user.walletAmount ?? 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-bold text-emerald-200">
+                                {user.wallet?.currency || "SAR"}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsWalletModalOpen(true)}
+                            className="mt-3.5 w-full py-2 px-3 bg-white/20 hover:bg-white/30 active:scale-[0.98] text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                            <History className="w-3.5 h-3.5" />
+                            View Transactions & Ledger
+                        </button>
                     </div>
                 </div>
             </div>
@@ -181,7 +218,68 @@ export default function PersonalUserDetailsComp() {
             {/* Redesigned Info Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                {/* 1. Account & Profile Info */}
+                {/* 1. Wallet & Financial Account Card */}
+                <ComponentCard title="Wallet & Financial Account">
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">
+                                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+                                    Current Balance
+                                </span>
+                                <p className="text-2xl font-black text-emerald-800 dark:text-emerald-200 mt-1">
+                                    {formatCurrency(user.wallet?.balance ?? user.walletBalance ?? user.walletAmount ?? 0)}
+                                </p>
+                                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                    Currency: {user.wallet?.currency || "SAR"}
+                                </p>
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-gray-800">
+                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">
+                                    Wallet Status
+                                </span>
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                        (user.wallet?.isActive !== false)
+                                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                                            : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                                    }`}>
+                                        {(user.wallet?.isActive !== false) ? "Active & Ready" : "Inactive / Suspended"}
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 mt-1.5">
+                                    Last Updated: {formatDateTime(user.wallet?.updatedAt || user.verifiedAt)}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            <DetailItem 
+                                icon={Wallet} 
+                                label="Wallet ID" 
+                                value={user.wallet?._id || "Not generated"} 
+                            />
+                            <DetailItem 
+                                icon={Calendar} 
+                                label="Wallet Created At" 
+                                value={formatDateTime(user.wallet?.createdAt)} 
+                            />
+                        </div>
+
+                        <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setIsWalletModalOpen(true)}
+                                startIcon={<History className="w-4 h-4 text-emerald-600" />}
+                            >
+                                Inspect Full Wallet Transactions & Cards
+                            </Button>
+                        </div>
+                    </div>
+                </ComponentCard>
+
+                {/* 2. Account & Profile Info */}
                 <ComponentCard title="Account Details">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <DetailItem icon={User} label="Salutation" value={user.salutation} />
@@ -338,6 +436,14 @@ export default function PersonalUserDetailsComp() {
                     </div>
                 </div>
             </ComponentCard>
+
+            {/* User Wallet & Ledger Modal */}
+            <UserWalletModal
+                isOpen={isWalletModalOpen}
+                userId={user._id}
+                userName={`${user.firstName || ""} ${user.lastName || ""}`.trim()}
+                onClose={() => setIsWalletModalOpen(false)}
+            />
         </div>
     );
 }
