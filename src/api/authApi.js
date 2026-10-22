@@ -50,14 +50,17 @@ export const updateAdminProfile = async (formData) => {
 export const getAllUsers = async ({
   page = 1,
   limit = 10,
+  pageSize = 10,
   search = "",
   status = "",
 } = {}) => {
   try {
+    const size = pageSize || limit;
     const res = await apiClient.get("/api/admin/get-all-users", {
       params: {
         page,
-        limit,
+        limit: size,
+        pageSize: size,
         search,
         status, // 'active' or 'inactive'
       },
@@ -232,11 +235,37 @@ export const createCoupon = async (payload) => {
   }
 };
 
-export const getCoupons = async ({ page = 1, limit = 10, search = "" } = {}) => {
+export const getCoupons = async ({
+  page = 1,
+  limit = 10,
+  pageSize = 10,
+  search = "",
+  couponType = "",
+  userRestriction = "",
+  status = "",
+} = {}) => {
   try {
-    const res = await apiClient.get("/api/admin/getAllCoupons", {
-      params: { page, limit, search }
-    });
+    const size = pageSize || limit;
+    const params = {
+      page,
+      limit: size,
+      pageSize: size,
+    };
+    if (search) params.search = search;
+    if (couponType) params.couponType = couponType;
+    if (userRestriction) params.userRestriction = userRestriction;
+    if (status) params.status = status;
+
+    const res = await apiClient.get("/api/admin/getAllCoupons", { params });
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const getCouponById = async (couponId) => {
+  try {
+    const res = await apiClient.get(`/api/admin/getCouponById/${couponId}`);
     return res.data;
   } catch (error) {
     throw error.response?.data || error;
@@ -255,6 +284,15 @@ export const updateCoupon = async (id, payload) => {
 export const deleteCoupon = async (id) => {
   try {
     const res = await apiClient.delete(`/api/admin/deleteCoupon/${id}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const adminOverrideRefund = async (bookingId, payload) => {
+  try {
+    const res = await apiClient.post(`/api/admin/adminOverrideRefund/${bookingId}`, payload);
     return res.data;
   } catch (error) {
     throw error.response?.data || error;
